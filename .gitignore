@@ -1,0 +1,39 @@
+# Ignorar todo por defecto
+*
+
+# Permitir el archivo .gitignore
+!.gitignore
+
+# Permitir archivos de configuración de Docker
+!docker-compose.yml
+!docker-compose-socat.yml
+
+# Permitir archivos raíz de LaTeX y bibliografía
+!main.tex
+!main.pdf
+!bibliografia.bib
+!MastersDoctoralThesis.cls
+
+# Permitir directorios de contenido
+!capitulos/
+!capitulos/**
+!apendices/
+!apendices/**
+!figuras/
+!figuras/**
+
+# --- Reglas de limpieza para LaTeX ---
+# Ignorar archivos temporales de compilación incluso en las subcarpetas permitidas
+*.aux
+*.log
+*.out
+*.toc
+*.bbl
+*.blg
+*.bcf
+*.run.xml
+*.fls
+*.fdb_latexmk
+*.synctex.gz
+*.lof
+*.lot

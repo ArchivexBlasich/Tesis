@@ -1,0 +1,11 @@
+services:
+  minio-proxy:
+    image: alpine/socat
+    command: 'TCP4-LISTEN:9000,fork,reuseaddr TCP4:192.168.80.24:9000'
+    expose:
+      - '9000'
+    healthcheck:
+      test: ["CMD", "nc", "-z", "127.0.0.1", "9000"]
+      interval: 5s
+      timeout: 2s
+      retries: 5

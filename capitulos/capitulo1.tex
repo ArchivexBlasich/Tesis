@@ -1,0 +1,154 @@
+\chapter{Introducción General}
+\label{chap:introduccion}
+
+El presente trabajo de graduación se desarrolla en el marco de la Facultad de Ciencias Exactas y Tecnología (FACET) de la Universidad Nacional de Tucumán (UNT). La FACET, como institución referente en la formación de ingenieros y científicos en la región, procesa un volumen constante de documentación administrativa y académica que requiere de mecanismos de validación y firma por parte de sus autoridades y personal docente.
+
+\section{Descripción del Problema}
+\label{sec:problematica}
+
+Históricamente, el flujo de trabajo para la firma de documentos en la institución ha sido manual y descentralizado. Este método presenta ineficiencias claras que dificultan el trabajo diario del personal académico.
+
+El proceso actual comienza cuando un usuario necesita firmar un documento. Típicamente, debe descargar el archivo, firmarlo con alguna herramienta externa, guardar una copia y enviarla por correo electrónico al siguiente responsable. Este ciclo se repite hasta conseguir todas las firmas, lo que genera los siguientes problemas:
+
+\begin{itemize}
+    \item Tiempo Administrativo: El usuario invierte tiempo en tareas repetitivas (descargar, buscar una herramienta de firma, procesar el archivo y volver a enviarlo) en lugar de realizar la acción de manera inmediata y centralizada.
+    \item Errores Humanos: Es común que se pierdan hilos de correos, se olviden archivos adjuntos o que los usuarios firmen en lugares incorrectos por no tener una guía visual clara en el documento.
+    \item Falta de Trazabilidad: Cada firmante posee una versión intermedia del documento en su dispositivo. No existe un registro centralizado que indique cuándo firmó cada persona (fecha y hora), ni un mecanismo que asegure el orden secuencial de las firmas, dificultando saber en qué etapa exacta se encuentra el trámite.
+    \item Uso Ineficiente del Almacenamiento: Al no existir un repositorio único, el mismo archivo se replica innecesariamente ocupando espacio tanto en los servidores de correo como en el almacenamiento local de cada usuario.
+\end{itemize}
+
+\section{Motivación y Justificación}
+\label{sec:motivacion}
+
+La principal motivación de este trabajo es transformar el proceso manual y fragmentado descrito anteriormente en un flujo de trabajo automatizado, aprovechando la infraestructura tecnológica con la que ya cuenta la facultad. 
+
+En lugar de recurrir a servicios externos que implican altos costos, se justifica el desarrollo de una solución interna que optimice el uso del hardware, los sistemas de almacenamiento y la red institucional. Se busca establecer un modelo de gestión donde el ciclo de vida del documento resulte ágil y simplificado:
+
+\begin{itemize}
+    \item Carga única: El usuario (docente, alumno o tercero) sube el archivo PDF al sistema una sola vez.
+    \item Definición de parámetros: Se establecen los firmantes, el orden de las firmas y la ubicación visual de cada una en el documento.
+    \item Orquestación automática: El sistema asume la gestión del proceso, enviando notificaciones, administrando los turnos y recolectando las firmas de forma ordenada.
+    \item Resultado trazable: Se genera un documento final único que contiene todas las firmas, almacenado de forma centralizada y con un registro de fecha y hora de cada intervención.
+\end{itemize}
+
+\section{Objetivos y Alcance del Trabajo}
+\label{sec:objetivos_alcance}
+
+\subsection{Objetivo General}
+Diseñar, implementar y desplegar una solución ``llave en mano'' para la gestión y firma electrónica de documentos PDF en la facultad, definiendo la infraestructura y los procedimientos necesarios para su operación y mantenimiento.
+
+\subsection{Objetivos Específicos}
+\begin{itemize}
+    \item Determinar la plataforma de código abierto más adecuada mediante un estudio comparativo, priorizando la integración con los servicios de identidad y almacenamiento de la facultad.
+    \item Diseñar la arquitectura de despliegue, la infraestructura de recursos y las políticas de administración (respaldo y gestión de usuarios).
+    \item Validar la solución técnica mediante una prueba piloto con usuarios reales, asegurando que la herramienta responda correctamente al flujo de trabajo propuesto.
+    \item Elaborar el manual de mantenimiento y los procedimientos que garanticen la transferencia de conocimiento y la continuidad del servicio.
+\end{itemize}
+
+\subsection{Alcance y Limitaciones}
+Este trabajo se centra en las tareas de infraestructura y administración de sistemas. El alcance comprende las siguientes áreas técnicas:
+
+\begin{itemize}
+    \item Diseño de la topología de red multicapa, desde el proxy inverso perimetral de la facultad hasta los contenedores Docker internos.
+    \item Despliegue contenerizado de la plataforma y sus servicios auxiliares mediante el orquestador Coolify sobre un contenedor LXC aprovisionado por la facultad.
+    \item Integración con el servidor de almacenamiento de objetos TrueNAS/MinIO, incluyendo la resolución de barreras de conectividad entre la red privada de Docker y la red institucional.
+    \item Configuración de la autenticación federada mediante Google OAuth 2.0, delegando la gestión de identidades al dominio institucional de Google Workspace.
+    \item Integración con un servicio externo de \textit{relay} SMTP para el envío de notificaciones transaccionales del sistema.
+    \item Definición de políticas de respaldo y retención orientadas a la preservación de los datos transaccionales y los documentos firmados.
+\end{itemize}
+
+Se establecen las siguientes limitaciones:
+
+\begin{itemize}
+    \item El proyecto no incluye el desarrollo de software de aplicación desde cero, sino la implementación, integración y optimización de herramientas de código abierto existentes para cumplir con los requisitos de la facultad.
+    \item El hardware disponible en el centro de datos presenta restricciones arquitectónicas (procesadores sin soporte para instrucciones AVX/AVX2) que condicionan la versión de la plataforma desplegable, aspecto documentado en el Capítulo~\ref{chap:diseno_implementacion}.
+    \item El certificado de firma utilizado es autofirmado y no posee validez ante terceros externos, por lo que el sistema se clasifica legalmente como firma electrónica conforme a la Ley 25.506.
+\end{itemize}
+
+\section{Estado del Arte}
+\label{sec:estado_arte}
+
+El análisis inicial del sector permitió identificar una marcada diferencia entre las plataformas comerciales de tipo SaaS (\textit{Software as a Service}) y las alternativas de código abierto. Si bien el mercado comercial ofrece herramientas robustas, los altos costos operativos y las restricciones de integración en planes básicos motivaron el descarte de soluciones propietarias para la facultad.
+
+Las soluciones líderes en el mercado operan bajo modelos de suscripción mensual por usuario que resultan económicamente inviables para una institución pública en el contexto actual. En la Tabla \ref{tab:comparativa_saas} se detallan los costos de los proveedores más relevantes.
+
+\begin{table}[H]
+    \centering
+    \begin{tabular}{l c}
+        \toprule
+        Proveedor & Costo por Usuario (USD/mes) \\
+        \midrule
+        DocuSign \cite{docusign_pricing} & \$25.00 \\
+        Dropbox Sign \cite{dropbox_sign_pricing} & \$25.00 \\
+        Adobe Sign \cite{adobe_sign_pricing} & \$22.19 \\
+        \bottomrule
+    \end{tabular}
+    \caption[Comparativa de costos de soluciones SaaS]{Comparativa de costos de soluciones SaaS de firma electrónica.}
+    \label{tab:comparativa_saas}
+\end{table}
+
+\begin{figure}[!htb]
+\minipage{0.32\textwidth}
+  \centering
+  \includegraphics[height=1.2cm, width=\linewidth, keepaspectratio]{figuras/capitulo1/Docusign.png}
+  \captionsetup{width=.95\linewidth}
+    \caption[DocuSign]{Logo de DocuSign. Extraído de \cite{docusign_site}.}\label{fig:logo_docusign}
+\endminipage\hfill
+\minipage{0.32\textwidth}
+  \centering
+  \includegraphics[height=1.2cm, width=\linewidth, keepaspectratio]{figuras/capitulo1/DropboxSign.png}
+  \captionsetup{width=.9\linewidth}
+    \caption[Dropbox Sign]{Logo de Dropbox Sign. Extraído de \cite{dropbox_sign_site}.}\label{fig:logo_dropbox}
+\endminipage\hfill
+\minipage{0.32\textwidth}%
+  \centering
+  \includegraphics[height=1.2cm, width=\linewidth, keepaspectratio]{figuras/capitulo1/AdobeSign.png}
+  \captionsetup{width=.9\linewidth}
+    \caption[Adobe Sign]{Logo de Adobe Sign. Extraído de \cite{adobe_site}.}\label{fig:logo_adobe}
+\endminipage
+\end{figure}
+
+Considerando el escenario más económico entre los proveedores analizados (\$22,19 USD por licencia), el costo anual proyectado para un grupo de apenas 20 usuarios clave sigue siendo significativo:
+
+\begin{equation}
+    \text{Costo Anual} = 20 \text{ usuarios} \times 22,19 \text{ USD} \times 12 \text{ meses} = 5.325,60 \text{ USD}
+\end{equation}
+
+Es fundamental reconocer que el ahorro en licencias que se logra con una solución de código abierto no es absoluto, sino que implica un intercambio de responsabilidades operativas. Al optar por un modelo \textit{on-premise}, la facultad asume el compromiso técnico de garantizar la disponibilidad del servicio, el mantenimiento de los servidores y la seguridad de la red y el almacenamiento. 
+
+Sin embargo, este esfuerzo se justifica plenamente por el valor estratégico que aporta a la institución. Más allá de eliminar los altos costos mensuales y asegurar la privacidad de los documentos dentro de la red de la UNT, este proyecto se posiciona como una experiencia pionera. La implementación exitosa de este sistema sirve de base técnica y operativa para futuras iniciativas de digitalización, demostrando que es posible automatizar procesos críticos mediante herramientas abiertas bajo el control total de la facultad.
+
+\subsection{Alternativas de Código Abierto (Open Source)}
+\label{subsec:alternativas_opensource}
+
+Habiendo descartado las soluciones comerciales por su inviabilidad económica, la investigación se centró en plataformas de firma electrónica de código abierto que permitieran un despliegue \textit{Self-Hosted}. El análisis del estado del arte arrojó dos alternativas principales con un nivel de madurez apto para producción: DocuSeal y Documenso. 
+
+Ambas plataformas se distribuyen bajo la licencia de código abierto AGPL-3.0 y ofrecen la funcionalidad base de firma electrónica. Sin embargo, un análisis profundo de sus características técnicas y de licenciamiento reveló diferencias críticas para el contexto universitario, las cuales se resumen en la Tabla \ref{tab:comparativa_opensource}.
+
+\begin{table}[H]
+    \centering
+    \begin{tabular}{l c c}
+        \toprule
+        Característica & Documenso (AGPL Core) & DocuSeal (AGPL Core) \\
+        \midrule
+        Gestión de Roles (RBAC) & \checkmark Incluido & $\times$ Bloqueado (Solo PRO) \\
+        Login Institucional (Google SSO) & \checkmark Incluido & $\times$ Bloqueado (Solo PRO) \\
+        Personalización Visual (Branding) & \checkmark Incluido & $\times$ Bloqueado (Solo PRO) \\
+        \textit{Stack} Tecnológico & Remix, Prisma, PostgreSQL & Ruby on Rails, PostgreSQL \\
+        \bottomrule
+    \end{tabular}
+    \caption[Comparativa de plataformas de código abierto]{Comparativa de características en versiones de código abierto.}
+    \label{tab:comparativa_opensource}
+\end{table}
+
+Como se observa en la comparativa, la versión comunitaria de DocuSeal restringe funcionalidades empresariales fundamentales detrás de una barrera de pago (\textit{paywall}). La carencia de control de acceso basado en roles implica que, por defecto, todos los usuarios creados en la plataforma posean privilegios de administrador. Esta limitación compromete gravemente la seguridad de los documentos y hace inviable su adopción en un entorno institucional de múltiples usuarios.
+
+Por estos motivos, se seleccionó Documenso como la plataforma definitiva para el proyecto. La decisión se fundamenta en tres pilares arquitectónicos que resuelven directamente las necesidades de la facultad:
+
+\begin{enumerate}
+    \item Seguridad e Identidad: Soporte nativo y gratuito para la integración con Google OAuth, permitiendo utilizar las cuentas \texttt{@herrera.unt.edu.ar} sin gestionar nuevas contraseñas.
+    \item Gestión Organizacional: La plataforma incluye una estructura de ``Equipos'' (\textit{Teams}) que permite mapear fielmente el organigrama jerárquico de la institución. Es posible instanciar una organización central (FACET) y subdividirla en equipos departamentales (como el DEEC o el Departamento de Física), aislando los documentos y plantillas de cada área.
+    \item Ecosistema de Infraestructura: Capacidad documentada para integrarse sin fricciones con servidores de almacenamiento de objetos compatibles con Amazon S3 (como MinIO) y servicios de \textit{relay} de correo electrónico (SMTP) para la notificación masiva de trámites.
+\end{enumerate}
+
+La elección de Documenso garantiza una solución robusta, escalable y sin costos ocultos de licenciamiento, sentando las bases operativas para el diseño de la arquitectura que se detalla en los capítulos posteriores.

@@ -1,0 +1,315 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Masters/Doctoral Thesis 
+% LaTeX Template
+% Version 2.3 (25/3/16)
+%
+% This template has been downloaded from:
+% http://www.LaTeXTemplates.com
+%
+% Version 2.x major modifications by:
+% Vel (vel@latextemplates.com)
+%
+% This template is based on a template by:
+% Steve Gunn (http://users.ecs.soton.ac.uk/srg/softwaretools/document/templates/)
+% Sunil Patel (http://www.sunilpatel.co.uk/thesis-template/)
+%
+% Template license:
+% CC BY-NC-SA 3.0 (http://creativecommons.org/licenses/by-nc-sa/3.0/)
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Plantilla para el informe del 
+% Trabajo de Graduación de 
+% Ingeneiria en Computacion
+%
+% Version 1.0 (17/06/2020) @ Esteban Volentini
+% 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%----------------------------------------------------------------------------------------
+%	PACKAGES AND OTHER DOCUMENT CONFIGURATIONS
+%----------------------------------------------------------------------------------------
+
+\documentclass[
+	11pt, % The default document font size, options: 10pt, 11pt, 12pt
+	%oneside, % Two side (alternating margins) for binding by default, uncomment to switch to one side
+	%chapterinoneline,% Have the chapter title next to the number in one single line
+	%english, % ngerman for German
+	spanish,
+	singlespacing, % Single line spacing, alternatives: onehalfspacing or doublespacing
+	%draft, % Uncomment to enable draft mode (no pictures, no links, overfull hboxes indicated)
+	%nolistspacing, % If the document is onehalfspacing or doublespacing, uncomment this to set spacing in lists to single
+	%liststotoc, % Uncomment to add the list of figures/tables/etc to the table of contents
+	%toctotoc, % Uncomment to add the main table of contents to the table of contents
+	parskip, % Uncomment to add space between paragraphs
+	%nohyperref, % Uncomment to not load the hyperref package
+	headsepline, % Uncomment to get a line under the header
+]{MastersDoctoralThesis} % The class file specifying the document structure
+
+% Required for inputting international characters
+\usepackage[utf8]{inputenc} 
+% Output font encoding for international characters
+\usepackage[T1]{fontenc} 
+% Use the Palatino font by default
+\usepackage{cmbright} 
+\DeclareFontShape{T1}{cmbr}{m}{sc}{<->ssub * cmr/m/sc}{}
+\DeclareFontShape{T1}{cmbr}{b}{sc}{<->ssub * cmr/bx/n}{}
+\DeclareFontShape{T1}{cmbr}{bx}{sc}{<->ssub * cmr/bx/n}{}
+% Use the bibtex backend for bibliography
+\usepackage[backend=biber,natbib=true, style=numeric, sorting=none]{biblatex} 
+% The filename of the bibliography
+\addbibresource{bibliografia.bib} 
+% Required to generate language-dependent quotes in the bibliography
+\usepackage[autostyle=true]{csquotes}
+
+\usepackage{caption}
+\usepackage{subcaption}
+\usepackage{todonotes}
+\usepackage{multirow}
+\usepackage{listings}
+
+%\usepackage[hyphens]{url}
+%\usepackage[hidelinks]{hyperref}
+%\hypersetup{breaklinks=true}
+\urlstyle{same}
+%\usepackage{cite}
+\hyphenation{biblatex}
+\usepackage{color}
+\usepackage{enumitem}
+%
+%----------------------------------------------------------------------------------------
+%	MARGIN SETTINGS
+%----------------------------------------------------------------------------------------
+
+\geometry{
+	paper=a4paper, % Change to letterpaper for US letter
+	inner=20mm, % Inner margin
+	outer=20mm, % Outer margin
+	bindingoffset=15mm, % Binding offset
+	top=15mm, % Top margin
+	bottom=15mm, % Bottom margin
+	%showframe,% show how the type block is set on the page
+}
+
+\usepackage{float}
+\usepackage{placeins}
+\usepackage{amsmath}
+\usepackage{amssymb}
+
+%----------------------------------------------------------------------------------------
+%	INFORMACIÓN DE LA MEMORIA
+%---------------------------------------------------------------------------------------
+
+% El títulos de la memoria, se usa en la carátula y se puede usar el cualquier lugar del documento con el comando \ttitle
+\thesistitle{Diseño, Implementación y Despliegue de un Sistema de Firma Electrónica de Documentos On-Premise para la FACET} 
+
+% Nombre del grado, se usa en la carátula y se puede usar el cualquier lugar del documento con el comando \degreename
+\degree{Ingeniero en Computación} 
+
+% Tu nombre, se usa en la carátula y se puede usar el cualquier lugar del documento con el comando \authorname
+\author{Blasich, Fabricio Lucas}
+
+% El nombre del director, se usa en la carátula y se puede usar el cualquier lugar del documento con el comando \supname
+\supervisor{Mag. Ing. Carlos Albaca Paraván} 
+\newcommand{\cosupname}{Mag. Ing. Esteban Daniel Volentini}
+
+% Nombre y pertenencia del un jurado se usa en la carátula y se puede usar el cualquier lugar del documento con el comando \jur1name
+\juradoUNO{Ing. Mariana Sanchez}
+
+% Nombre y pertenencia del un jurado se usa en la carátula y se puede usar el cualquier lugar del documento con el comando \jur2name
+\juradoDOS{Ing. Federico Lutz} 
+
+% Nombre y pertenencia del un jurado se usa en la carátula y se puede usar el cualquier lugar del documento con el comando \jur3name
+\juradoTRES{Ing. Javier Bilbao}
+
+\fechaINICIO{noviembre de 2025}
+\fechaFINAL{marzo de 2026}
+
+% Your subject area, this is not currently used anywhere in the template, print it elsewhere with \subjectname
+\subject{Informe del Trabajo de Graduación de la Carrera de Ingeniero en Computación de la Universidad Nacional de Tucumán} 
+
+% Keywords for your thesis, this is not currently used anywhere in the template, print it elsewhere with \keywordnames
+\keywords{Ingeniería Computación, FACET, UNT} 
+
+% Your university's name and URL, this is used in the title page and abstract, print it elsewhere with \univname
+\university{Universidad Nacional de Tucumán} 
+
+% Your faculty's name and URL, this is used in the title page and abstract, print it elsewhere with \facname
+\faculty{{Facultad de Ciencias Exactas y Tecnología}} 
+
+% Your department's name and URL, this is used in the title page and abstract, print it elsewhere with \deptname
+\department{Departamento de Electricidad, Electrónica y Computación} 
+
+% Your research group's name and URL, this is used in the title page, print it elsewhere with \groupname
+\group{{Laboratorio de Microprocesadores}} 
+
+
+% Set the PDF's title to your title
+\hypersetup{pdftitle=\ttitle} 
+% Set the PDF's author to your name
+\hypersetup{pdfauthor=\authorname} 
+% Set the PDF's keywords to your keywords
+\hypersetup{pdfkeywords=\keywordnames} 
+
+
+\newcaptionname{spanish}{\acknowledgementname}{Agradecimientos}
+\newcaptionname{spanish}{\authorshipname}{Declaración de Autoría}
+\newcaptionname{spanish}{\abbrevname}{Glosario}
+\newcaptionname{spanish}{\byname}{por}
+
+% Listing -> Code
+\renewcommand{\lstlistingname}{Código}
+
+% List of Listings -> List of Algorithms
+\renewcommand{\lstlistlistingname}{Índice de \lstlistingname s}
+
+\renewcommand{\listtablename}{Índice de Tablas}
+\renewcommand{\tablename}{Tabla} 
+
+% Espacio adicional en los footnotes
+\addtolength{\footnotesep}{2mm} 
+
+\begin{document}
+
+\frontmatter % Use roman page numbering style (i, ii, iii, iv...) for the pre-content pages
+
+\pagestyle{plain} % Default to the plain heading style until the thesis style is called for the body content
+
+%----------------------------------------------------------------------------------------
+%	CARÁTULA
+%----------------------------------------------------------------------------------------
+
+\begin{titlepage}
+	\begin{center}
+		\includegraphics[height=35mm]{figuras/unt}
+		\hspace{30mm}
+		\includegraphics[height=35mm]{figuras/facet}
+		
+		\vspace{10mm}
+		
+		\textsc{\huge{Carrera de Ingeniería en Computación}}
+		\vspace{8mm} % Thesis type
+		
+		\textsc{\Large Informe del Trabajo de Graduación}		
+		\vspace{8mm}
+		
+		% Thesis title
+		{\Huge \bfseries \ttitle\par}
+		\vspace{4mm} 
+		\vfill
+		
+		% Author name
+		\vspace{10mm}
+		\LARGE\textbf{Autor:\\ \authorname}\\ 
+		
+		\vspace{10mm}
+		
+ 		% Supervisor name
+ 		\large
+		{Tutor:} \\
+		{\supname} \\
+		\vspace{2mm}
+		{Co-Tutor:} \\
+		{\cosupname}
+		
+		\vspace{8mm}
+		Jurados:\\	
+		\jurunoname\\
+		\jurdosname\\
+		\jurtresname
+		
+		\vfill
+		\textit{Este trabajo fue realizado en la Ciudad de San Miguel de Tucumán, \newline entre \fechaINICIOname \hspace{1px} y \fechaFINALname.}
+	\end{center}
+\end{titlepage}
+
+
+%----------------------------------------------------------------------------------------
+%	RESUMEN - ABSTRACT 
+%----------------------------------------------------------------------------------------
+
+\begin{abstract}
+\addchaptertocentry{\abstractname} % Add the abstract to the table of contents
+%
+%The Thesis Abstract is written here (and usually kept to just this page). The page is kept centered vertically so can expand into the blank space above the title too\ldots
+\centering
+
+Este trabajo de graduación describe el diseño, implementación y despliegue de un sistema de firma electrónica de documentos on-premise para la Facultad de Ciencias Exactas y Tecnología (FACET) de la Universidad Nacional de Tucumán. Ante la necesidad de centralizar y agilizar los procesos administrativos de firma, actualmente manuales y distribuidos, se seleccionó y desplegó la plataforma de código abierto (Open Source) Documenso sobre una infraestructura de virtualización basada en Proxmox VE y orquestada por Coolify. La solución garantiza la soberanía de los datos mediante el auto-alojamiento y el uso de almacenamiento de objetos compatible con S3 (MinIO). El sistema se integra con el dominio institucional de Google Workspace mediante OAuth 2.0 para la autenticación de usuarios y utiliza un servicio de correo transaccional para las notificaciones automáticas. Como resultado, se entrega una solución funcional ``llave en mano'', incluyendo manuales técnicos y de procedimientos que aseguran la trazabilidad documental y la autonomía operativa del personal de TI de la facultad.
+				
+
+\end{abstract}
+
+%----------------------------------------------------------------------------------------
+%	CONTENIDO DE LA MEMORIA  - AGRADECIMIENTOS
+%----------------------------------------------------------------------------------------
+
+\begin{acknowledgements}
+%\addchaptertocentry{\acknowledgementname} % Descomentando esta línea se puede agregar los agradecimientos al índice
+\vspace{15mm}
+
+A mis padres y a mi hermana, pilares fundamentales de mi vida, por brindarme la oportunidad, la confianza y el apoyo necesarios para recorrer este camino. A mi familia, tanto a quienes me acompañaron incondicionalmente a la distancia como a quienes me recibieron y me hicieron sentir en casa aquí en Tucumán.
+
+A mis tutores, Carlos Albaca Paraván y Esteban Daniel Volentini, por su guía, paciencia y acompañamiento constante para llevar este proyecto a su cierre. A mis docentes, compañeros y amigos, por todo lo compartido a lo largo de la carrera y por haber contribuido, cada uno a su manera, a mi formación personal y profesional. A la cátedra de Informática/Programación 1, en la que tuve la oportunidad de trabajar durante dos años y obtener mi primer trabajo oficial, por haber sido una experiencia formativa clave en mi recorrido. A la Universidad Nacional de Tucumán, por brindarme la posibilidad de acceder a una educación pública, gratuita y de excelencia.
+
+\end{acknowledgements}
+
+%----------------------------------------------------------------------------------------
+%	LISTA DE CONTENIDOS/FIGURAS/TABLAS
+%----------------------------------------------------------------------------------------
+\renewcommand{\listtablename}{Índice de Tablas}
+
+% Prints the main table of contents
+\tableofcontents 
+
+% Prints the list of figures
+\listoffigures 
+
+% Prints the list of tables
+\listoftables 
+
+%----------------------------------------------------------------------------------------
+%	CONTENIDO DE LA MEMORIA  - CAPÍTULOS
+%----------------------------------------------------------------------------------------
+
+% Begin numeric (1,2,3...) page numbering
+\mainmatter 
+
+% Return the page headers back to the "thesis" style
+\pagestyle{thesis} 
+
+\renewcommand{\tablename}{Tabla} 
+
+% Incluir los capítulos como archivos separados desde la carpeta Chapters
+% Descomentar las líneas a medida que se escriben los capítulos
+
+\include{capitulos/capitulo1}
+\include{capitulos/capitulo2}
+\include{capitulos/capitulo3}
+\include{capitulos/capitulo4}
+\include{capitulos/capitulo5}
+
+%----------------------------------------------------------------------------------------
+%	CONTENIDO DE LA MEMORIA  - APÉNDICES
+%----------------------------------------------------------------------------------------
+
+% indicativo para indicarle a LaTeX los siguientes "capítulos" son apéndices
+\appendix 
+
+% Incluir los apéndices de la memoria como archivos separadas desde la carpeta Appendices
+% Descomentar las líneas a medida que se escriben los apéndices
+
+\include{apendices/apendice1}
+\include{apendices/apendice2}
+%\include{apendices/apendice3}
+
+%----------------------------------------------------------------------------------------
+%	BIBLIOGRAPHY
+%----------------------------------------------------------------------------------------
+
+\Urlmuskip=0mu plus 1mu\relax
+\raggedright
+\printbibliography[heading=bibintoc]
+
+%----------------------------------------------------------------------------------------
+
+\end{document}  
