@@ -11,10 +11,131 @@ En este apéndice se documentan las variables de entorno y los parámetros de co
     morekeywords={openssl,base64}
 }
 
+\section{Composición Docker Completa del Despliegue}
+\label{AppendixB:Compose}
+
+Para complementar la Sección~\ref{sec:configuracion_servicios}, en este apartado se incluye la composición Docker completa utilizada como base del despliegue de Documenso en Coolify. Su incorporación permite reunir en un único bloque la definición conjunta de los servicios \texttt{documenso}, \texttt{database} y \texttt{browserless}, junto con sus dependencias, verificaciones de estado y volumen persistente.
+
+\begin{lstlisting}[language=YAML, caption={Archivo docker-compose.yml completo utilizado como base del despliegue}, label={lst:docker_compose_full}]
+services:
+    documenso:
+        image: 'documenso/documenso:v2.0.14'
+        depends_on:
+            database:
+                condition: service_healthy
+        environment:
+            - NEXT_PRIVATE_JOBS_PROVIDER=local
+            - 'NEXT_PRIVATE_INTERNAL_WEBAPP_URL=http://documenso:3000'
+            - 'NEXT_PRIVATE_BROWSERLESS_URL=ws://browserless:3000'
+            - SERVICE_URL_DOCUMENSO_3000
+            - 'NEXTAUTH_URL=${SERVICE_URL_DOCUMENSO}'
+            - 'NEXTAUTH_SECRET=${SERVICE_BASE64_AUTHSECRET}'
+            - 'NEXT_PRIVATE_ENCRYPTION_KEY=${SERVICE_BASE64_ENCRYPTIONKEY}'
+            - 'NEXT_PRIVATE_ENCRYPTION_SECONDARY_KEY=${SERVICE_BASE64_SECONDARYENCRYPTIONKEY}'
+            - 'NEXT_PUBLIC_WEBAPP_URL=${SERVICE_URL_DOCUMENSO}'
+            - 'NEXT_PRIVATE_RESEND_API_KEY=${NEXT_PRIVATE_RESEND_API_KEY}'
+            - 'NEXT_PRIVATE_SMTP_TRANSPORT=${NEXT_PRIVATE_SMTP_TRANSPORT}'
+            - 'NEXT_PRIVATE_SMTP_HOST=${NEXT_PRIVATE_SMTP_HOST}'
+            - 'NEXT_PRIVATE_SMTP_PORT=${NEXT_PRIVATE_SMTP_PORT}'
+            - 'NEXT_PRIVATE_SMTP_USERNAME=${NEXT_PRIVATE_SMTP_USERNAME}'
+            - 'NEXT_PRIVATE_SMTP_PASSWORD=${NEXT_PRIVATE_SMTP_PASSWORD}'
+            - 'NEXT_PRIVATE_SMTP_FROM_NAME=${NEXT_PRIVATE_SMTP_FROM_NAME}'
+            - 'NEXT_PRIVATE_SMTP_FROM_ADDRESS=${NEXT_PRIVATE_SMTP_FROM_ADDRESS}'
+            - 'NEXT_PRIVATE_DATABASE_URL=postgresql://${SERVICE_USER_POSTGRES}:${SERVICE_PASSWORD_POSTGRES}@database/${POSTGRES_DB:-documensoprod-db}?schema=public'
+            - 'NEXT_PRIVATE_DIRECT_DATABASE_URL=postgresql://${SERVICE_USER_POSTGRES}:${SERVICE_PASSWORD_POSTGRES}@database/${POSTGRES_DB:-documensoprod-db}?schema=public'
+            - NEXT_PRIVATE_SIGNING_TRANSPORT=local
+            - 'NEXT_PRIVATE_SIGNING_PASSPHRASE=${SERVICE_PASSWORD_DOCUMENSO}'
+            - 'NEXT_PRIVATE_SIGNING_LOCAL_FILE_CONTENTS=${CERTIFICADO_P12_BASE64}'
+            - 'NEXT_PUBLIC_DISABLE_SIGNUP=${DISABLE_LOGIN:-false}'
+        healthcheck:
+            test:
+                - CMD-SHELL
+                - "wget -q -O - http://documenso:3000/ | grep -q 'Sign in to your account'"
+            interval: 5s
+            timeout: 10s
+            retries: 20
+    database:
+        image: 'postgres:17'
+        environment:
+            - 'POSTGRES_USER=${SERVICE_USER_POSTGRES}'
+            - 'POSTGRES_PASSWORD=${SERVICE_PASSWORD_POSTGRES}'
+            - 'POSTGRES_DB=${POSTGRES_DB:-documensoprod-db}'
+        volumes:
+            - 'documensoprod_postgresql_data:/var/lib/postgresql/data'
+        healthcheck:
+            test:
+                - CMD-SHELL
+                - 'pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}'
+            interval: 5s
+            timeout: 20s
+            retries: 10
+    browserless:
+        image: 'browserless/chrome:latest'
+        restart: always
+        deploy:
+            resources:
+                limits:
+                    cpus: '2.0'
+                    memory: 2G
+        environment:
+            - MAX_CONCURRENT_SESSIONS=10
+            - MAX_QUEUE_LENGTH=20
+            - TIMEOUT=60000
+            - DEFAULT_IGNORE_HTTPS_ERRORS=true
+        extra_hosts:
+            - 'documentos.facet.unt.edu.ar:host-gateway'
+        healthcheck:
+            test:
+                - CMD
+                - curl
+                - '-f'
+                - 'http://localhost:3000/'
+            interval: 30s
+            timeout: 10s
+            retries: 3
+volumes:
+    documensoprod_postgresql_data: null
+\end{lstlisting}
+
+\section{Automatización del Resguardo de Configuración}
+\label{AppendixB:ConfigBackup}
+
+Para complementar la Subsección~\ref{sec:estrategia_respaldo_retencion}, en este apartado se incluye el \textit{script} utilizado para respaldar la configuración exportable de los proyectos administrados por Coolify. La lógica del procedimiento consiste en localizar selectivamente los archivos \texttt{.env} y \texttt{docker-compose}, empaquetarlos en un único artefacto comprimido y transferirlo hacia el \textit{bucket} \texttt{backups-coolify} mediante \texttt{rclone}.
+
+\begin{lstlisting}[language=bash, caption={Script de respaldo selectivo de configuraciones exportables hacia MinIO}, label={lst:backup_script_coolify_full}]
+#!/bin/bash
+# --- CONFIGURACION ---
+DATE=$(date +%Y-%m-%d_%H%M%S)
+BACKUP_NAME="coolify_configs_$DATE.tar.gz"
+BACKUP_TEMP_FILE="/tmp/$BACKUP_NAME"
+REMOTE_MINIO="minio:backups-coolify/configs"
+
+echo "Buscando archivos .env y docker-compose..."
+
+find /data/coolify/applications /data/coolify/services \
+     -name ".env" \
+     -o -name "docker-compose.yml" \
+     -o -name "docker-compose.yaml" \
+     | tar -czf "$BACKUP_TEMP_FILE" -P -T -
+
+echo "Subiendo backup a MinIO..."
+rclone copy "$BACKUP_TEMP_FILE" "$REMOTE_MINIO"
+
+if [ $? -eq 0 ]; then
+    echo "Backup enviado correctamente."
+    rm "$BACKUP_TEMP_FILE"
+else
+    echo "ERROR: Fallo la subida con rclone."
+    exit 1
+fi
+\end{lstlisting}
+
+Su ejecución se programó con la expresión \textit{cron} \nolinkurl{0 4 * * * /bin/bash /root/backup_configs.sh >> /var/log/coolify_backup.log 2>&1}. Desde el punto de vista de diseño, el uso de \texttt{rclone} en lugar de una utilidad específica de MinIO mantiene el procedimiento portable hacia otros destinos S3 compatibles sin modificar la lógica principal del respaldo.
+
 \section{Variables Mágicas de Coolify (SERVICE\_\#\#\#)}
 \label{AppendixB:CoolifyMagic}
 
-Coolify incorpora un mecanismo de variables mágicas que permite inyectar automáticamente credenciales, usuarios y otros valores sensibles generados de forma segura durante el despliegue \cite{coolify_magic_env_vars}. En lugar de codificar secretos en texto plano dentro del archivo \texttt{docker-compose.yml}, el orquestador expone variables derivadas del contexto del servicio, las cuales se resuelven en tiempo de ejecución.
+Coolify incorpora un mecanismo de variables mágicas que permite inyectar automáticamente credenciales, usuarios y otros valores sensibles generados de forma segura durante el despliegue \cite{coolify_magic_env_vars}. En lugar de codificar secretos en texto plano dentro del archivo \texttt{docker-compose.yml}, la PaaS expone variables derivadas del contexto del servicio, las cuales se resuelven en tiempo de ejecución.
 
 En esta implementación, dicho mecanismo se utilizó para variables como \texttt{SERVICE\_PASSWORD\_DOCUMENSO}, \texttt{SERVICE\_USER\_POSTGRES} y \texttt{SERVICE\_PASSWORD\_POSTGRES}. Esta estrategia redujo la exposición accidental de secretos, simplificó la rotación de credenciales y mantuvo desacoplada la definición declarativa de los contenedores respecto de los valores concretos del entorno institucional.
 
@@ -32,27 +153,27 @@ openssl pkcs12 -export -legacy -out certificate_facet.p12 -inkey private.key -in
 base64 -w 0 certificate_facet.p12 > cert_base64_facet.txt
 \end{lstlisting}
 
-El contenido generado en \texttt{cert\_base64\_facet.txt} se asigna posteriormente a la variable \texttt{CERTIFICADO\_P12\_BASE64}. En términos operativos, esto significa que el despliegue no almacena el certificado en texto plano dentro del repositorio, sino que lo inyecta desde Coolify como un secreto externo. La contraseña utilizada para proteger el archivo PKCS\#12 es la provista dinámicamente por la variable \texttt{SERVICE\_PASSWORD\_DOCUMENSO}, generada por el propio orquestador. Aunque la variable que Documenso consume internamente para la firma local es \texttt{NEXT\_PRIVATE\_SIGNING\_LOCAL\_FILE\_CONTENTS}, en esta implementación el valor se administra en Coolify mediante \texttt{CERTIFICADO\_P12\_BASE64} y luego se referencia en la composición con la asignación \texttt{NEXT\_PRIVATE\_SIGNING\_LOCAL\_FILE\_CONTENTS=\$\{CERTIFICADO\_P12\_BASE64\}}. Dicho de otro modo, \texttt{CERTIFICADO\_P12\_BASE64} representa el contenido codificado en Base64 del archivo \texttt{.p12}, mientras que \texttt{NEXT\_PRIVATE\_SIGNING\_LOCAL\_FILE\_CONTENTS} es la variable efectiva que la aplicación lee al iniciar. En consecuencia, al respaldar el archivo de variables de entorno del despliegue también se está respaldando el certificado institucional, dado que su contenido completo se encuentra embebido en la variable auxiliar administrada por Coolify. La documentación oficial de Documenso enfatiza que tanto este certificado como su frase de paso deben considerarse parte del esquema de respaldo de la plataforma, ya que su pérdida impediría continuar emitiendo nuevas firmas con la identidad institucional configurada \cite{documenso_backups}.
+El contenido generado en \texttt{cert\_base64\_facet.txt} se asigna posteriormente a la variable \texttt{CERTIFICADO\_P12\_BASE64}. En términos operativos, esto significa que el despliegue no almacena el certificado en texto plano dentro del repositorio, sino que lo inyecta desde Coolify como un secreto externo. La contraseña utilizada para proteger el archivo PKCS\#12 es la provista dinámicamente por la variable \texttt{SERVICE\_PASSWORD\_DOCUMENSO}, generada por la propia PaaS. Aunque la variable que Documenso consume internamente para la firma local es \texttt{NEXT\_PRIVATE\_SIGNING\_LOCAL\_FILE\_CONTENTS}, en esta implementación el valor se administra en Coolify mediante \texttt{CERTIFICADO\_P12\_BASE64} y luego se referencia en la composición con la asignación \texttt{NEXT\_PRIVATE\_SIGNING\_LOCAL\_FILE\_CONTENTS=\$\{CERTIFICADO\_P12\_BASE64\}}. Dicho de otro modo, \texttt{CERTIFICADO\_P12\_BASE64} representa el contenido codificado en Base64 del archivo \texttt{.p12}, mientras que \texttt{NEXT\_PRIVATE\_SIGNING\_LOCAL\_FILE\_CONTENTS} es la variable efectiva que la aplicación lee al iniciar. En consecuencia, al respaldar el archivo de variables de entorno del despliegue también se está respaldando el certificado institucional, dado que su contenido completo se encuentra embebido en la variable auxiliar administrada por Coolify. La documentación oficial de Documenso enfatiza que tanto este certificado como su frase de paso deben considerarse parte del esquema de respaldo de la plataforma, ya que su pérdida impediría continuar emitiendo nuevas firmas con la identidad institucional configurada \cite{documenso_backups}.
 
 \section{Configuración de Almacenamiento S3 (MinIO)}
 \label{AppendixB:S3}
 
-Documenso permite delegar el almacenamiento de documentos a un backend compatible con S3 mediante variables específicas de configuración \cite{documenso_storage_config}. En el despliegue institucional, este mecanismo se vinculó con MinIO expuesto detrás del proxy inverso institucional.
+Documenso permite delegar el almacenamiento de documentos a un backend compatible con S3 mediante variables específicas de configuración \cite{documenso_storage_config}. En el despliegue institucional, este mecanismo se vinculó con MinIO expuesto detrás del reverse proxy institucional.
 
 Las variables relevantes son las siguientes:
 
 \begin{itemize}
     \item \texttt{NEXT\_PUBLIC\_UPLOAD\_TRANSPORT}: se configuró con el valor \texttt{s3}. Indica a Documenso que los archivos no deben almacenarse en el sistema de archivos local del contenedor, sino en un servicio de almacenamiento de objetos compatible con S3.
-    \item \texttt{NEXT\_PUBLIC\_DOCUMENT\_SIZE\_UPLOAD\_LIMIT}: se configuró con el valor \texttt{30}. Define, en megabytes, el límite de tamaño presentado al usuario en la interfaz de carga. En la versión de Documenso utilizada en este trabajo se observó una discrepancia entre distintas fuentes de configuración: el archivo \texttt{.env.example} sugiere \texttt{5} MB, mientras que el código fuente aplica \texttt{50} MB cuando la variable no está definida. Para evitar ambigüedades y alinear el comportamiento visible con el dimensionamiento del almacenamiento institucional, se decidió explicitar el valor en \texttt{30} MB. Este parámetro no reemplaza las restricciones efectivas impuestas por la infraestructura subyacente, ya que el tamaño máximo real también depende de la configuración del proxy inverso, del backend S3 y del resto de la cadena de publicación \cite{documenso_storage_config}.
+    \item \texttt{NEXT\_PUBLIC\_DOCUMENT\_SIZE\_UPLOAD\_LIMIT}: se configuró con el valor \texttt{30}. Define, en megabytes, el límite de tamaño presentado al usuario en la interfaz de carga. En la versión de Documenso utilizada en este trabajo se observó una discrepancia entre distintas fuentes de configuración: el archivo \texttt{.env.example} sugiere \texttt{5} MB, mientras que el código fuente aplica \texttt{50} MB cuando la variable no está definida. Para evitar ambigüedades y alinear el comportamiento visible con el dimensionamiento del almacenamiento institucional, se decidió explicitar el valor en \texttt{30} MB. Este parámetro no reemplaza las restricciones efectivas impuestas por la infraestructura subyacente, ya que el tamaño máximo real también depende de la configuración del reverse proxy, del backend S3 y del resto de la cadena de publicación \cite{documenso_storage_config}.
     \item \texttt{NEXT\_PRIVATE\_UPLOAD\_ENDPOINT}: se configuró con el endpoint \nolinkurl{https://minio.facet.unt.edu.ar}. Define la dirección base a la que la aplicación enviará las operaciones de lectura y escritura sobre el backend S3.
     \item \texttt{NEXT\_PRIVATE\_UPLOAD\_BUCKET}: se configuró con el valor \texttt{documenso-prod}. Identifica el \textit{bucket} lógico donde se conservarán los documentos y artefactos generados por la plataforma.
     \item \texttt{NEXT\_PRIVATE\_UPLOAD\_REGION}: se configuró con el valor \texttt{us-east-1}. Provee la región requerida por varios clientes S3, incluso cuando el backend utilizado sea MinIO y la región no represente una ubicación física real.
-    \item \texttt{NEXT\_PRIVATE\_UPLOAD\_FORCE\_PATH\_STYLE}: se configuró con el valor \texttt{true}. Obliga al cliente S3 a construir las URLs en formato de ruta y no como subdominios virtuales. Esta variable es crítica en este despliegue, ya que permite que el proxy inverso Traefik y la capa de publicación institucional enruten correctamente las peticiones hacia MinIO sin depender de \textit{virtual-hosted style buckets}.
+    \item \texttt{NEXT\_PRIVATE\_UPLOAD\_FORCE\_PATH\_STYLE}: se configuró con el valor \texttt{true}. Obliga al cliente S3 a construir las URLs en formato de ruta y no como subdominios virtuales. Esta variable es crítica en este despliegue, ya que permite que el reverse proxy Traefik y la capa de publicación institucional enruten correctamente las peticiones hacia MinIO sin depender de \textit{virtual-hosted style buckets}.
     \item \texttt{NEXT\_PRIVATE\_UPLOAD\_ACCESS\_KEY\_ID}: define la credencial pública utilizada por Documenso para autenticarse contra MinIO.
     \item \texttt{NEXT\_PRIVATE\_UPLOAD\_SECRET\_ACCESS\_KEY}: define la clave secreta de acceso S3 asociada al identificador anterior y constituye el secreto principal de autenticación del cliente frente a MinIO.
 \end{itemize}
 
-Además de las variables anteriores, la operación correcta de la carga de archivos exigió un ajuste explícito en el proxy inverso perimetral de la facultad. Durante las pruebas iniciales, toda solicitud de carga superior a 1 MB era rechazada con el código HTTP \texttt{413 Content Too Large}, evidenciando que el límite efectivo no estaba siendo impuesto por Documenso sino por la capa de publicación externa. Para resolverlo, se ampliaron los valores de \texttt{client\_max\_body\_size} a 50 MB para \nolinkurl{documentos.facet.unt.edu.ar} y a 75 MB para \nolinkurl{minio.facet.unt.edu.ar}. Esta diferencia permitió mantener un margen operativo sobre el límite visible configurado en la aplicación y contemplar el hecho de que los artefactos firmados pueden resultar ligeramente más pesados que el PDF original.
+Además de las variables anteriores, la operación correcta de la carga de archivos exigió un ajuste explícito en el reverse proxy perimetral de la facultad. Durante las pruebas iniciales, toda solicitud de carga superior a 1 MB era rechazada con el código HTTP \texttt{413 Content Too Large}, evidenciando que el límite efectivo no estaba siendo impuesto por Documenso sino por la capa de publicación externa. Para resolverlo, se ampliaron los valores de \texttt{client\_max\_body\_size} a 50 MB para \nolinkurl{documentos.facet.unt.edu.ar} y a 75 MB para \nolinkurl{minio.facet.unt.edu.ar}. Esta diferencia permitió mantener un margen operativo sobre el límite visible configurado en la aplicación y contemplar el hecho de que los artefactos firmados pueden resultar ligeramente más pesados que el PDF original.
 
 \section{Configuración de Transporte de Correo (SMTP)}
 \label{AppendixB:SMTP}

@@ -53,6 +53,11 @@ services:
   browserless:
     image: 'browserless/chrome:latest'
     restart: always
+    deploy:
+      resources:
+        limits:
+          cpus: '2.0'
+          memory: 2G
     environment:
       - MAX_CONCURRENT_SESSIONS=10
       - MAX_QUEUE_LENGTH=20

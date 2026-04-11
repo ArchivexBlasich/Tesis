@@ -1,12 +1,12 @@
 \chapter{Diseño e Implementación de la Infraestructura}
 \label{chap:diseno_implementacion}
 
-\definecolor{yamlbg}{rgb}{0.96,0.97,0.99}
-\definecolor{yamlframe}{rgb}{0.82,0.86,0.91}
-\definecolor{yamlkey}{rgb}{0.10,0.28,0.52}
-\definecolor{yamlcomment}{rgb}{0.18,0.47,0.32}
-\definecolor{yamlstring}{rgb}{0.62,0.24,0.12}
-\definecolor{yamlnumber}{rgb}{0.46,0.50,0.58}
+\definecolor{yamlbg}{gray}{0.98}
+\definecolor{yamlframe}{gray}{0.70}
+\definecolor{yamlkey}{gray}{0.10}
+\definecolor{yamlcomment}{gray}{0.35}
+\definecolor{yamlstring}{gray}{0.15}
+\definecolor{yamlnumber}{gray}{0.45}
 
 \lstdefinelanguage{YAML}{
     sensitive=false,
@@ -26,10 +26,10 @@
     breakatwhitespace=false,
     breaklines=true,
     captionpos=b,
-    commentstyle=\color{yamlcomment},
+    commentstyle=\itshape\color{yamlcomment},
     frame=single,
     keepspaces=true,
-    keywordstyle=\color{yamlkey},
+    keywordstyle=\bfseries\color{yamlkey},
     numbers=left,
     numbersep=5pt,
     numberstyle=\tiny\color{yamlnumber},
@@ -42,104 +42,156 @@
     tabsize=2
 }
 
-En este capítulo se describe el proceso de diseño técnico y la ejecución práctica de la solución de firma electrónica. Se detalla la configuración de las capas de infraestructura, desde el aprovisionamiento de recursos de cómputo en el centro de datos de la facultad, hasta el despliegue de los servicios contenerizados, su almacenamiento en la red local y su integración con sistemas externos en la nube (Google OAuth 2.0 y el \textit{relay} SMTP de Brevo).
+En este capítulo se describe el diseño técnico y la implementación práctica de la solución de firma electrónica. Se detalla la infraestructura utilizada para el despliegue, la configuración del contenedor LXC y de la PaaS Coolify, la definición de los servicios contenerizados que integran la plataforma, su vinculación con PostgreSQL y MinIO dentro de la red institucional, y la integración con servicios externos como Google OAuth 2.0 y el \textit{relay} SMTP de Brevo.
 
 \section{Topología de Red y Arquitectura General}
 \label{sec:topologia_arquitectura}
 
-El diseño de la arquitectura del sistema prioriza la seguridad, el aislamiento y la disponibilidad de los servicios. La topología general se fundamenta en un modelo de capas que permite direccionar el tráfico proveniente de Internet (nivel WAN) hacia la red de área local de la facultad (nivel LAN), donde se ubican los contenedores de Docker (Documenso, PostgreSQL, entre otros).
+La topología del sistema se organizó en capas para preservar el aislamiento entre componentes, controlar la exposición de servicios y sostener la disponibilidad operativa. En este esquema, el tráfico proveniente de Internet (nivel WAN) ingresa a la red de área local de la facultad (nivel LAN), donde se ubican los contenedores de Docker, entre ellos Documenso y PostgreSQL.
 
-Como se detalla en el diagrama de la Figura \ref{fig:arquitectura_global}, el flujo de una petición web externa sigue un recorrido controlado a través de tres niveles:
+La Figura \ref{fig:arquitectura_global} resume el recorrido de una petición web externa a través de tres niveles:
 
 \begin{enumerate}
-    \item Capa de Borde (Proxy Inverso FACET): Las peticiones dirigidas al dominio institucional \nolinkurl{documentos.facet.unt.edu.ar} son recibidas inicialmente por el proxy inverso perimetral de la facultad. Este componente gestiona la terminación SSL mediante certificados de Let's Encrypt y realiza el reenvío del tráfico HTTP/HTTPS hacia la red interna.
-    \item Capa de Orquestación (Contenerización y Coolify): El tráfico es dirigido a un Contenedor Linux (LXC) dentro del hipervisor Proxmox VE. En esta capa opera el orquestador Coolify, el cual gestiona una instancia interna de Traefik que enruta dinámicamente las peticiones hacia el servicio correspondiente.
+    \item Capa de Borde (Reverse Proxy Nginx): Las peticiones dirigidas al dominio institucional \nolinkurl{documentos.facet.unt.edu.ar} son recibidas inicialmente por el reverse proxy perimetral Nginx de la facultad. Este componente gestiona la terminación SSL mediante certificados de Let's Encrypt y reenvía el tráfico HTTP/HTTPS hacia la red interna, tal como puede apreciarse en las Figuras~\ref{fig:headers_nginx} y \ref{fig:certificado_tls}.
+    \item Capa PaaS (Contenerización y Coolify): El tráfico es dirigido a un Contenedor Linux (LXC) dentro del hipervisor Proxmox VE. En esta capa opera la PaaS Coolify, que gestiona una instancia interna de Traefik que enruta dinámicamente las peticiones hacia el servicio correspondiente.
     \item Capa de Servicios (Contenedores Docker): Finalmente, la solicitud llega al contenedor de la aplicación Documenso. Este se comunica de forma interna (mediante redes privadas de Docker) con su base de datos PostgreSQL y el servicio contenerizado Browserless, y a través de la red local con el servidor de almacenamiento TrueNAS/MinIO.
 \end{enumerate}
 
-En la práctica, este diseño oculta la dirección IP real del servidor y los puertos de Docker frente a Internet. Todo el flujo de datos debe atravesar obligatoriamente el proxy inverso de la facultad, el cual actúa como único intermediario entre los usuarios externos y la red local.
+En este esquema, ni la dirección IP del servidor ni los puertos internos de Docker quedan expuestos directamente a Internet. Todo el flujo de datos atraviesa el reverse proxy perimetral de la facultad, que actúa como único intermediario entre los usuarios externos y la red local.
 
-\begin{figure}[H]
+\begin{figure}[!htbp]
     \centering
     \includegraphics[width=0.9\textwidth]{figuras/capitulo3/TopologiadeRedyArquitecturaGeneral.png}
     \caption[Arquitectura Global del Sistema]{Diagrama de flujo de tráfico y arquitectura de capas del sistema de firma electrónica.}
     \label{fig:arquitectura_global}
 \end{figure}
 
-\section{Infraestructura Base y Entorno de Orquestación}
+\begin{figure}[!htbp]
+    \centering
+    \includegraphics[width=0.95\textwidth]{figuras/capitulo3/headers_https_documenso-server_ngnix.png}
+    \caption[Cabeceras HTTP del dominio institucional]{Cabeceras HTTP de la respuesta del dominio institucional, con \texttt{Server: nginx}.}
+    \label{fig:headers_nginx}
+\end{figure}
+
+\begin{figure}[!t]
+    \centering
+    {\setlength{\fboxsep}{3pt}\colorbox{black}{\includegraphics[width=0.52\textwidth]{figuras/capitulo3/certificadoTLS.png}}}
+    \caption[Certificado TLS del dominio institucional]{Certificado TLS presentado por el dominio institucional, emitido para \texttt{*.facet.unt.edu.ar} por Let's Encrypt.}
+    \label{fig:certificado_tls}
+\end{figure}
+
+\FloatBarrier
+
+\section{Infraestructura Base y Entorno PaaS}
 \label{sec:infraestructura_base}
 
-A diferencia de un despliegue desde cero, la implementación práctica de este proyecto partió de una infraestructura base previamente aprovisionada por el área de sistemas de la FACET. El trabajo técnico en esta etapa se centró en auditar el entorno heredado, validar su viabilidad y utilizarlo como plataforma de orquestación.
+La implementación no partió de un despliegue desde cero, sino de una infraestructura base previamente aprovisionada por el área de sistemas de la FACET. En esta etapa, el trabajo consistió en auditar ese entorno, comprobar que resultara suficiente y usarlo como base para desplegar Documenso sobre la PaaS ya disponible.
 
 \subsection{Auditoría del Entorno LXC y Configuración Base}
 
-La fase de despliegue inició con la auditoría técnica de un contenedor LXC con Ubuntu 22.04 LTS, aprovisionado por la facultad sobre el hipervisor Proxmox VE. El análisis del entorno heredado tuvo como objetivo validar que las capacidades de cómputo y almacenamiento asignadas fueran suficientes para soportar de forma simultánea el orquestador Coolify y la plataforma Documenso.
+La etapa de despliegue comenzó con la auditoría técnica de un contenedor LXC con Ubuntu 22.04 LTS, aprovisionado por la facultad sobre el hipervisor Proxmox VE. El objetivo fue verificar que los recursos de cómputo y almacenamiento asignados alcanzaran para sostener, en simultáneo, Coolify y Documenso.
 
 \begin{itemize}
-    \item Requisitos de Coolify: 2 vCPUs, 2 GB RAM y 30 GB de almacenamiento.
-    \item Requisitos de Documenso: 2 vCPUs y 4 GB RAM.
+    \item Requisitos mínimos de Coolify: 2 vCPUs, 2 GB RAM y 30 GB de almacenamiento libre \cite{coolify_reqs}.
+    \item Requisitos recomendados de Documenso para producción: 2 vCPUs, 2 GB RAM y 20 GB de almacenamiento \cite{documenso_reqs}.
     \item Recursos reales auditados: 8 núcleos lógicos, 8 GB de memoria RAM, disco raíz de 50 GB y volumen de montaje adicional de 160 GB.
 \end{itemize}
 
-El entorno se configuró como un contenedor no privilegiado para mitigar riesgos de seguridad hacia el servidor físico. Asimismo, se habilitó el anidamiento (\textit{nesting}=1), característica técnica indispensable para que el motor de Docker pueda gestionar sus propios contenedores y redes de forma aislada sobre el LXC base. En la Figura \ref{fig:configuracion_lxc} se presenta la evidencia técnica de los parámetros auditados en la consola de gestión de Proxmox VE.
+El entorno se configuró como un contenedor no privilegiado (es decir, sin otorgar privilegios equivalentes a los del \textit{host}) para reducir el impacto potencial de un incidente sobre el servidor físico. Asimismo, se habilitó el anidamiento (\textit{nesting}=1, necesario para que Docker pueda crear y administrar sus propios contenedores y redes dentro del LXC). Las Figuras \ref{fig:lxc_recursos} y \ref{fig:lxc_seguridad} muestran la evidencia de estos parámetros en la consola de gestión de Proxmox VE.
 
-\begin{figure}[H]
-     \centering
-     \begin{subfigure}[b]{0.75\textwidth}
-         \centering
-         \includegraphics[width=\textwidth]{figuras/capitulo3/proxmox_lxc_options.png}
-         \caption{Recursos de hardware y almacenamiento.}
-         \label{fig:lxc_recursos}
-     \end{subfigure}
-     \hfill
-     \begin{subfigure}[b]{0.75\textwidth}
-         \centering
-         \includegraphics[width=\textwidth]{figuras/capitulo3/proxmox_lxc_options2.png}
-         \caption{Configuraciones de aislamiento del contenedor.}
-         \label{fig:lxc_seguridad}
-     \end{subfigure}
-        \caption{Evidencia técnica de la auditoría del contenedor LXC en Proxmox VE.}
-        \label{fig:configuracion_lxc}
+\begin{figure}[!t]
+    \centering
+    \includegraphics[width=0.72\textwidth]{figuras/capitulo3/proxmox_lxc_options.png}
+    \caption[Auditoría del LXC: recursos de hardware y almacenamiento]{Evidencia técnica de la auditoría del contenedor LXC en Proxmox VE: recursos de hardware y almacenamiento asignados.}
+    \label{fig:lxc_recursos}
 \end{figure}
 
-\subsection{Justificación del Entorno de Orquestación}
+\begin{figure}[!t]
+    \centering
+    \includegraphics[width=0.72\textwidth]{figuras/capitulo3/proxmox_lxc_options2.png}
+    \caption[Auditoría del LXC: configuraciones de aislamiento]{Evidencia técnica de la auditoría del contenedor LXC en Proxmox VE: configuraciones de aislamiento del contenedor.}
+    \label{fig:lxc_seguridad}
+\end{figure}
 
-Inicialmente, se analizó la posibilidad de desplegar Documenso sobre una máquina virtual (VM) independiente en Proxmox. No obstante, esta opción fue descartada debido a la complejidad administrativa que suponía la configuración y el mantenimiento manual de todo el \textit{stack} tecnológico. En su lugar, se decidió capitalizar la instancia de Coolify ya existente en la infraestructura, la cual opera sobre un contenedor LXC y emplea Docker para la orquestación interna de servicios. Esta arquitectura permite un despliegue ágil, eficiente y centralizado, evitando el sobredimensionamiento de recursos.
+\FloatBarrier
 
-La adopción de esta Plataforma como Servicio automatiza tareas críticas que, en un despliegue manual, incrementarían la carga operativa y el margen de error:
+\subsection{Justificación del Uso de Coolify como PaaS}
+
+Inicialmente, se evaluó desplegar Documenso sobre una máquina virtual (VM) o un contenedor LXC dedicados en Proxmox. Esa alternativa se descartó porque implicaba montar y mantener manualmente toda la infraestructura asociada: un reverse proxy adicional para publicar la aplicación, el enrutamiento hacia los servicios auxiliares y el despliegue separado de PostgreSQL, Browserless y el proxy hacia MinIO. En cambio, se aprovechó la instancia de Coolify ya disponible en la infraestructura. Esto permitió centralizar la operación sin incorporar una nueva VM ni sobredimensionar recursos.
+
+En la práctica, la PaaS resolvió tareas que, en un despliegue manual, hubieran incrementado la carga operativa y el margen de error:
 
 \begin{itemize}
-    \item Gestión de red: Enrutamiento dinámico interno mediante Traefik, el cual recibe el tráfico del proxy inverso perimetral y lo dirige hacia los puertos correspondientes de cada contenedor.
-    \item Aislamiento: Segmentación de servicios en redes virtuales de Docker independientes para garantizar la seguridad y aislamiento lógico entre componentes.
-    \item Mantenimiento: Interfaz centralizada para la inyección de variables de entorno, gestión de volúmenes y supervisión de \textit{logs} en tiempo real.
+    \item Gestión de red: enrutamiento interno dinámico mediante Traefik, que recibe el tráfico del reverse proxy perimetral y lo dirige al puerto correspondiente de cada contenedor.
+    \item Aislamiento: segmentación de servicios en redes virtuales de Docker para mantener separados los componentes.
+    \item Mantenimiento: interfaz centralizada para inyectar variables de entorno, gestionar volúmenes y consultar \textit{logs} en tiempo real.
+    \item Respaldo: integración con almacenamiento S3 compatible, utilizada más adelante para automatizar los respaldos de PostgreSQL sobre MinIO.
 \end{itemize}
 
-Resulta necesario distinguir con precisión las responsabilidades de red de cada capa en esta arquitectura anidada. El servidor físico ejecuta Proxmox VE con la dirección de administración \texttt{192.168.80.39}; su función se limita exclusivamente a la asignación de recursos de cómputo, memoria y almacenamiento hacia los contenedores y máquinas virtuales que gestiona. El hipervisor no interviene, no enruta ni inspecciona el tráfico HTTP/HTTPS de las aplicaciones desplegadas sobre él. A nivel de topología de red, el contenedor LXC se conecta a la LAN de la facultad a través de un puente virtual (\textit{bridge}) configurado en Proxmox, obteniendo su propia dirección IP (\texttt{192.168.80.65}) como un nodo independiente en la red local. Para el demonio de Docker y para Traefik, este contenedor LXC constituye su sistema operativo anfitrión real: Traefik expone sus puertos perimetrales (\texttt{80} y \texttt{443}) directamente sobre la IP del LXC, sin dependencia alguna de la interfaz de administración del hipervisor. Esta separación garantiza que el plano de datos de la aplicación y el plano de gestión de la infraestructura física operen en dominios de red completamente independientes.
+En esta arquitectura conviene diferenciar el rol de cada capa. Proxmox VE corre sobre el servidor físico, cuya IP en la LAN es \texttt{192.168.80.39}. Su función consiste en asignar recursos de cómputo, memoria y almacenamiento a los contenedores y máquinas virtuales que administra. El hipervisor no participa del enrutamiento ni del procesamiento del tráfico HTTP/HTTPS de las aplicaciones.
 
-La Figura \ref{fig:zoom_coolify} ilustra esta arquitectura anidada, detallando cómo Coolify gestiona el enrutamiento interno a través de Traefik y aísla lógicamente la aplicación de otras cargas de trabajo presentes en el mismo contenedor base.
+El contenedor LXC, en cambio, se conecta a la LAN de la facultad mediante un puente virtual (\textit{bridge}) configurado en Proxmox y obtiene su propia IP, \texttt{192.168.80.65}, como un nodo independiente de la red local. Para Docker y Traefik, ese LXC actúa como sistema anfitrión: allí se publican los puertos \texttt{80} y \texttt{443} y desde allí se resuelve el enrutamiento interno hacia los contenedores. Así, Proxmox queda en el plano de gestión de la infraestructura, mientras que el LXC concentra el plano de datos de la aplicación.
+
+La Figura \ref{fig:zoom_coolify} muestra esta arquitectura anidada y el modo en que Coolify gestiona el enrutamiento interno mediante Traefik, manteniendo a Documenso separado de otros servicios desplegados sobre ese LXC.
 
 \begin{figure}[H]
     \centering
     \includegraphics[width=0.9\textwidth]{figuras/capitulo3/ZoomProxmoxCoolify.png}
-    \caption[Topología interna del orquestador Coolify]{Arquitectura anidada y segmentación de redes virtuales Docker dentro del contenedor LXC base.}
+    \caption[Topología interna de la PaaS Coolify]{Arquitectura anidada y segmentación de redes virtuales Docker dentro del contenedor LXC base.}
     \label{fig:zoom_coolify}
 \end{figure}
 
 \section{Configuración de Servicios y Despliegue de Documenso}
 \label{sec:configuracion_servicios}
 
-Con la validación técnica de la capa base completada, el proyecto avanzó hacia la fase central: el despliegue de Documenso y sus servicios auxiliares. La configuración resultante no fue producto de una plantilla genérica adoptada sin modificaciones, sino de la fusión de dos fuentes de referencia: la plantilla oficial de Coolify para Documenso \cite{coolify_documenso_template} y la guía de despliegue con Docker Compose publicada en la documentación de Documenso \cite{documenso_docker_compose_docs}. Ninguna de las dos cubría en su totalidad los requerimientos del entorno institucional: la primera automatizaba la generación del certificado PKCS\#12 mediante un \textit{entrypoint} personalizado pero no contemplaba servicios auxiliares como Browserless ni el proxy hacia MinIO; la segunda definía únicamente dos servicios---aplicación y base de datos---sin abordar el problema de la ausencia de Chromium en la imagen oficial de Docker. La composición final integró elementos de ambas fuentes con adaptaciones específicas derivadas de la resolución de incidentes reales durante las pruebas de despliegue, los cuales se documentan en las subsecciones siguientes.
+Una vez validada la capa base, el trabajo avanzó hacia el despliegue de Documenso y sus servicios auxiliares. Para definir esta implementación se tomaron como punto de partida dos referencias: la plantilla oficial de Coolify para Documenso \cite{coolify_documenso_template} y la guía de despliegue con Docker Compose publicada en la documentación de Documenso \cite{documenso_docker_compose_docs}. Ninguna de las dos resolvía por sí sola las necesidades del entorno institucional. A medida que avanzaron las pruebas aparecieron requisitos y problemas no cubiertos inicialmente, lo que obligó a investigar ajustes adicionales e incorporar servicios complementarios. La configuración final surgió de esa combinación entre referencias previas y decisiones tomadas durante la fase de prueba, que se describen en las subsecciones siguientes.
 
-La arquitectura desplegada separó responsabilidades en cuatro servicios contenerizados: PostgreSQL para persistencia transaccional, Browserless como motor de renderizado auxiliar, Documenso como núcleo de aplicación y un proxy Socat para la conectividad con el almacenamiento de objetos MinIO. En términos operativos, Coolify actuó como plano de control para traducir la configuración declarativa de cada contenedor en una ejecución reproducible, con redes privadas internas, inyección centralizada de variables de entorno y puntos de montaje consistentes con los requerimientos de persistencia y observabilidad de la plataforma. La separación de responsabilidades evitó consolidar todas las cargas sobre un único proceso de \textit{runtime}, redujo puntos de falla y facilitó la administración posterior. El detalle ampliado de los diagramas de topología y de la arquitectura interna del orquestador se presenta en el Apéndice~\ref{AppendixA}.
+La arquitectura resultante quedó organizada en cuatro servicios contenerizados: PostgreSQL para la persistencia transaccional, Browserless como motor de renderizado auxiliar, Documenso como núcleo de aplicación y un proxy Socat para la conectividad con MinIO. Esta separación permitió distribuir responsabilidades entre persistencia, renderizado, lógica de aplicación y acceso al almacenamiento, lo que simplificó tanto el despliegue como el diagnóstico de fallas y la administración posterior. El detalle ampliado de los diagramas de topología y de la arquitectura interna de la PaaS se presenta en el Apéndice~\ref{AppendixA}. La composición Docker completa utilizada como base del despliegue se incluye en el Apéndice~\ref{AppendixB:Compose}.
 
 \subsection{Persistencia de Estado (PostgreSQL)}
 \label{subsec:postgresql}
 
-El primer servicio en inicializarse fue PostgreSQL, declarado en la composición bajo el identificador \texttt{database}. Este motor constituyó la base de persistencia sobre la cual se apoyó la totalidad del estado transaccional de la plataforma: usuarios, equipos de trabajo, relaciones de permisos, metadatos asociados a los documentos y los eventos necesarios para sostener la trazabilidad operativa del sistema.
+El primer servicio en inicializarse fue PostgreSQL, declarado en la composición bajo el identificador \texttt{database}. En este despliegue, PostgreSQL almacenó los datos de la aplicación necesarios para su funcionamiento diario: usuarios, equipos de trabajo, relaciones de permisos, metadatos de documentos, estados del flujo de firma y registros de auditoría \cite{documenso_backups}.
 
-Una distinción fundamental en la arquitectura de datos de Documenso es que PostgreSQL no almacena los archivos PDF binarios de los documentos. La persistencia de los archivos cargados por los usuarios y los documentos sellados se delega al transporte de almacenamiento de objetos ---en este caso, MinIO---. La base de datos conserva únicamente los metadatos estructurados: identificadores de documento, estados del flujo de firma, registros de auditoría, marcas temporales y referencias a la ubicación de los objetos en el \textit{bucket} S3. Esta separación responde a un principio de diseño que evita sobrecargar el motor relacional con operaciones de lectura y escritura de objetos binarios de gran tamaño, reservándolo para las operaciones transaccionales donde sus garantías ACID resultan imprescindibles.
+Cuando Documenso se configura con almacenamiento S3 compatible, los archivos PDF no se guardan en PostgreSQL, sino en MinIO \cite{documenso_storage_config,documenso_backups}. La base de datos conserva la información asociada a esos archivos, como identificadores, estados del circuito de firma, marcas temporales y referencias a su ubicación dentro del \textit{bucket}. Esta separación resulta conveniente en producción porque evita que la base crezca por almacenar documentos y deja a PostgreSQL dedicado a los datos propios de la aplicación \cite{documenso_storage_config}.
 
-Desde la perspectiva funcional, PostgreSQL no solo resolvió la escritura durable de datos, sino también la coordinación de accesos concurrentes sobre registros compartidos, condición necesaria para una plataforma donde múltiples firmantes pueden interactuar sobre plantillas, solicitudes y estados de aprobación de manera simultánea. Asimismo, operó como soporte directo del modelo RBAC (\textit{Role-Based Access Control}) implementado por Documenso. La jerarquía de roles, membresías y permisos no podía quedar delegada a almacenamiento efímero ni a configuraciones distribuidas entre contenedores. Por este motivo, se priorizó su arranque antes que el resto de los servicios y se definió un volumen persistente nominal, \texttt{documensoprod\_postgresql\_data}, administrado por Docker y Coolify para evitar la pérdida de información ante reinicios, recreación de contenedores o actualizaciones controladas desde el orquestador.
+PostgreSQL también almacenó la estructura de usuarios y permisos sobre la que Documenso aplica su modelo RBAC (\textit{Role-Based Access Control}). Por eso, su arranque se priorizó antes que el del resto de los servicios y se definió un volumen persistente nominal, \nolinkurl{documensoprod_postgresql_data}, de modo que la información se mantuviera aun cuando el contenedor fuera reiniciado, recreado o actualizado desde la PaaS.
+
+Un detalle operativo inicial fue la asignación del rol administrador al primer usuario. La documentación oficial de Documenso indica que las cuentas creadas desde la interfaz se registran como usuarios comunes y que el primer rol \texttt{ADMIN} debe asignarse directamente en la base de datos \cite{documenso_quick_start}. A partir de ese punto, ese administrador ya puede otorgar ese rol a otros usuarios desde la interfaz web. En este despliegue, la asignación inicial no se realizó desde \texttt{docker compose}, sino desde la terminal de gestión de la base expuesta por Coolify. Allí se abrió una sesión \texttt{psql} con las credenciales del servicio y se ejecutó manualmente la actualización del rol. El Código~\ref{lst:assign_admin_role_postgresql} muestra la sentencia utilizada para realizar esa operación.
+
+\begin{lstlisting}[language=bash, caption={Asignación manual del rol administrador en PostgreSQL desde la terminal de Coolify}, label={lst:assign_admin_role_postgresql}]
+psql -U $POSTGRES_USER -d $POSTGRES_DB
+UPDATE "User" SET roles = '{ADMIN}' WHERE email = 'fblasich0@gmail.com';
+\end{lstlisting}
+
+La Figura~\ref{fig:assign_admin_role} muestra el procedimiento de asignación inicial del rol administrador: primero, el acceso a la terminal de la base desde la interfaz de Coolify; luego, la ejecución manual del comando SQL sobre \texttt{psql}.
+
+\begin{figure}[H]
+    \centering
+    \begin{subfigure}[b]{0.85\textwidth}
+        \centering
+        \includegraphics[width=\textwidth,height=0.30\textheight,keepaspectratio]{figuras/capitulo3/connectToDatabaseCoolify.png}
+        \caption{Acceso a la terminal de gestión de PostgreSQL desde Coolify.}
+        \label{fig:connect_database_coolify}
+    \end{subfigure}
+
+    \vspace{0.5em}
+
+    \begin{subfigure}[b]{0.85\textwidth}
+        \centering
+        \includegraphics[width=\textwidth,height=0.30\textheight,keepaspectratio]{figuras/capitulo3/assignAdminRolFromTerminal.png}
+        \caption{Ejecución manual de la sentencia SQL para asignar el rol \texttt{ADMIN}.}
+        \label{fig:assign_admin_terminal}
+    \end{subfigure}
+    \caption[Asignación inicial del rol administrador en Documenso]{Evidencia del acceso a PostgreSQL desde Coolify y de la ejecución manual de la sentencia utilizada para asignar el rol administrador al primer usuario de Documenso.}
+    \label{fig:assign_admin_role}
+\end{figure}
+
+\FloatBarrier
+
+El Código~\ref{lst:documenso_postgresql_service} muestra dos decisiones básicas del despliegue. La primera fue usar un volumen persistente dedicado para que la información no dependiera del ciclo de vida del contenedor. La segunda fue incorporar un \textit{healthcheck} con \texttt{pg\_isready}, de modo que \texttt{documenso} solo iniciara cuando PostgreSQL ya estuviera listo para aceptar conexiones.
+
+\clearpage
 
 \begin{lstlisting}[language=YAML, caption={Definición del servicio PostgreSQL con volumen persistente y verificación de estado}, label={lst:documenso_postgresql_service}]
 services:
@@ -160,12 +212,12 @@ services:
             retries: 10
 \end{lstlisting}
 
-La definición del Listado~\ref{lst:documenso_postgresql_service} muestra que el estado de la base se desacopló del ciclo de vida efímero del contenedor mediante un volumen persistente dedicado. El \textit{healthcheck} basado en \texttt{pg\_isready} garantizó que el servicio \texttt{documenso} no intentara conectarse antes de que el motor aceptara conexiones, condición controlada por la cláusula \texttt{depends\_on} con \texttt{condition: service\_healthy} en la definición del contenedor principal.
+\FloatBarrier
 
 \subsection{Motor de Renderizado Auxiliar (Browserless)}
 \label{subsec:browserless}
 
-La incorporación de Browserless como servicio contenerizado independiente no formó parte del diseño original del despliegue, sino que surgió como respuesta directa a un defecto funcional detectado durante las pruebas de integración. Una vez completado el primer ciclo de firma de extremo a extremo, se observó que los documentos transitaban correctamente por todas las etapas del flujo---carga, asignación de firmantes, notificación por correo y aplicación de la firma---pero permanecían indefinidamente en estado \texttt{PENDING} en lugar de avanzar a \texttt{COMPLETED}. El análisis de los registros del contenedor reveló que el \textit{job} interno \texttt{internal.seal-document} fallaba de forma sistemática al intentar generar el certificado de firma en formato PDF, con el siguiente mensaje de error:
+Browserless no formó parte del diseño inicial del despliegue. Se incorporó después de detectar un defecto funcional durante las pruebas de integración. Una vez completado el primer ciclo de firma de extremo a extremo, se observó que los documentos recorrían correctamente todas las etapas del flujo ---carga, asignación de firmantes, notificación por correo y aplicación de la firma---, pero quedaban en estado \texttt{PENDING} en lugar de pasar a \texttt{COMPLETED}. El análisis de los registros del contenedor mostró que el \textit{job} interno \texttt{internal.seal-document} fallaba al intentar generar el certificado de firma en PDF, con el siguiente mensaje de error:
 
 \begin{quote}
 \texttt{Failed to get certificate PDF} \\
@@ -174,17 +226,33 @@ La incorporación de Browserless como servicio contenerizado independiente no fo
 \texttt{chrome-linux/headless\_shell}
 \end{quote}
 
-La causa raíz residió en que la imagen oficial de Docker de Documenso no incluye Playwright ni Chromium preinstalados \cite{documenso_issue_2060}. La plataforma utiliza internamente Playwright para renderizar la página HTML del certificado de firma a PDF mediante un navegador \textit{headless}. Sin embargo, la imagen oficial se construye sobre Alpine Linux con un usuario no privilegiado (\texttt{nodejs}) que carece de permisos para instalar paquetes del sistema operativo en tiempo de ejecución. Los intentos de ejecutar \texttt{npx playwright install --with-deps chromium} dentro del contenedor en ejecución fallaron con el error \texttt{su: must be suid to work properly}, confirmando que la solución no podía abordarse mediante intervención manual sobre el contenedor.
+La Figura~\ref{fig:browserless_logs_error} muestra este error en los registros del servicio Documenso consultados desde la interfaz de Coolify.
 
-Este defecto fue reportado por múltiples usuarios de la comunidad en el repositorio oficial del proyecto. El \textit{issue} \#1634 \cite{documenso_issue_1634} documentó originalmente la ausencia del certificado de firma en los documentos generados con la versión 1.9.0 de la imagen Docker. Un análisis posterior del código fuente, realizado por un usuario de la comunidad, identificó que el módulo \texttt{get-certificate-pdf.ts} de Documenso implementa una bifurcación en su lógica de renderizado: si la variable de entorno \texttt{NEXT\_PRIVATE\_BROWSERLESS\_URL} se encuentra definida, la aplicación delega la ejecución del navegador \textit{headless} a una instancia externa accesible por WebSocket; en caso contrario, intenta invocar una instalación local de Chromium a través de Playwright, la cual no existía en la imagen oficial.
+\begin{figure}[!htbp]
+    \centering
+    \includegraphics[width=0.95\textwidth]{figuras/capitulo3/browserlessLogsError.png}
+    \caption[Error de renderizado del certificado en los registros de Documenso]{Registros del servicio Documenso consultados desde Coolify, donde se observa el error asociado a la ausencia del ejecutable de Chromium requerido para generar el certificado de firma en PDF.}
+    \label{fig:browserless_logs_error}
+\end{figure}
 
-La solución adoptada consistió en desplegar la imagen \texttt{browserless/chrome} \cite{browserless_chrome} como servicio auxiliar dentro de la misma composición Docker. Browserless es un servicio \textit{open source} que expone una instancia de Google Chrome \textit{headless} a través de un endpoint WebSocket, compatible con las bibliotecas Puppeteer, Playwright y Selenium \cite{browserless_chrome}. El contenedor de Documenso se conectó a esta instancia mediante la variable \texttt{NEXT\_PRIVATE\_BROWSERLESS\_URL}, configurada con el endpoint \nolinkurl{ws://browserless:3000}, aprovechando la resolución DNS interna de la red privada de Docker. De este modo, cuando la plataforma necesitó renderizar el certificado de firma, la solicitud fue procesada por el navegador Chromium ejecutándose en el contenedor Browserless, sin requerir modificaciones sobre la imagen oficial de Documenso.
+Antes de describir la solución, conviene precisar qué rol cumple cada componente. Un navegador \textit{headless} es un navegador que se ejecuta sin interfaz gráfica y puede ser controlado por otro programa. Playwright y Puppeteer son bibliotecas de automatización que permiten abrir ese navegador, cargar páginas, interactuar con su contenido y exportar resultados como capturas o archivos PDF. Browserless, por su parte, ofrece ese navegador ya preparado como servicio remoto accesible por WebSocket, de modo que una aplicación puede conectarse a él y usarlo sin instalar localmente Chromium ni administrar su ejecución \cite{browserless_baas_start}.
+
+La causa del problema ya había sido documentada en el repositorio oficial del proyecto. El \textit{issue} \#2060, identificado durante el intercambio con la comunidad de Documenso en su servidor de Discord, reportó que la imagen Docker de Documenso no incluye Playwright ni Chromium, aun cuando la generación del certificado de firma en PDF depende de ese binario \cite{documenso_issue_2060}. A partir de ese antecedente, se revisaron los hilos de la comunidad hasta llegar al \textit{issue} \#1634, donde se discutía una solución aplicable a este despliegue \cite{documenso_issue_1634}.
+
+Un análisis del código fuente compartido en esas discusiones mostró que el módulo encargado de generar el certificado PDF sigue dos caminos: si la variable de entorno \texttt{NEXT\_PRIVATE\_BROWSERLESS\_URL} está definida, la aplicación envía el renderizado a una instancia externa accesible por WebSocket; en caso contrario, intenta usar una instalación local de Chromium a través de Playwright. Como ese ejecutable no está disponible en la imagen oficial, Documenso no puede completar el sellado solo con su contenedor.
+
+La solución adoptada fue desplegar la imagen \texttt{browserless/chrome} \cite{browserless_chrome} como servicio auxiliar dentro de esa composición Docker. En este esquema, Documenso no ejecuta Chromium dentro de su propio contenedor, sino que se conecta por WebSocket al servicio Browserless mediante la variable \texttt{NEXT\_PRIVATE\_BROWSERLESS\_URL}, configurada con el endpoint \nolinkurl{ws://browserless:3000}. De ese modo, el certificado de firma pasó a renderizarse en el contenedor Browserless, sin modificar la imagen oficial de Documenso.
 
 \begin{lstlisting}[language=YAML, caption={Definición del servicio Browserless para renderizado auxiliar de documentos PDF}, label={lst:documenso_browserless_service}]
 services:
     browserless:
         image: 'browserless/chrome:latest'
         restart: always
+        deploy:
+            resources:
+                limits:
+                    cpus: '2.0'
+                    memory: 2G
         environment:
             - MAX_CONCURRENT_SESSIONS=10
             - MAX_QUEUE_LENGTH=20
@@ -203,16 +271,16 @@ services:
             retries: 3
 \end{lstlisting}
 
-En la configuración del Listado~\ref{lst:documenso_browserless_service}, los parámetros \texttt{MAX\_CONCURRENT\_SESSIONS} y \texttt{MAX\_QUEUE\_LENGTH} limitaron la concurrencia del navegador \textit{headless} a diez sesiones simultáneas con una cola de veinte solicitudes pendientes, valores dimensionados para el volumen de operación estimado de la FACET. El parámetro \texttt{TIMEOUT} estableció un límite de sesenta segundos por sesión de renderizado, previniendo la acumulación de procesos de Chrome abandonados. La directiva \texttt{DEFAULT\_IGNORE\_HTTPS\_ERRORS=true} resultó necesaria dado que, desde la perspectiva de la red interna de Docker, el certificado SSL del dominio institucional \nolinkurl{documentos.facet.unt.edu.ar} es gestionado por el proxy inverso perimetral y no es visible para el contenedor Browserless, que accede al recurso a través de la red privada.
+En la configuración del Código~\ref{lst:documenso_browserless_service}, \texttt{MAX\_CONCURRENT\_SESSIONS} definió cuántas sesiones de navegador podían ejecutarse al mismo tiempo, mientras que \nolinkurl{MAX_QUEUE_LENGTH} fijó cuántas solicitudes podían quedar en espera cuando ese límite ya estaba ocupado. Con esto se evitó que varias instancias de Chrome consumieran memoria en exceso durante picos de demanda. El parámetro \texttt{TIMEOUT} limitó cada sesión a sesenta segundos para que un renderizado bloqueado no dejara procesos colgados. La opción \texttt{DEFAULT\_IGNORE\_HTTPS\_ERRORS=true} se mantuvo porque, una vez establecida la conexión entre Documenso y Browserless, el navegador remoto debía abrir la URL HTTPS de la propia aplicación para obtener el HTML del certificado. Desactivar esa verificación evitó que un problema puntual de validación TLS interrumpiera el renderizado. Complementariamente, la sección \texttt{deploy.resources.limits} restringió el servicio a dos CPU virtuales y 2 GB de memoria, de modo que la carga de renderizado no desplazara recursos necesarios para el resto del \textit{stack}.
 
-La entrada \texttt{extra\_hosts} con el valor \texttt{host-gateway} resolvió un requisito operativo concreto: durante el proceso de sellado, Documenso instruye al navegador \textit{headless} para que acceda a una URL interna del dominio institucional, sobre la ruta \nolinkurl{/__htmltopdf/certificate}, para capturar la página HTML del certificado y convertirla a PDF. Sin la directiva \texttt{extra\_hosts}, el contenedor Browserless no podía resolver el dominio institucional, ya que la entrada DNS pública apunta a la IP del proxy inverso perimetral, inaccesible desde la red privada de Docker. La resolución hacia \texttt{host-gateway} redirigió la petición al host del contenedor LXC, desde donde el tráfico fue enrutado correctamente hacia el proxy inverso y de regreso al servicio Documenso a través de Traefik.
+La directiva \texttt{extra\_hosts} con el valor \texttt{host-gateway} acompañó ese mismo flujo. Documenso no genera el PDF por sí solo: primero se conecta a Browserless y luego le indica que abra la vista HTML del certificado. Esta opción ayudó a que Browserless pudiera comunicarse con Documenso dentro de la red del despliegue, sin depender de resolver \nolinkurl{documentos.facet.unt.edu.ar} por una ruta externa.
 
-Desde el punto de vista de la ingeniería de despliegue, esta separación ofreció una ventaja adicional: aisló las cargas de renderizado de la lógica de negocio. Los picos de consumo de memoria y CPU asociados al proceso de Chrome no afectaron la disponibilidad del servicio principal de firma electrónica, dado que se ejecutaron en un espacio de procesos independiente con sus propios límites de recursos.
+Esta solución permitió completar la generación de certificados sin modificar la imagen oficial de Documenso, pero agregó un costo operativo adicional: mantener un servicio más dentro del despliegue. En la práctica, esto implicó reservar memoria, CPU y capacidad de supervisión también para Browserless, además de los recursos ya necesarios para la aplicación principal y sus demás componentes.
 
-\subsection{Núcleo de la Aplicación (Documenso Core)}
+\subsection{Servicio Principal de Documenso}
 \label{subsec:documenso_core}
 
-El contenedor principal correspondió a la instancia de Documenso responsable de exponer la interfaz web, aplicar la lógica de negocio, coordinar el flujo de firma y establecer comunicación con PostgreSQL, Browserless y el resto de los servicios de apoyo definidos para la plataforma. A diferencia de los servicios auxiliares, este componente reunió la mayor densidad de configuración, ya que dependió simultáneamente de credenciales, rutas internas, dominios públicos, parámetros de firma local y variables de transporte SMTP sensibles al entorno institucional. Por tal motivo, la inyección centralizada de variables desde Coolify resultó determinante para desacoplar la imagen de aplicación de los valores concretos utilizados en producción.
+El contenedor principal de Documenso expuso la interfaz web, concentró la lógica de negocio y coordinó el flujo de firma. También reunió la mayor parte de la parametrización del despliegue, al depender de credenciales, rutas internas, dominios públicos y parámetros de integración con los servicios auxiliares.
 
 \begin{lstlisting}[language=YAML, caption={Definición del servicio principal de Documenso con dependencias y variables de entorno inyectadas por Coolify}, label={lst:documenso_core_service}]
 services:
@@ -254,63 +322,33 @@ services:
             retries: 20
 \end{lstlisting}
 
-El Listado~\ref{lst:documenso_core_service} sintetiza la función de Coolify como mecanismo de parametrización del despliegue. La URL pública del servicio, los secretos de autenticación \texttt{NEXTAUTH\_SECRET}, las claves de cifrado, la cadena de conexión a PostgreSQL, los parámetros SMTP y el material PKCS\#12 codificado en Base64 se cargaron desde la interfaz del orquestador y fueron inyectados en tiempo de ejecución, sin acoplar la imagen del servicio a secretos concretos del entorno institucional. La variable \texttt{NEXT\_PRIVATE\_BROWSERLESS\_URL} estableció la conexión WebSocket hacia el servicio auxiliar documentado en la subsección anterior, mientras que \texttt{NEXT\_PRIVATE\_INTERNAL\_WEBAPP\_URL} definió la dirección interna para la comunicación entre procesos dentro de la misma red Docker. El detalle ampliado de las variables de entorno y de los parámetros de configuración asociados al despliegue se presenta en el Apéndice~\ref{AppendixB}.
+El Código~\ref{lst:documenso_core_service} muestra que la configuración se resolvió mediante inyección de variables de entorno desde Coolify, Esta práctica de diseño evita codificar de forma rígida credenciales y parámetros de configuración dentro del archivo \texttt{docker-compose.yml}. En esta subsección interesan dos de ellas: \texttt{NEXT\_PRIVATE\_BROWSERLESS\_URL}, que definió la conexión WebSocket con Browserless, y \texttt{NEXT\_PRIVATE\_INTERNAL\_WEBAPP\_URL}, que fijó la dirección interna de Documenso dentro de la red del despliegue. El inventario completo de variables se documenta en el Apéndice~\ref{AppendixB}.
 
-Un aspecto crítico del despliegue fue la decisión de fijar la versión de la imagen en \texttt{v2.0.14} en lugar de utilizar la etiqueta \texttt{latest}. Esta restricción no fue arbitraria, sino que respondió a una incompatibilidad de hardware detectada durante las pruebas de actualización. Al intentar migrar a versiones posteriores (v2.2.0 y superiores), el contenedor terminaba inmediatamente con el error:
+La imagen se fijó en \texttt{v2.0.14} en lugar de usar la etiqueta \texttt{latest}. Al evaluar una actualización a versiones posteriores (v2.1.0 y superiores), el contenedor terminaba inmediatamente con el error:
 
 \begin{quote}
 \texttt{Illegal instruction (core dumped)}
 \end{quote}
 
-La investigación del incidente determinó que a partir de la versión 2.2.0, Documenso actualizó dependencias internas ---específicamente el paquete Sharp (libvips) para procesamiento de imágenes--- que requieren instrucciones AVX/AVX2 del procesador \cite{documenso_issue_2292}. El servidor físico de la FACET cuenta con procesadores Intel Xeon E5620, una arquitectura de la familia Westmere lanzada en 2010 cuyo conjunto de instrucciones SIMD se limita a SSE 4.2 y no incluye soporte para AVX. Esta limitación fue confirmada mediante la inspección del repertorio de instrucciones del procesador a través del comando \texttt{lscpu} ejecutado en el contenedor LXC, donde las \textit{flags} \texttt{avx} y \texttt{avx2} se encontraron ausentes.
+Desde la versión 2.1.0, Documenso incorpora dependencias internas ---en particular Sharp (libvips)--- que requieren instrucciones AVX/AVX2 del procesador \cite{documenso_issue_2292}. El servidor físico de la FACET utiliza procesadores Intel Xeon E5620, pertenecientes a la familia Westmere, cuyo repertorio SIMD se limita a SSE 4.2 y no incluye AVX. Esta restricción se verificó con \texttt{lscpu} ejecutado en el contenedor LXC, donde las \textit{flags} \texttt{avx} y \texttt{avx2} no estaban presentes. En consecuencia, el despliegue quedó anclado en \texttt{v2.0.14}, última versión operable sobre el hardware disponible. El requerimiento de AVX/AVX2 para ramas posteriores quedó además documentado en el \textit{issue} \#2292 del repositorio oficial \cite{documenso_issue_2292}.
 
-El \textit{issue} \#2292 del repositorio oficial confirmó que otros operadores experimentaron el mismo comportamiento en procesadores sin soporte AVX, como el Intel Pentium G5400 y procesadores de dispositivos NAS Synology. Un colaborador del proyecto identificó la causa probable en la biblioteca Sharp (libvips), y un usuario adicional verificó que la solución requería un procesador con perfil \texttt{x86-64-v3} o superior, el cual incluye AVX2 como parte obligatoria de su especificación \cite{documenso_issue_2292}.\footnote{En entornos virtualizados con Proxmox, el tipo de CPU de la máquina virtual debe configurarse como \texttt{x86-64-v3} para exponer las instrucciones AVX2 al sistema operativo invitado.} Dado que el reemplazo del hardware físico del servidor excedía el alcance y presupuesto del proyecto, se adoptó la decisión de fijar la versión en \texttt{v2.0.14}, la última compatible con la arquitectura del procesador disponible. Esta restricción se documentó como una limitación operativa del despliegue, con la recomendación de re-evaluar la versión tras una eventual actualización del hardware del centro de datos.
-
-La dependencia respecto de PostgreSQL y Browserless no fue meramente secuencial, sino funcional. Sin conectividad estable hacia la base de datos, Documenso no podía recuperar usuarios, sesiones, plantillas ni estados documentales. Sin acceso al motor de renderizado auxiliar, el sellado de documentos fallaba de forma irrecuperable. En consecuencia, el servicio se definió con una dependencia explícita de salud sobre \texttt{database} y con referencias internas por nombre de servicio, aprovechando la resolución DNS provista por la red privada de Docker administrada por Coolify.
-
-La interoperabilidad entre los cuatro servicios descritos se sustentó en el modelo de red que Coolify establece de forma implícita al desplegar una composición Docker Compose. El orquestador crea una red privada dedicada por cada \textit{stack} desplegado e inyecta en ella el servicio de proxy Traefik \cite{coolify_docker_compose_docs}. Dentro de esta red, cada contenedor es accesible para los demás mediante su nombre de servicio como registro DNS interno ---por ejemplo, \texttt{database}, \texttt{browserless} o \texttt{documenso}---, mecanismo provisto por el demonio de Docker sin requerir configuración adicional. Los servicios que no exponen puertos ni tienen un dominio asignado permanecen inaccesibles desde fuera de la red privada, garantizando que componentes como PostgreSQL y Browserless no sean alcanzables directamente desde la LAN ni desde Internet. Traefik, por su parte, opera como único punto de ingreso: recibe el tráfico reenviado por el proxy inverso perimetral de la facultad y lo enruta dinámicamente hacia el contenedor de Documenso en el puerto \texttt{3000}, basándose en reglas de dominio configuradas desde la interfaz de Coolify. La Figura~\ref{fig:zoom_seccion_servicios} sintetiza esta topología interna, mostrando las relaciones de comunicación entre los contenedores del \textit{stack} y la posición de Traefik como intermediario entre la red externa y la red privada de Docker.
-
+Dentro del despliegue, Documenso resolvió sus dependencias internas mediante los nombres de servicio \texttt{database} y \texttt{browserless}, mientras que Traefik expuso únicamente la interfaz web. En la configuración del dominio de la aplicación, la forma https://documentos.facet.unt.edu.ar:3000 no representó la apertura del puerto \texttt{3000} hacia el exterior, sino una regla declarativa consumida por el proxy interno para enrutar el tráfico HTTPS entrante hacia ese puerto dentro del contenedor. La Figura~\ref{fig:zoom_seccion_servicios} resume esta organización y justifica la nomenclatura adoptada en el diagrama de red.
 \begin{figure}[H]
     \centering
     \includegraphics[width=0.9\textwidth]{figuras/capitulo3/3.3.png}
-    \caption[Topología interna de la red Docker del \textit{stack} Documenso]{Comunicación entre servicios contenerizados y enrutamiento de Traefik dentro de la red privada del \textit{stack} desplegado por Coolify.}
+    \caption[Topología interna de la red Docker del despliegue Documenso]{Comunicación entre servicios contenerizados y enrutamiento de Traefik dentro de la red privada del despliegue administrado por Coolify.}
     \label{fig:zoom_seccion_servicios}
 \end{figure}
 
-En conjunto, la secuencia de arranque y la segmentación funcional de estos servicios establecieron una base operativa coherente para el resto de las integraciones descritas en el proyecto. La base de datos aseguró persistencia y consistencia transaccional sin almacenar objetos binarios, Browserless resolvió un defecto de la imagen oficial que impedía completar el ciclo de firma, y Documenso consolidó la lógica de aplicación dentro de una versión específica compatible con las limitaciones de hardware del entorno institucional. Sobre esta organización se sustentó el despliegue productivo de la plataforma dentro de la infraestructura \textit{on-premise} de la FACET.
 
 \section{Conectividad con el Almacenamiento de Objetos (Proxy Socat)}
 \label{sec:proxy_socat}
 
-El cuarto servicio referido en la introducción de esta sección ---el proxy Socat hacia MinIO--- resolvió una barrera de conectividad entre el entorno contenerizado y el servidor físico de almacenamiento de la facultad. El servidor TrueNAS, ubicado en la dirección \texttt{192.168.80.24} de la LAN institucional, expone el servicio MinIO en el puerto \texttt{9000}. Sin embargo, durante las pruebas de integración se constató que configurar directamente esta dirección IP como valor de la variable \texttt{NEXT\_PRIVATE\_UPLOAD\_ENDPOINT} provocaba el fallo sistemático de la carga de archivos desde el navegador del usuario.
+La conectividad entre Documenso y MinIO estuvo condicionada por una restricción de diseño de la aplicación: el sistema centraliza la configuración de su almacenamiento S3 a través de una única variable de entorno denominada \texttt{NEXT\_PRIVATE\_UPLOAD\_ENDPOINT}. Al disponer de un único parámetro de configuración, la arquitectura obligó a que tanto el navegador web del usuario (tráfico externo) como el propio servidor interno de la aplicación (tráfico interno) utilizaran una única ruta para acceder al almacenamiento. La solución adoptada fue establecer \nolinkurl{minio.facet.unt.edu.ar} como el dominio público unificado.
 
-El análisis del comportamiento mediante las herramientas de desarrollo del navegador reveló la causa raíz del problema: a pesar de que el nombre de la variable contiene el prefijo \texttt{PRIVATE}, Documenso utiliza internamente este \textit{endpoint} para generar URLs prefirmadas (\textit{presigned URLs}) que el navegador del usuario consume de forma directa mediante peticiones HTTP. En consecuencia, cuando el valor configurado era una dirección IP privada de la LAN (\texttt{192.168.80.24:9000}), las peticiones emitidas por el \textit{frontend} fallaban por dos motivos concurrentes: el navegador del usuario externo no podía alcanzar una dirección de red local, y las políticas de seguridad del navegador bloqueaban las solicitudes desde un origen HTTPS hacia un \textit{endpoint} HTTP plano (\textit{Mixed Content}).
+Bajo esta configuración, la plataforma opera con dos flujos de datos diferenciados. El primer flujo corresponde a los recursos gráficos de la interfaz, como las imágenes de \textit{branding}. En este caso, Documenso genera URLs prefirmadas que el navegador consume directamente contra MinIO \cite{documenso_storage_config,documenso_backups}. Si la variable de entorno hubiera contenido una dirección privada de la LAN, como \texttt{192.168.80.24:9000}, este flujo habría fallado porque esa dirección no es enrutable desde Internet y, por lo tanto, no puede ser alcanzada por clientes externos. A esto se suma que las políticas de seguridad del navegador bloquean peticiones desde un origen HTTPS hacia un destino HTTP plano (\textit{Mixed Content}).
 
-La resolución de este problema requirió coordinación con el área de redes de la facultad. Se solicitó al Ing. Javier Bilbao la creación del registro DNS \nolinkurl{minio.facet.unt.edu.ar}, apuntando a la dirección IP del contenedor LXC donde opera Coolify (\texttt{192.168.80.65}). Con el dominio institucional establecido y cubierto por el certificado SSL del proxy inverso perimetral, el tráfico hacia MinIO quedó encapsulado bajo HTTPS de extremo a extremo desde la perspectiva del navegador.
-
-Durante las pruebas funcionales también se detectó una segunda restricción en la cadena de publicación: al intentar cargar archivos de tamaño superior a 1 MB, el navegador recibía una respuesta HTTP \texttt{413 Content Too Large}. La inspección del tráfico desde las herramientas de desarrollo confirmó que el rechazo no provenía de Documenso ni de MinIO, sino del proxy inverso perimetral, que imponía un límite de tamaño de cuerpo demasiado bajo para el caso de uso institucional. La corrección requirió nuevamente intervención del área de redes, que ajustó el parámetro \texttt{client\_max\_body\_size} para los subdominios publicados. Como resultado, el dominio \nolinkurl{documentos.facet.unt.edu.ar} quedó habilitado con un umbral de 50 MB y \nolinkurl{minio.facet.unt.edu.ar} con uno de 75 MB, eliminando el cuello de botella de la capa de borde.
-
-Para completar la cadena, se desplegó un contenedor con la utilidad \texttt{socat} como proyecto independiente dentro de Coolify, separado del \textit{stack} de Documenso. Este contenedor actúa como un túnel TCP: escucha conexiones en el puerto \texttt{9000} dentro de la red de Docker y las reenvía hacia la dirección física \texttt{192.168.80.24:9000} del servidor TrueNAS. Traefik, al recibir una petición dirigida al dominio \nolinkurl{minio.facet.unt.edu.ar}, gestiona la terminación SSL y enruta el tráfico internamente hacia el contenedor Socat, el cual lo reenvía como paquetes TCP hacia el servidor físico. Este patrón de retorno vía proxy inverso permite que tanto los navegadores externos como el propio servidor de Documenso utilicen el mismo FQDN público para acceder al almacenamiento, sin exponer puertos inseguros ni crear redes compartidas entre proyectos de Coolify.
-
-\begin{lstlisting}[language=YAML, caption={Definición del servicio proxy Socat para la conectividad con MinIO}, label={lst:socat_minio_proxy}]
-services:
-  minio-proxy:
-    image: alpine/socat
-    command: 'TCP4-LISTEN:9000,fork,reuseaddr TCP4:192.168.80.24:9000'
-    expose:
-      - '9000'
-    healthcheck:
-      test: ["CMD", "nc", "-z", "127.0.0.1", "9000"]
-      interval: 5s
-      timeout: 2s
-      retries: 5
-\end{lstlisting}
-
-La decisión de desplegar este proxy como un proyecto independiente en Coolify, en lugar de integrarlo dentro de la composición de Documenso, respondió a un criterio de reutilización institucional. Al operar como un \textit{gateway} de almacenamiento centralizado con su propio dominio público, cualquier sistema futuro que la facultad despliegue sobre la misma infraestructura podrá consumir el almacenamiento MinIO a través de \nolinkurl{minio.facet.unt.edu.ar}, sin necesidad de duplicar túneles ni reglas de enrutamiento. Complementariamente, la variable \texttt{NEXT\_PRIVATE\_UPLOAD\_FORCE\_PATH\_STYLE}, cuyo detalle se documenta en el Apéndice~\ref{AppendixB:S3}, resultó indispensable para que Traefik pudiera reconocer el dominio principal y enrutar correctamente las peticiones, dado que el estilo de ruta coloca el nombre del \textit{bucket} en la URL (por ejemplo, \texttt{/documenso-prod/}) en lugar de anteponer un subdominio que requeriría un certificado \textit{wildcard} adicional.
-
-La validación funcional de esta cadena de conectividad se verificó mediante la inspección del tráfico de red desde las herramientas de desarrollo del navegador. La Figura~\ref{fig:socat_evidencia} presenta la evidencia de las dos peticiones que el \textit{frontend} de Documenso emite al cargar un documento: en primer lugar, una solicitud \textit{preflight} de tipo OPTIONS conforme al protocolo CORS (\textit{Cross-Origin Resource Sharing}), mediante la cual el navegador consulta al servidor MinIO ---a través de Traefik y Socat--- si acepta tráfico originado desde \nolinkurl{https://documentos.facet.unt.edu.ar}; en segundo lugar, la petición PUT que efectúa la carga del archivo hacia el \textit{bucket} S3, utilizando la URL prefirmada generada por el \textit{backend}. La respuesta satisfactoria de ambas peticiones confirma que la configuración CORS de MinIO, el túnel Socat y la terminación SSL de Traefik operan de forma coordinada a lo largo de toda la cadena.
-
-La ampliación del límite de carga en el proxy inverso constituyó una condición complementaria para que esta validación resultara exitosa. Aun cuando Documenso exhiba un límite de tamaño en su interfaz y MinIO acepte objetos mayores, una configuración restrictiva en la capa de borde puede abortar la transferencia antes de que el archivo alcance la aplicación o el almacenamiento de objetos. En consecuencia, el tamaño máximo efectivo de carga en esta arquitectura quedó determinado por la intersección entre la política visible de la aplicación, la configuración del proxy inverso institucional y las capacidades del backend S3.
+La publicación del dominio \nolinkurl{minio.facet.unt.edu.ar} a través del reverse proxy perimetral resolvió este impedimento, pero exigió dos ajustes. Primero, fue necesario configurar el parámetro \texttt{client\_max\_body\_size} en Nginx, elevando el límite a 50 MB para \nolinkurl{documentos.facet.unt.edu.ar} y a 75 MB para \nolinkurl{minio.facet.unt.edu.ar}. Estos valores no se fijaron de forma arbitraria, sino que se alinearon con los tamaños máximos admitidos por Documenso para la carga de archivos y con la necesidad de contemplar que los documentos firmados pueden superar el tamaño del original. Segundo, en el flujo directo del navegador, fue obligatorio autorizar en MinIO el origen institucional \nolinkurl{https://documentos.facet.unt.edu.ar}. Esto permitió que las cargas iniciadas desde la interfaz web fueran aceptadas dentro de la política de acceso entre orígenes. La Figura~\ref{fig:socat_evidencia} evidencia esta secuencia, mientras que la Figura~\ref{fig:minio_cors_config} documenta la política aplicada en el servidor.
 
 \begin{figure}[H]
      \centering
@@ -324,41 +362,87 @@ La ampliación del límite de carga en el proxy inverso constituyó una condici�
      \begin{subfigure}[b]{0.85\textwidth}
          \centering
          \includegraphics[width=\textwidth]{figuras/capitulo3/requestToMinIO2.png}
-         \caption{Petición PUT de carga del documento hacia el \textit{bucket} S3.}
+         \caption{Petición PUT de carga del recurso gráfico hacia el \textit{bucket} S3.}
          \label{fig:devtools_put}
      \end{subfigure}
-        \caption{Evidencia de tráfico entre el \textit{frontend} de Documenso y MinIO a través del proxy Socat.}
+        \caption{Evidencia del flujo directo entre la interfaz web de Documenso y MinIO durante la carga de recursos gráficos.}
         \label{fig:socat_evidencia}
 \end{figure}
-
-La aceptación satisfactoria de la solicitud \textit{preflight} no dependió únicamente del encaminamiento provisto por Traefik y Socat, sino también de la política CORS definida en la API de MinIO. En particular, fue necesario declarar explícitamente como orígenes permitidos a \nolinkurl{https://documentos.facet.unt.edu.ar}, desde donde operan los usuarios finales, y a \nolinkurl{https://coolify.facet.unt.edu.ar}, dominio utilizado para la administración del despliegue. La Figura~\ref{fig:minio_cors_config} muestra esta configuración en la consola de MinIO y complementa la evidencia anterior, ya que explica por qué el servidor responde de forma válida a la negociación CORS observada en las herramientas de desarrollo del navegador.
 
 \begin{figure}[H]
     \centering
     \includegraphics[width=0.9\textwidth]{figuras/capitulo3/CORS_minIO.png}
-    \caption[Configuración CORS de MinIO]{Configuración de la política CORS en la API de MinIO, con los orígenes \nolinkurl{https://documentos.facet.unt.edu.ar} y \nolinkurl{https://coolify.facet.unt.edu.ar} habilitados para solicitudes provenientes de la interfaz web y de la consola de administración.}
+    \caption[Configuración CORS de MinIO]{Configuración de la política CORS en la API de MinIO, con el origen \nolinkurl{https://documentos.facet.unt.edu.ar} habilitado para solicitudes provenientes de la interfaz web.}
     \label{fig:minio_cors_config}
 \end{figure}
 
-La Figura~\ref{fig:flujo_socat_minio} sintetiza el recorrido completo de una petición de carga de archivo originada desde el navegador del usuario. La línea rosa representa el flujo de la petición externa: la solicitud, dirigida al dominio \nolinkurl{minio.facet.unt.edu.ar}, ingresa por el proxy inverso perimetral de la facultad y es recibida por Traefik dentro del contenedor LXC. La línea azul indica el tramo interno de retransmisión: Traefik enruta el tráfico hacia el contenedor Socat, el cual lo reenvía como paquetes TCP hacia el puerto \texttt{9000} del servidor físico TrueNAS donde opera MinIO.
+A diferencia del caso anterior, el segundo flujo es indirecto y gestiona la manipulación de documentos PDF, incluyendo su carga, descarga y firma. En este caso, el navegador no interactúa directamente con MinIO, sino que se comunica con la API del servidor interno de Documenso, y es este \textit{backend} quien realiza luego las operaciones correspondientes sobre el almacenamiento S3.
+
+La Figura~\ref{fig:indirect_flow_devtools} presenta la evidencia de este comportamiento desde la perspectiva del cliente. Durante la descarga de un documento PDF firmado, el navegador emite una petición GET hacia un \textit{endpoint} de la API de la aplicación, en lugar de consumir una URL prefirmada del almacenamiento de objetos. Esto demuestra que el servidor interno actúa como intermediario entre el cliente y MinIO.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.88\textwidth]{figuras/capitulo3/http_req_download_pdf_flujo_indirecto.png}
+    \caption[Evidencia del flujo indirecto de descarga de PDF firmado]{Descarga indirecta de un documento PDF firmado a través de la API de Documenso.}
+    \label{fig:indirect_flow_devtools}
+\end{figure}
+
+Para conectar de forma segura la red aislada de contenedores con el servidor físico de almacenamiento, se implementó un contenedor basado en \texttt{socat} dentro de Coolify. Este servicio se desplegó en un proyecto separado del \textit{stack} principal de Documenso, con el fin de conservar un punto de acceso reutilizable al almacenamiento S3 para otros despliegues institucionales que pudieran requerirlo en el futuro. Como se observa en el Código~\ref{lst:socat_minio_proxy}, el servicio expone el puerto \texttt{9000} dentro de la red interna de Docker, donde la utilidad queda a la escucha mediante \texttt{TCP4-LISTEN:9000}, y redirige el tráfico TCP hacia la dirección IP del servidor físico (\texttt{TCP4:192.168.80.24:9000}). En esta topología, Traefik recibe las peticiones dirigidas a \nolinkurl{minio.facet.unt.edu.ar}, y deriva el tráfico entrante hacia ese puerto del contenedor \texttt{socat}, que actúa como un puente de red hacia TrueNAS. Esta estrategia evitó la exposición directa de puertos físicos en la red de la facultad y centralizó el acceso a MinIO.
+
+\begin{samepage}
+\begin{lstlisting}[language=YAML, caption={Definición del servicio proxy Socat para la conectividad con MinIO}, label={lst:socat_minio_proxy}]
+services:
+  minio-proxy:
+    image: alpine/socat
+    command: 'TCP4-LISTEN:9000,fork,reuseaddr TCP4:192.168.80.24:9000'
+    expose:
+      - '9000'
+    healthcheck:
+      test: ["CMD", "nc", "-z", "127.0.0.1", "9000"]
+      interval: 5s
+      timeout: 2s
+      retries: 5
+\end{lstlisting}
+\end{samepage}
+
+El diseño final hizo que ambos flujos convergieran en un mismo dominio público, de modo que todo el tráfico dirigido al almacenamiento ---ya se originara externamente en el navegador o fuera reinyectado internamente por el servidor de la aplicación--- atravesara el reverse proxy perimetral de la facultad.
+
+La Figura~\ref{fig:flujo_socat_minio} ilustra esta convergencia de los dos flujos hacia el almacenamiento físico. La línea discontinua verde representa el flujo directo originado en el navegador del usuario para las cargas de \textit{branding}, mientras que la línea discontinua naranja representa el flujo indirecto originado en el \textit{backend} de Documenso para la gestión de documentos PDF. Ambas líneas discontinuas convergen en el reverse proxy perimetral Nginx. A partir de ese punto, el tráfico unificado se representa mediante una línea continua rosa que atraviesa Traefik hacia el contenedor \texttt{socat}, y finalmente se transforma en una línea continua azul que enlaza el túnel TCP con el servidor físico TrueNAS/MinIO.
 
 \begin{figure}[H]
     \centering
     \includegraphics[width=0.9\textwidth]{figuras/capitulo3/3.4.png}
-    \caption[Flujo de carga de archivos hacia MinIO a través del proxy Socat]{Recorrido de una petición de almacenamiento desde el navegador del usuario hasta el servidor físico TrueNAS/MinIO, a través del proxy inverso perimetral, Traefik y el contenedor Socat.}
+    \caption[Flujos de acceso a MinIO a través del proxy Socat]{Convergencia del flujo directo del navegador y del flujo indirecto del \textit{backend} hacia el servidor físico TrueNAS/MinIO a través del reverse proxy perimetral, Traefik y el contenedor Socat.}
     \label{fig:flujo_socat_minio}
 \end{figure}
 
 \section{Estrategia de Respaldo y Retención de Datos}
 \label{sec:estrategia_respaldo_retencion}
 
-La estrategia operativa de preservación de datos se definió sobre tres dominios con características diferentes: el estado transaccional almacenado en PostgreSQL, el repositorio documental persistido en MinIO y la configuración declarativa del despliegue administrado por Coolify. Esta separación respondió a un criterio técnico elemental: no todos los activos de la plataforma tienen el mismo valor operativo, ni admiten el mismo mecanismo de recuperación. Mientras que los metadatos relacionales pueden respaldarse mediante volcados lógicos consistentes, los documentos PDF requieren políticas de retención e inmutabilidad sobre el almacenamiento de objetos, y la reconstrucción del entorno demanda conservar además la configuración de los servicios y sus parámetros de despliegue.
+La estrategia de preservación de datos se organizó en tres dominios con necesidades de protección diferentes: la base transaccional de PostgreSQL, el repositorio documental almacenado en MinIO y la configuración exportable de la plataforma. Esta separación respondió a un criterio de criticidad operativa: no todos los componentes del sistema se recuperan del mismo modo ni tienen el mismo impacto ante una falla. La base de datos admite respaldos lógicos periódicos, los documentos PDF requieren políticas de retención e inmutabilidad sobre el almacenamiento de objetos, y la reconstrucción del entorno exige conservar las variables de entorno junto con los archivos \texttt{docker-compose.yml} utilizados en producción.
+
+La documentación de Documenso distingue dos alternativas de almacenamiento documental: el almacenamiento en base de datos y el almacenamiento S3 compatible. La Tabla~\ref{tab:documenso_storage_compare} resume las diferencias operativas más relevantes entre ambas, incluida la recomendación explícita de utilizar almacenamiento S3 en despliegues de producción \cite{documenso_storage_config,documenso_backups}.
+
+\begin{table}[!htbp]
+    \centering
+    \caption[Comparación entre database storage y S3-compatible storage en Documenso]{Comparación entre las alternativas \texttt{database storage} y \texttt{S3-compatible storage} en Documenso, a partir de la documentación oficial.}
+    \label{tab:documenso_storage_compare}
+    \begin{tabular}{p{0.24\textwidth} p{0.33\textwidth} p{0.33\textwidth}}
+        \toprule
+        Aspecto & \texttt{database storage} & \texttt{S3-compatible storage} \\
+        \midrule
+        Costo de respaldo & Los respaldos de la base crecen junto con el volumen documental. & Requiere respaldar por separado la base y el \textit{bucket} S3. \\
+        Rendimiento con archivos grandes & El rendimiento se degrada a medida que aumenta el tamaño del repositorio. & Mantiene un comportamiento más consistente para cargas documentales mayores. \\
+        Recomendación de uso & Adecuado para despliegues pequeños o simples. & La documentación lo recomienda para despliegues de producción. \\
+        \bottomrule
+    \end{tabular}
+\end{table}
 
 \subsection{Respaldo lógico de la base de datos PostgreSQL}
 
-Aunque PostgreSQL opera sobre un volumen persistente local dentro del servidor de Coolify, la continuidad del servicio no se apoyó exclusivamente en ese volumen. Se configuró la funcionalidad de copias de seguridad de Coolify para ejecutar diariamente, a las 03:00, un respaldo lógico completo de la base de datos y transferirlo a un almacenamiento S3 compatible, conforme al mecanismo documentado por la plataforma \cite{coolify_db_backups,coolify_s3_intro}. El respaldo se almacenó en el \textit{bucket} \texttt{documenso-backup-databases}, para el cual se deshabilitó el almacenamiento local y se fijó una cuota de 5 GB. Cada ejecución genera un archivo \texttt{.dmp} con marca temporal en el nombre, evitando la sobrescritura de volcados previos y facilitando la selección de un punto de recuperación concreto.
+En este despliegue, el respaldo lógico de PostgreSQL cubre exclusivamente los datos transaccionales descritos en la Subsección~\ref{subsec:postgresql}. Bajo este criterio, la continuidad operativa no se apoyó exclusivamente en el volumen persistente local del servicio, sino en una política de exportación periódica del contenido de la base hacia un destino independiente, alineada con las estrategias diarias de respaldo automatizado que la documentación de Documenso propone para recuperación a un punto reciente \cite{documenso_backups}. Los volcados se enviaron al \textit{bucket} \texttt{documenso-backup-databases}, creado en MinIO, mientras que en Coolify se deshabilitó el almacenamiento local de respaldos y se fijó una cuota de 5 GB para ese destino. Cada ejecución produce un archivo \texttt{.dmp} con nombres del tipo \texttt{pg-dump-documensoprod-db-1774755213.dmp}, lo que permite identificar cada respaldo por su marca temporal sin reutilizar un nombre fijo.
 
-La Figura~\ref{fig:coolify_db_backup_ui} presenta la evidencia visual, obtenida desde la interfaz gráfica de Coolify, de la configuración y ejecución del respaldo lógico programado para PostgreSQL. En ella se observa explícitamente la expresión \textit{cron} \texttt{0 3 * * *}, la activación del almacenamiento S3 y el historial de ejecuciones satisfactorias del proceso automático. Esta captura complementa la descripción conceptual del mecanismo al certificar que la política diaria de respaldo no solo fue definida a nivel declarativo, sino también ejecutada correctamente por el orquestador en el entorno productivo.
+La Figura~\ref{fig:coolify_db_backup_ui} presenta la evidencia visual, obtenida desde la interfaz gráfica de Coolify, de la configuración y ejecución del respaldo lógico programado para PostgreSQL. En ella se observan la activación del almacenamiento S3, el historial de ejecuciones satisfactorias del proceso automático y su programación diaria a las 03:00 mediante la expresión \textit{cron} \texttt{0 3 * * *}, lo que certifica que la política definida a nivel arquitectónico fue aplicada de forma efectiva en el entorno productivo.
 
 \begin{figure}[H]
     \centering
@@ -367,49 +451,76 @@ La Figura~\ref{fig:coolify_db_backup_ui} presenta la evidencia visual, obtenida 
     \label{fig:coolify_db_backup_ui}
 \end{figure}
 
-Sobre este \textit{bucket} se definió una política de ciclo de vida mediante el comando \texttt{mc ilm rule add --expire-days 30 --noncurrent-expire-days 30}, con el objetivo de conservar una ventana de recuperación de treinta días \cite{minio_ilm_rule_add}. Adicionalmente, se habilitó retención en modo \textit{governance} por el mismo período. Si bien cada volcado se almacena bajo un nombre distinto y, por esa razón, el versionado no aporta un historial funcional significativo en este caso, se mantuvo habilitado porque las políticas de \textit{Object Lock} de MinIO se sustentan sobre \textit{buckets} versionados \cite{minio_object_locking}. Desde la perspectiva de continuidad operativa, esta frecuencia diaria establece un RPO práctico de 24 horas para el dominio transaccional. El RTO queda condicionado por el tiempo necesario para reinstanciar la base de datos y restaurar el último volcado válido mediante \texttt{pg\_restore}, pero se mantiene acotado al no depender de procedimientos manuales de reconstrucción de registros individuales.
+Sobre este \textit{bucket} se definió una política de ciclo de vida con una retención de 30 días para la versión vigente del respaldo y para sus versiones anteriores \cite{minio_ilm_rule_add}. Adicionalmente, se habilitó retención en modo \textit{governance} por 30 días. Si bien cada volcado se almacena con un nombre propio y, por esa razón, el versionado no aporta un historial funcional especialmente valioso en este caso, se mantuvo habilitado porque las políticas de \textit{Object Lock} de MinIO se sustentan sobre \textit{buckets} versionados \cite{minio_object_locking}. En términos de continuidad operativa, esta frecuencia diaria establece un objetivo práctico de punto de recuperación (RPO) de 24 horas para el dominio transaccional. El objetivo de tiempo de recuperación (RTO) se mantiene acotado gracias a que Coolify integra importación y restauración directa de volcados desde el almacenamiento S3, lo que reduce la contingencia a una operación asistida desde la interfaz gráfica. El detalle operativo de este procedimiento se documenta en el manual de mantenimiento del sistema.
 
 \subsection{Retención e inmutabilidad del repositorio documental}
 
-Los documentos originales cargados por los usuarios y las versiones firmadas no se almacenan en PostgreSQL, sino en el \textit{bucket} \texttt{documenso-prod} del servidor MinIO, en concordancia con la configuración S3 recomendada para despliegues productivos de Documenso \cite{documenso_storage_config}. Sobre este repositorio se configuró una cuota de 2 TB, versionado activo y una política de retención \textit{governance} de 1825 días. Asimismo, se definió una regla de ciclo de vida mediante \texttt{mc ilm rule add --expire-days 1825 --noncurrent-expire-days 1}, orientada a conservar la versión corriente de cada objeto durante cinco años y a marcar tempranamente las versiones no corrientes para su expiración \cite{minio_ilm_rule_add}. En este punto resulta importante distinguir dos conceptos que suelen confundirse: el versionado y el \textit{Object Lock} no constituyen, por sí solos, una copia de seguridad externa. Su función principal es preservar la integridad lógica de los objetos y controlar su ciclo de vida dentro del mismo sistema de almacenamiento \cite{minio_object_locking}.
+Los documentos originales cargados por los usuarios y las versiones firmadas se almacenan en el \textit{bucket} \texttt{documenso-prod} del servidor MinIO. Para este repositorio se definió una cuota de 2 TB, estimada a partir del principal límite operativo del sistema: la capacidad diaria del servicio SMTP. El cálculo se apoya en las siguientes restricciones:
+\begin{itemize}
+    \item Bajo un límite de 300 correos diarios (proveedor SMTP externo) y estimando un promedio de 5 firmantes por trámite ---lo que consume 6 notificaciones por documento (invitaciones y aviso de finalización)---, la plataforma alcanza un techo operativo de 50 trámites por día.
+    \item Con un peso promedio estimado de 10 MB por PDF, y considerando que MinIO almacena tanto el archivo original como la versión final firmada (20 MB totales por trámite), el incremento máximo de datos es de 1 GB diario.
+    \item Aplicando la política de retención ILM de 5 años (1825 días), el volumen de datos proyectado es de 1825 GB.
+\end{itemize}
 
-Esta decisión también resultó más conveniente que persistir los PDF directamente en PostgreSQL. La documentación oficial de Documenso indica que el almacenamiento en base de datos está orientado a despliegues pequeños por su simplicidad, mientras que el backend S3 se recomienda para producción y archivos de mayor volumen \cite{documenso_storage_config}. En términos operativos, almacenar los documentos fuera del motor relacional evita que el crecimiento del repositorio documental impacte de forma directa sobre la base transaccional, simplifica el dimensionamiento de los respaldos y separa con mayor claridad los metadatos del sistema respecto de los objetos binarios. El uso de MinIO como almacenamiento S3 compatible mantuvo, por tanto, una arquitectura más adecuada para la escala prevista del servicio.
+En consecuencia, la cuota de 2 TB cubre la demanda máxima teórica proyectada a cinco años, con un margen aproximado del 10\%.
 
-La capacidad de 2 TB se dimensionó a partir de una estimación conservadora del caudal máximo de operación impuesto por el servicio SMTP externo. Dado que Brevo permite el envío de 300 correos electrónicos diarios en el plan utilizado y que un flujo típico de firma con cinco firmantes produce seis notificaciones transaccionales, el sistema podría procesar hasta 50 documentos por día bajo ese límite. Para el dimensionamiento se adoptó un tamaño promedio de 10 MB para el archivo PDF original. Sin embargo, el consumo real del \textit{bucket} no se limita a ese objeto inicial: Documenso persiste tanto el documento original como la versión firmada, cuyo tamaño suele ser ligeramente mayor debido a los metadatos y elementos criptográficos incorporados durante el sellado. A efectos de una estimación operativa simple, se consideró entonces un consumo aproximado de 20 MB por trámite completo. Bajo esta hipótesis, el crecimiento diario máximo del repositorio sería del orden de 1 GB. Proyectado sobre 1825 días, ello arroja aproximadamente 1825 GB, valor inferior a la cuota definida de 2 TB. Esta estimación debe interpretarse como una cota de orden de magnitud y no como un límite exacto, ya que el consumo real depende del tamaño efectivo de los archivos, de la diferencia concreta entre el PDF original y el firmado, del número de objetos asociados a cada trámite y de la evolución futura de la demanda institucional.
+Este límite de 2 TB se estableció considerando la capacidad física del servidor. En la interfaz de TrueNAS, el volumen de almacenamiento disponible es de 18,19 TiB, por lo que la cuota asignada representa aproximadamente el 11\% del espacio total. La Figura~\ref{fig:truenas_backup_storage} muestra el volumen sobre el que se apoya el repositorio documental.
 
-La principal limitación de este dominio de datos es que, en el estado actual del despliegue, no existe un respaldo externo del \textit{bucket} documental. En consecuencia, la política implementada protege razonablemente contra eliminaciones accidentales, sobrescrituras indebidas y alteraciones lógicas dentro de MinIO, pero no elimina el punto único de falla representado por el servidor TrueNAS que hospeda el almacenamiento físico. Una falla catastrófica del NAS, corrupción severa del \textit{pool} o pérdida total del servidor implicaría la indisponibilidad o pérdida definitiva de los PDF almacenados. Por este motivo, la replicación o el respaldo \textit{off-site} del repositorio documental hacia un segundo destino S3 compatible se identifica como la mejora de mayor prioridad para una etapa posterior.
+\begin{figure}[!htbp]
+    \centering
+    \includegraphics[width=0.95\textwidth]{figuras/capitulo3/storage_backup_truenas.png}
+    \caption[Volumen virtual Backup en TrueNAS]{Vista del almacenamiento virtual \texttt{Backup} en la interfaz de TrueNAS, donde se observa el volumen expuesto al sistema operativo con una capacidad de 18,19 TiB.}
+    \label{fig:truenas_backup_storage}
+\end{figure}
+
+Por debajo de ese volumen, el almacenamiento se organiza con una controladora LSI y 12 discos SAS de 2 TB. SAS es una tecnología de conexión de discos utilizada habitualmente en servidores. La controladora agrupa esas unidades en un RAID 6 por hardware y presenta al sistema un único volumen de 18,188 TB. Sobre ese volumen, ZFS organiza el espacio que luego utiliza MinIO.
+
+La salida del comando \texttt{sudo storcli /c1 show}, ejecutado desde la \textit{shell} de TrueNAS y mostrada en la Figura~\ref{fig:truenas_raid6_terminal}, muestra un único volumen virtual de 18,188 TB configurado en RAID 6 con estado \texttt{Pdgd} (\textit{Partially Degraded}). En la lista de discos físicos se observan 12 unidades asociadas: una figura como \texttt{Failed} y las 11 restantes como \texttt{Onln}.
+
+\begin{figure}[!htbp]
+    \centering
+    \includegraphics[width=0.78\textwidth]{figuras/capitulo3/raid6_truenas_terminal.png}
+    \caption[Configuración RAID 6 verificada con storcli]{Evidencia obtenida en TrueNAS mediante \texttt{sudo storcli /c1 show}, donde se observa un único volumen virtual RAID 6 de 18,188 TB y la lista de 12 discos físicos asociados, con una unidad en estado \texttt{Failed} y las restantes en \texttt{Onln}.}
+    \label{fig:truenas_raid6_terminal}
+\end{figure}
+
+Durante la auditoría, esa falla de disco no dejó al repositorio fuera de servicio, lo que coincide con el comportamiento esperado de un RAID 6. Sin embargo, en línea con lo expuesto en la Subsección~\ref{subsec:teoria_raid}, esta redundancia de hardware mejora la continuidad del almacenamiento, pero no equivale a una copia de seguridad.
+
+Sobre esa infraestructura se configuraron en MinIO las políticas de retención del \textit{bucket}. La regla ILM fija una conservación de cinco años para la versión vigente de cada objeto y elimina antes las versiones anteriores \cite{minio_ilm_rule_add}. El \textit{Object Lock} en modo \textit{governance}, por su parte, impide la modificación o eliminación normal de los objetos retenidos antes de que venza el plazo configurado \cite{minio_object_locking}. Para que estas funciones estén disponibles, el \textit{bucket} debe permanecer versionado. De todos modos, el versionado por sí solo no constituye una copia de seguridad externa.
+
+La limitación principal de este dominio de datos aparece, precisamente, en la transición entre ambas capas. La combinación de RAID 6, ZFS, versionado, ILM y \textit{Object Lock} protege razonablemente frente a fallas de disco, eliminaciones accidentales, sobrescrituras indebidas y parte de las alteraciones lógicas dentro de MinIO, pero no elimina el punto único de falla representado por el servidor TrueNAS que hospeda el almacenamiento físico. Una falla catastrófica del NAS, una corrupción severa del \textit{pool} o la pérdida total del servidor implicarían la indisponibilidad o pérdida definitiva de los PDF almacenados. Por ello, la replicación o el respaldo \textit{off-site} del repositorio documental hacia un segundo destino S3 compatible se identifica como la mejora de mayor prioridad para una etapa posterior.
 
 \subsection{Resguardo de la configuración del despliegue}
 
-Como tercera capa de protección se implementó un \textit{script} \textit{bash}, ejecutado diariamente mediante \textit{cron}, cuyo propósito es conservar la configuración declarativa de los proyectos administrados por Coolify. Este procedimiento almacena en el \textit{bucket} \texttt{backups-coolify} las variables de entorno y los archivos \texttt{docker-compose.yml} de cada proyecto desplegado, incluyendo la instancia de Documenso. Sobre dicho \textit{bucket} se definió una cuota de 100 MB y una política ILM de 180 días mediante \texttt{mc ilm rule add --expire-days 180 --noncurrent-expire-days 180} \cite{minio_ilm_rule_add}.
+El tercer dominio de protección se orientó a preservar la reconstruibilidad de la plataforma a partir de su configuración exportable. Para ello, se resguardaron las variables de entorno y los archivos \texttt{docker-compose.yml} de cada proyecto desplegado, incluida la instancia de Documenso, en el \textit{bucket} \texttt{backups-coolify}. Este resguardo se automatizó mediante un script en \textit{bash}, documentado en el Apéndice~\ref{AppendixB:ConfigBackup}, y ejecutado diariamente por \textit{cron}. En lugar de copiar toda la estructura de Coolify, el procedimiento conserva solo los archivos necesarios para reconstruir el entorno. Esto reduce el volumen del respaldo y permite mantener ese esquema sobre cualquier destino S3 compatible. La periodicidad diaria no respondió a cambios frecuentes en la configuración de Documenso, sino a que ese proceso resguarda, de forma unificada, la configuración exportable del conjunto de proyectos administrados por Coolify. Sobre dicho \textit{bucket} se definió una cuota de 100 MB y una política ILM con una retención de 180 días para la versión vigente y para sus versiones anteriores \cite{minio_ilm_rule_add}.
 
-Este resguardo no sustituye los respaldos de la base de datos ni del repositorio documental, puesto que no conserva ni los metadatos transaccionales ni los archivos PDF. Su valor radica en otro plano: reduce el tiempo y el esfuerzo requeridos para reconstruir el entorno ante una contingencia severa sobre el servidor de Coolify. Al preservar la definición de los servicios, las referencias de red y los parámetros de configuración, se evita depender de la reconstrucción manual de secretos, variables y descriptores de despliegue dispersos entre la interfaz del orquestador y la memoria operativa del administrador.
+Este resguardo no sustituye los respaldos de la base de datos ni del repositorio documental, puesto que no conserva ni los datos transaccionales de la aplicación ni los archivos PDF. Su aporte es otro: reduce el tiempo y el esfuerzo requeridos para reconstruir el entorno ante una contingencia severa sobre el servidor. Al preservar la definición de los servicios, las referencias de red y los parámetros de configuración, se evita depender de la reconstrucción manual de secretos, variables y descriptores de despliegue dispersos entre la interfaz de la PaaS y la memoria operativa del administrador.
 
-La guía de mantenimiento de Documenso añade un matiz importante a este punto: además de la base de datos y del almacenamiento documental, el certificado de firma y su frase de paso forman parte de los elementos críticos que deben resguardarse \cite{documenso_backups}. En este despliegue, dicho material no se administra como un archivo persistente montado en un volumen, sino como contenido codificado en Base64 y secretos inyectados por Coolify. Por ello, el respaldo diario de la configuración también cumple una función criptográfica: preserva los valores necesarios para mantener la capacidad de emitir nuevas firmas con la identidad institucional ya configurada.
+La guía de mantenimiento de Documenso señala además que, junto con la base de datos y el almacenamiento documental, el certificado de firma y su frase de paso forman parte de los elementos críticos que deben resguardarse \cite{documenso_backups}. En este despliegue, el certificado no se administra como un archivo montado en un volumen, sino como una variable de entorno que contiene el archivo \texttt{.p12} codificado en Base64, junto con la frase de paso inyectada por Coolify. Por ello, el respaldo diario de la configuración también preserva los valores necesarios para restablecer la capacidad de emitir nuevas firmas con la identidad institucional ya configurada.
 
 \subsection{Evidencia operativa y validación de las políticas de ciclo de vida}
 
-La Figura~\ref{fig:minio_ilm_policies} presenta la evidencia operativa de las políticas de Ciclo de Vida de la Información configuradas en MinIO, obtenida mediante el comando \texttt{mc ilm ls} sobre tres \textit{buckets} distintos. Estas capturas permiten verificar la segmentación de la estrategia de retención según la función de cada repositorio. En \texttt{documenso-prod} se definió una retención de 1825 días, equivalente a cinco años, con el objetivo de asegurar la preservación de largo plazo del núcleo documental de la plataforma. Dado que Documenso almacena cada archivo dentro de directorios identificados por un \textit{hash} único, en la práctica no se producen sobrescrituras sobre una misma clave lógica ni se generan versiones de uso frecuente; aun así, se mantuvo una regla de expiración de un día para versiones no corrientes como medida preventiva de optimización. En \texttt{documenso-backup-databases} se configuró una expiración de 30 días, coherente con el ciclo de vida de los volcados lógicos de PostgreSQL, cuyos nombres incorporan marcas temporales y, por lo tanto, se almacenan como objetos independientes. Finalmente, en \texttt{backups-coolify} se estableció una retención de 180 días, suficiente para conservar durante cinco o seis meses la configuración exportada de contenedores y variables de entorno ante la necesidad de revisar o reconstruir un despliegue previo.
+La Figura~\ref{fig:minio_ilm_policies} muestra las políticas ILM configuradas en MinIO, obtenidas con el comando \texttt{mc ilm ls}. En la salida de esta herramienta, la tabla \textit{Expiration for latest version} (Expiración de la versión más reciente) indica en la columna \texttt{DAYS TO EXPIRE} cuántos días se conserva la versión vigente de un objeto. Por su parte, la tabla \textit{Expiration for older versions} (Expiración de versiones anteriores) muestra cuántos días se conservan las versiones previas de ese mismo objeto cuando el \textit{bucket} tiene versionado habilitado \cite{minio_ilm_rule_add}. La evidencia permite constatar que cada repositorio posee una retención distinta según su función operativa. En \texttt{documenso-prod}, que almacena los documentos originales y firmados del sistema, se configuró una expiración de 1825 días, equivalente a cinco años. En \texttt{documenso-backup-databases} se definió una expiración de 30 días para los volcados lógicos de PostgreSQL, y en \texttt{backups-coolify} se estableció una retención de 180 días para la configuración exportable del despliegue.
 
-\begin{figure}[H]
+\begin{figure}[!htbp]
     \centering
     \begin{subfigure}[b]{0.95\textwidth}
         \centering
-        \includegraphics[width=\textwidth]{figuras/capitulo3/documenso-prod_retention-policies.png}
+        \includegraphics[width=\textwidth,height=0.24\textheight,keepaspectratio]{figuras/capitulo3/documenso-prod_retention-policies.png}
         \caption{Salida de \texttt{mc ilm ls} para el \textit{bucket} \texttt{documenso-prod}.}
         \label{fig:ilm_documenso_prod}
     \end{subfigure}
     \hfill
     \begin{subfigure}[b]{0.95\textwidth}
         \centering
-        \includegraphics[width=\textwidth]{figuras/capitulo3/documenso-backup-databases_retention-policies.png}
+        \includegraphics[width=\textwidth,height=0.24\textheight,keepaspectratio]{figuras/capitulo3/documenso-backup-databases_retention-policies.png}
         \caption{Salida de \texttt{mc ilm ls} para el \textit{bucket} \texttt{documenso-backup-databases}.}
         \label{fig:ilm_documenso_db_backups}
     \end{subfigure}
     \hfill
     \begin{subfigure}[b]{0.95\textwidth}
         \centering
-        \includegraphics[width=\textwidth]{figuras/capitulo3/backups-coolify_retention-policies.png}
+        \includegraphics[width=\textwidth,height=0.24\textheight,keepaspectratio]{figuras/capitulo3/backups-coolify_retention-policies.png}
         \caption{Salida de \texttt{mc ilm ls} para el \textit{bucket} \texttt{backups-coolify}.}
         \label{fig:ilm_backups_coolify}
     \end{subfigure}
@@ -417,27 +528,27 @@ La Figura~\ref{fig:minio_ilm_policies} presenta la evidencia operativa de las po
     \label{fig:minio_ilm_policies}
 \end{figure}
 
-La Figura~\ref{fig:minio_ui_buckets} complementa esta validación con capturas de la interfaz web de MinIO, donde se observan los tres \textit{buckets} configurados en producción y sus respectivas políticas de retención. Esta segunda evidencia resulta útil porque muestra la misma segmentación desde la consola administrativa del sistema de almacenamiento, corroborando que la retención de \texttt{backups-coolify} quedó finalmente establecida en 180 días, en coincidencia con la regla ILM definida para ese repositorio.
+La Figura~\ref{fig:minio_ui_buckets} muestra esos mismos \textit{buckets} desde la interfaz web de MinIO. En estas capturas se distinguen el repositorio documental, el destino de los respaldos de PostgreSQL y el repositorio de configuración exportable. Estas vistas complementan la evidencia obtenida por consola y muestran la configuración desde la interfaz administrativa de MinIO.
 
-\begin{figure}[H]
+\begin{figure}[!htbp]
     \centering
     \begin{subfigure}[b]{0.95\textwidth}
         \centering
-        \includegraphics[width=\textwidth]{figuras/capitulo3/documenso-prod.png}
+        \includegraphics[width=\textwidth,height=0.24\textheight,keepaspectratio]{figuras/capitulo3/documenso-prod.png}
         \caption{Configuración del \textit{bucket} \texttt{documenso-prod} desde la interfaz de MinIO.}
         \label{fig:minio_ui_documenso_prod}
     \end{subfigure}
     \hfill
     \begin{subfigure}[b]{0.95\textwidth}
         \centering
-        \includegraphics[width=\textwidth]{figuras/capitulo3/documenso-backup-databases.png}
+        \includegraphics[width=\textwidth,height=0.24\textheight,keepaspectratio]{figuras/capitulo3/documenso-backup-databases.png}
         \caption{Configuración del \textit{bucket} \texttt{documenso-backup-databases} desde la interfaz de MinIO.}
         \label{fig:minio_ui_documenso_db_backups}
     \end{subfigure}
     \hfill
     \begin{subfigure}[b]{0.95\textwidth}
         \centering
-        \includegraphics[width=\textwidth]{figuras/capitulo3/backups-coolify.png}
+        \includegraphics[width=\textwidth,height=0.24\textheight,keepaspectratio]{figuras/capitulo3/backups-coolify.png}
         \caption{Configuración del \textit{bucket} \texttt{backups-coolify} desde la interfaz de MinIO.}
         \label{fig:minio_ui_backups_coolify}
     \end{subfigure}
@@ -445,33 +556,29 @@ La Figura~\ref{fig:minio_ui_buckets} complementa esta validación con capturas d
     \label{fig:minio_ui_buckets}
 \end{figure}
 
-En conjunto, la estrategia implementada estableció tres capas complementarias con alcances claramente diferenciados. Para PostgreSQL y para la configuración del despliegue sí existen copias de resguardo exportadas hacia almacenamiento S3 compatible, con ventanas de retención explícitas y automatización diaria. Para el repositorio documental, en cambio, la solución actual ofrece retención e inmutabilidad local, pero todavía no una copia externa capaz de absorber un desastre físico del subsistema de almacenamiento. Esta distinción resulta central para evaluar con precisión el nivel real de resiliencia alcanzado por la plataforma y evita atribuir a las políticas de retención capacidades de recuperación que, en sentido estricto, solo puede ofrecer un respaldo independiente.
+\FloatBarrier
+
+La estrategia de preservación alcanzada proporciona puntos de recuperación independientes para el dominio transaccional y para la configuración declarativa del entorno. El riesgo residual ya señalado ---la ausencia de un respaldo externo del repositorio documental--- permanece como la limitación de mayor prioridad para una etapa posterior, ya que condiciona el nivel de continuidad del sistema ante una falla física del subsistema de almacenamiento.
 
 \section{Integración del Servicio de Correo Transaccional}
 
 \subsection{Configuración del Servicio de Correo Transaccional (Brevo SMTP)}
 \label{subsec:brevo_smtp}
 
-La operación de Documenso requiere un servicio SMTP para emitir invitaciones de firma, recordatorios y notificaciones transaccionales asociadas al avance de cada trámite. Aunque desde el punto de vista técnico hubiera sido posible desplegar un servidor de correo local dentro de la infraestructura institucional, se descartó esa alternativa por una razón operativa central: la instalación básica de un servicio SMTP no representa la parte más costosa del problema, mientras que sostener su entregabilidad en producción sí impone una carga desproporcionada. La administración de la reputación de la IP emisora, la prevención de bloqueos en listas negras y la necesidad de satisfacer políticas de filtrado cada vez más estrictas por parte de proveedores como Gmail u Outlook convierten al correo saliente en una capa particularmente sensible desde el punto de vista del mantenimiento.
+La operación de Documenso requiere un servicio SMTP para emitir invitaciones de firma, recordatorios y notificaciones transaccionales asociadas al avance de cada flujo de firma. Aunque desde el punto de vista técnico hubiera sido posible desplegar un servidor de correo local dentro de la infraestructura institucional, esa alternativa quedó fuera del alcance por su carga operativa. El problema no radica en instalar el servicio, sino en sostener su entregabilidad en producción: reputación de la IP emisora, prevención de bloqueos en listas negras y cumplimiento de políticas de filtrado cada vez más estrictas por parte de proveedores como Gmail u Outlook.
 
-Por este motivo, se adoptó una decisión pragmática de ingeniería: mantener la plataforma principal bajo un esquema \textit{on-premise}, pero delegar específicamente la emisión de correo transaccional a Brevo como servicio externo complementario. Esta elección no alteró el carácter autoalojado del sistema de firma electrónica ni desplazó fuera de la facultad el procesamiento documental o el almacenamiento principal, sino que externalizó únicamente un componente cuya confiabilidad depende en gran medida de factores de reputación y validación pública del dominio. En términos operativos, esta separación permitió reducir la carga administrativa asociada al correo saliente y mejorar la probabilidad de entrega efectiva de las notificaciones generadas por la plataforma.
+Por ese motivo, el correo saliente se resolvió con Brevo y no con un servidor SMTP propio. La plataforma continuó alojada en la infraestructura de la facultad, pero el envío de notificaciones se delegó a un proveedor externo ya preparado para operar con tasas de entrega adecuadas.
 
-Durante este trabajo se utilizó el plan gratuito de Brevo, el cual permitía un máximo de 300 correos diarios. Para la escala prevista en la etapa inicial, este umbral resultó suficiente y se incorporó como restricción práctica dentro del dimensionamiento general del sistema. Dado que cada circuito de firma genera múltiples mensajes automáticos a medida que el documento avanza entre firmantes, el límite diario del servicio de correo no solo condiciona la capacidad de notificación, sino también el volumen máximo de trámites que la plataforma puede sostener sin degradar su comportamiento operativo.
+La configuración de Brevo se realizó siguiendo el procedimiento habitual de alta del servicio: creación de la cuenta, verificación del remitente o dominio y obtención de las credenciales SMTP que luego fueron cargadas en Documenso. Durante este trabajo se utilizó el plan gratuito de Brevo, que permite hasta 300 correos diarios. Ese valor se tomó como restricción de dimensionamiento en la estimación presentada en la Sección~\ref{sec:estrategia_respaldo_retencion}. Bajo esa hipótesis, se obtiene un promedio estimado de 50 documentos por día, pero no un límite fijo del sistema, ya que la cantidad real depende del número de firmantes, recordatorios y notificaciones efectivamente enviadas en cada flujo de firma.
 
-Para habilitar el envío de mensajes en nombre del dominio institucional fue necesario completar la configuración habitual de autenticación de correo basada en SPF, DKIM y DMARC. Estos tres mecanismos cumplen funciones complementarias. SPF define qué servidores están autorizados a emitir correo para un dominio determinado; DKIM incorpora una firma criptográfica en los mensajes salientes para permitir la verificación de su autenticidad e integridad; y DMARC establece la política de validación que deben aplicar los servidores receptores cuando un mensaje no supera las verificaciones anteriores. En conjunto, estas medidas refuerzan la legitimidad del dominio emisor y disminuyen la probabilidad de que los mensajes transaccionales sean clasificados como fraudulentos o no deseados.
+Una vez obtenidos en Brevo los registros DNS requeridos para verificar el dominio, se solicitó al área de redes de la facultad su publicación. En esa etapa apareció una limitación del esquema DNS existente: el subdominio \nolinkurl{documentos.facet.unt.edu.ar} estaba definido con un registro CNAME, por lo que no era posible agregar en ese mismo nodo los registros TXT requeridos por Brevo. Para resolverlo, el área de redes reemplazó el CNAME por un registro A apuntado a la IP pública del servidor. Con ese cambio fue posible publicar los registros de verificación y completar la validación del dominio para el envío institucional de notificaciones.
 
-La implementación de esta capa presentó, no obstante, un desafío técnico concreto durante la validación del dominio. Brevo requería la publicación de registros de tipo TXT sobre el subdominio \nolinkurl{documentos.facet.unt.edu.ar} para verificar la autorización de envío y habilitar las firmas correspondientes. Sin embargo, dicho nombre ya se encontraba definido mediante un registro CNAME. Esta situación generó una colisión estructural en la zona DNS, dado que los estándares del protocolo establecen que un registro CNAME no puede coexistir con otros registros en el mismo nodo. En consecuencia, no era posible incorporar simultáneamente los registros TXT exigidos para la autenticación del correo mientras se mantuviera esa forma de delegación.
-
-Para resolver esta limitación arquitectónica, se gestionó la adecuación de la zona DNS a través del área de redes de la institución. La solución técnica consistió en la eliminación del registro CNAME y su reemplazo por un registro A apuntando directamente a la dirección IP pública del servidor. Esta modificación estructural removió la restricción de coexistencia en el nodo y permitió incorporar los registros necesarios para la validación del dominio y la autenticación del servicio de correo. Si bien esta decisión redujo la flexibilidad ante un eventual cambio futuro de IP pública, constituyó la adecuación de infraestructura indispensable para habilitar una capa SMTP funcional y alineada con los requisitos de seguridad exigidos por los proveedores modernos.
-
-\subsection{Autenticación y Federación de Identidades (Google OAuth 2.0)}
+\subsection{Autenticación Institucional con Google OAuth 2.0}
 \label{subsec:google_oauth}
 
-Para el acceso a Documenso se descartó la gestión local de usuarios y contraseñas. El objetivo principal de esta decisión no fue únicamente simplificar la operación del sistema, sino también restringir el ingreso a la plataforma a personas que ya dispusieran de una identidad institucional válida dentro del dominio administrado por la facultad en Google Workspace. Bajo este criterio, solo los usuarios habilitados con cuentas institucionales pueden iniciar sesión, cargar documentos y definir los firmantes de cada trámite. La restricción se aplicó sobre quienes crean y administran procesos dentro de la plataforma, pero no sobre los destinatarios de firma: los firmantes pueden pertenecer a cualquier dominio de correo electrónico, ya que el sistema los incorpora como participantes del flujo documental a través de las notificaciones transaccionales enviadas por correo.
+Para el acceso a Documenso se descartó el registro local de usuarios y contraseñas. El motivo principal fue restringir el uso del sistema al personal de la facultad, evitando que cualquier persona pudiera crear una cuenta y operar la plataforma de firmas. Bajo este criterio, solo los usuarios con cuenta institucional pueden iniciar sesión, cargar documentos y definir los firmantes de cada trámite. Esta restricción alcanza a quienes crean y administran procesos dentro de la plataforma, pero no a los destinatarios de firma: los firmantes pueden pertenecer a cualquier dominio de correo electrónico, ya que el sistema los incorpora como participantes del flujo documental a través de notificaciones transaccionales enviadas por correo.
 
-Desde la perspectiva de seguridad, esta integración redujo la exposición asociada al almacenamiento local de credenciales. Al delegar la autenticación inicial a Google OAuth 2.0, la base de datos de la aplicación no necesita conservar contraseñas de acceso ni sostener mecanismos propios de recuperación, rotación o endurecimiento de cuentas. Esta decisión tampoco contradijo el carácter \textit{on-premise} de la solución, dado que la aplicación, los documentos y la infraestructura de respaldo permanecen alojados en recursos institucionales. Lo que se externalizó fue exclusivamente la validación de identidad, apoyándose en un proveedor ya adoptado por la organización para su esquema general de cuentas.
-
-La integración se configuró desde Google Cloud Console, donde fue necesario aprovisionar la aplicación y definir la pantalla de consentimiento OAuth. Como se observa en la Figura~\ref{fig:gcp_oauth_interno}, un aspecto relevante de esta etapa fue la selección del tipo de usuario como \textit{Interno}. Esta configuración trasladó una primera restricción al propio proveedor de identidad, ya que limita la finalización del flujo de autorización a cuentas pertenecientes al entorno institucional administrado en Google Workspace y reduce la posibilidad de accesos no previstos desde cuentas externas.
+La configuración se realizó sobre el entorno institucional de Google Workspace con intervención del área de redes de la facultad. En Google Cloud Console se creó el proyecto, se configuró la pantalla de consentimiento OAuth y se definió el tipo de publico como \textit{Interno}, tal como se observa en la Figura~\ref{fig:gcp_oauth_interno}. Con esta configuración, solo cuentas pertenecientes a la organización pueden completar el inicio de sesión.
 
 \begin{figure}[H]
     \centering
@@ -480,27 +587,27 @@ La integración se configuró desde Google Cloud Console, donde fue necesario ap
     \label{fig:gcp_oauth_interno}
 \end{figure}
 
-Una vez establecida esta restricción a nivel del proveedor, se emitieron las credenciales utilizadas por el flujo de autenticación, concretamente el \textit{Client ID} y el \textit{Client Secret}. Asimismo, se registró como URI autorizada de redirección únicamente la ruta exacta empleada por la instancia productiva para el retorno del proveedor, \texttt{https://documentos.facet.unt.edu.ar/api/auth/callback/google}, evitando habilitar direcciones más amplias que ampliaran innecesariamente el alcance del \textit{callback}. En el plano interno, Documenso utiliza \texttt{NextAuth.js} para administrar el ciclo de autenticación y sesión, mientras que las credenciales del proveedor se inyectaron como variables de entorno desde Coolify, sin incorporarlas al código fuente ni a archivos versionados.
+Luego se creó un cliente OAuth de tipo \textit{aplicación web}. En esa etapa se registró como origen autorizado de JavaScript el dominio público de la plataforma y como URI de redireccionamiento autorizada la ruta de retorno utilizada por Documenso para el proveedor Google: \nolinkurl{https://documentos.facet.unt.edu.ar/api/auth/callback/google}. Finalmente, se obtuvieron el \textit{Client ID} y el \textit{Client Secret}, que se cargaron en Documenso como variables de entorno desde Coolify.
 
-Como medida complementaria para reforzar este criterio de acceso institucional, se configuró la variable de entorno \texttt{NEXT\_PUBLIC\_DISABLE\_SIGNUP=\$\{DISABLE\_LOGIN\}} con el valor \texttt{DISABLE\_LOGIN=true}. Esta decisión deshabilitó el registro local de nuevas cuentas y dejó como único mecanismo de ingreso el inicio de sesión federado mediante Google. En términos operativos, ello evitó que cualquier visitante externo pudiera crear una cuenta autónoma dentro de la plataforma y aseguró que la capacidad de cargar documentos y originar circuitos de firma quedara reservada a identidades previamente gestionadas por la institución.
+Para completar la restricción de acceso, se deshabilitó el registro local de nuevas cuentas mediante la configuración correspondiente en las variables de entorno de la aplicación. Con esta medida, el único mecanismo de ingreso quedó limitado a la autenticación mediante Google.
 
-La Figura~\ref{fig:google_oauth_disable_signup} muestra el efecto visible de esta configuración sobre la interfaz de acceso. Cuando el registro permanece habilitado, la pantalla de inicio de sesión exhibe al pie el mensaje ``\textquestiondown No tienes una cuenta? Reg\'istrate'', lo que abre la posibilidad de creación local de usuarios. En cambio, al activar \texttt{DISABLE\_LOGIN=true}, ese enlace desaparece y el acceso queda acotado al flujo federado previsto para cuentas institucionales. Esta diferencia visual complementa la configuración descrita previamente y evidencia que la restricción no solo fue definida a nivel de variables de entorno, sino también aplicada de forma efectiva sobre la interfaz expuesta al usuario.
-
-\begin{figure}[H]
+\begin{figure}[!htbp] 
     \centering
-    \begin{subfigure}[b]{0.48\textwidth}
+    \begin{subfigure}[t]{0.38\textwidth}
         \centering
         \includegraphics[width=\textwidth]{figuras/capitulo3/login_signup_enabled.png}
         \caption{Pantalla de acceso con registro local habilitado.}
         \label{fig:login_signup_enabled}
     \end{subfigure}
     \hfill
-    \begin{subfigure}[b]{0.48\textwidth}
+    \begin{subfigure}[t]{0.38\textwidth}
         \centering
         \includegraphics[width=\textwidth]{figuras/capitulo3/login_signup_disabled.png}
-        \caption{Pantalla de acceso con \texttt{DISABLE\_LOGIN=true}.}
+        \caption{Pantalla de acceso con registro local deshabilitado.}
         \label{fig:login_signup_disabled}
     \end{subfigure}
-    \caption[Restricción del registro local en Documenso]{Comparación de la interfaz de acceso de Documenso con el registro local habilitado y deshabilitado. La eliminación del enlace de registro evidencia que el ingreso al sistema queda limitado al mecanismo federado definido para identidades institucionales.}
+    \caption[Restricción del registro local en Documenso]{Comparación de la interfaz de acceso de Documenso con el registro local habilitado y deshabilitado. La eliminación del enlace de registro evidencia que el ingreso al sistema queda limitado a cuentas institucionales.}
     \label{fig:google_oauth_disable_signup}
 \end{figure}
+
+La Figura~\ref{fig:google_oauth_disable_signup} muestra el cambio visible en la interfaz de acceso. Con el registro local habilitado aparece el enlace ``\textquestiondown No tienes una cuenta? Reg\'istrate''; al deshabilitarlo, ese enlace desaparece y el ingreso queda limitado a cuentas institucionales.

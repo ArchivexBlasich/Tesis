@@ -1,31 +1,42 @@
 \chapter{Marco Teórico y Tecnológico}
 \label{chap:marco_teorico}
 
-En este capítulo se detallan los fundamentos teóricos, legales y tecnológicos que sustentan el diseño de la solución. El análisis abarca desde los conceptos criptográficos y normativos que validan la firma electrónica en el marco legal argentino, hasta la descripción técnica de los componentes de infraestructura de virtualización, orquestación y almacenamiento necesarios para el despliegue del sistema \textit{on-premise}.
+En este capítulo se presentan los fundamentos teóricos, legales y tecnológicos que sustentan la solución propuesta. El análisis abarca desde los conceptos criptográficos y el marco normativo aplicable a la firma electrónica en la Argentina, hasta la arquitectura de virtualización, PaaS y almacenamiento sobre la que se apoya el despliegue del sistema \textit{on-premise}.
 
 \section{Modelos de Despliegue: On-Premise y Self-Hosted}
 \label{sec:onpremise_selfhosted}
 
 Para la implementación de la plataforma Documenso, se adoptó una estrategia de despliegue que combina los modelos \textit{On-Premise} y \textit{Self-Hosted}. Aunque en la industria actual ambos términos suelen utilizarse de manera intercambiable, presentan diferencias técnicas que justifican su elección para este trabajo.
 
-El término On-Premise (en las instalaciones) hace referencia a la ubicación física de la infraestructura subyacente. En este modelo, el software y sus bases de datos operan sobre hardware de computación alojado físicamente en los edificios o centros de datos propios de la organización. Para la FACET, esto se traduce en la utilización de sus servidores físicos actuales. Esta decisión técnica se fundamenta en la optimización y el aprovechamiento de los recursos de hardware y red institucionales ya existentes (tales como clústeres de virtualización Proxmox y servidores TrueNAS), evitando así la dependencia y los costos recurrentes asociados a la infraestructura en la nube (IaaS).
+El término On-Premise (en las instalaciones) hace referencia a la ubicación física de la infraestructura subyacente. En este modelo, el software y sus bases de datos operan sobre hardware de computación alojado físicamente en los edificios o centros de datos propios de la organización. En términos prácticos, esto se traduce en la utilización de servidores físicos propios. Esta decisión técnica se fundamenta en la optimización y el aprovechamiento de los recursos de hardware y red institucionales ya existentes (tales como clústeres de virtualización Proxmox y servidores TrueNAS), evitando así la dependencia y los costos recurrentes asociados a la infraestructura en la nube (IaaS).
 
-Por otro lado, el concepto Self-Hosted (auto-alojado) se refiere al modelo de gestión y administración de la plataforma. Implica que la propia institución es responsable de aprovisionar, configurar, mantener y asegurar la aplicación, en contraposición a delegar estas tareas a un proveedor de \textit{Software as a Service} (SaaS). Al optar por una solución \textit{Self-Hosted}, la facultad asume la carga operativa del mantenimiento, pero a cambio obtiene control absoluto y granular sobre las configuraciones del sistema, la arquitectura de red interna, las políticas de retención y el ciclo de vida de los documentos.
+Por otro lado, el concepto Self-Hosted (auto-alojado) se refiere al modelo de gestión y administración de la plataforma. Implica que la propia institución es responsable de aprovisionar, configurar, mantener y asegurar la aplicación, en contraposición a delegar estas tareas a un proveedor de \textit{Software as a Service} (SaaS). Al optar por una solución \textit{Self-Hosted}, la institución asume la carga operativa del mantenimiento, pero a cambio obtiene control absoluto y granular sobre las configuraciones del sistema, la arquitectura de red interna, las políticas de retención y el ciclo de vida de los documentos.
 
-La convergencia de ambos modelos en este proyecto resulta en un sistema integralmente autónomo. Al ejecutar software \textit{Self-Hosted} en infraestructura \textit{On-Premise}, la institución capitaliza su inversión previa en equipamiento tecnológico y, de forma simultánea, garantiza que el procesamiento, almacenamiento y tránsito de la documentación administrativa se realice estrictamente dentro de los límites de su red privada.
+En este trabajo, ambos conceptos se utilizan de manera complementaria. El carácter \textit{On-Premise} está dado por el hecho de que la solución se despliega sobre infraestructura física de la institución, mientras que su condición \textit{Self-Hosted} responde a que la propia organización administra la plataforma, sus servicios y sus datos sin depender de un proveedor SaaS. Esta distinción permite describir con mayor precisión el modelo adoptado para el despliegue de Documenso en un entorno institucional.
+
+\subsection{Software de Código Abierto y Licencia AGPL-3.0}
+
+Documenso se distribuye en su Community Edition como software de código abierto bajo licencia AGPL-3.0 e incluye las funcionalidades centrales de firma documental y autoalojamiento \cite{documenso_community,documenso_github}. En términos prácticos, esto permitió considerar una plataforma que puede ejecutarse sobre infraestructura propia, cuyo código fuente puede revisarse y cuyo uso no depende de un esquema propietario de licenciamiento.
+
+De acuerdo con la documentación oficial, la AGPL-3.0 permite usar, estudiar, modificar, distribuir y autoalojar el software, incluso para ofrecer servicios, siempre que se respeten las obligaciones de esa licencia \cite{documenso_community}. Su rasgo distintivo frente a otras licencias de la familia GPL es que extiende esas obligaciones también a los casos en que el software modificado se ofrece a través de una red. En otras palabras, si la plataforma se modifica y luego se pone a disposición como servicio web, esas modificaciones no pueden mantenerse cerradas \cite{documenso_community,agpl_fossa,agpl_ultralytics}.
+
+Para este trabajo, la Community Edition resultó adecuada porque habilitó el despliegue institucional de Documenso sobre infraestructura propia, el análisis de su comportamiento interno y la adaptación de la solución sin depender de una licencia comercial. Al mismo tiempo, la propia documentación de Documenso marca un límite claro: cuando se requieren funciones empresariales específicas o se necesita mantener modificaciones privadas, el uso pasa al terreno de la Enterprise Edition \cite{documenso_community}.
 
 \section{Fundamentos de Seguridad de la Información}
 \label{sec:fundamentos_seguridad}
 
-La seguridad informática comprende el conjunto de herramientas y procedimientos diseñados para proteger los datos, mientras que la seguridad de red se centra en las medidas para salvaguardarlos durante su transmisión. Tomando como base teórica el enfoque académico desarrollado en la cátedra de Protocolos de Comunicación TCP/IP de la FACET - UNT, y siguiendo la arquitectura de seguridad OSI (X.800), el sistema implementado debe garantizar un conjunto de servicios críticos que respondan de forma sistemática ante posibles amenazas.
-Para asegurar la confianza en el proceso de gestión documental, el diseño se apoya en la denominada Tríada de Seguridad (CIA), extendida con los servicios de Autenticación y No Repudio:
+La seguridad informática comprende el conjunto de herramientas y procedimientos orientados a proteger los datos, mientras que la seguridad de red se enfoca en las medidas necesarias para resguardarlos durante su transmisión. Estas definiciones, tomadas como base conceptual del presente trabajo, permiten delimitar el problema de seguridad que enfrenta una plataforma de gestión documental desplegada sobre infraestructura institucional.
+
+Siguiendo la arquitectura de seguridad OSI X.800, la protección de la información puede analizarse en términos de servicios de seguridad que responden ante amenazas y ataques sobre los sistemas y las comunicaciones. En el contexto de esta tesis, dicho marco resulta útil para identificar los requerimientos que debe satisfacer la solución implementada.
+
+Para asegurar la confianza en el proceso de gestión documental, el diseño se apoya en la denominada Tríada de Seguridad (CIA), extendida con los servicios de autenticación, control de acceso y no repudio:
 
 \begin{itemize}
     \item Confidencialidad: Protección de los datos frente a su revelación no autorizada, asegurando que el contenido de los documentos sea accesible únicamente por entidades legitimadas.
     \item Integridad: Garantía de que los datos recibidos son idénticos a los enviados por el emisor, permitiendo detectar cualquier alteración del documento digital posterior a su firma.
     \item Disponibilidad: Seguridad de acceso ininterrumpido a los servicios y a la información, garantizando que la plataforma y los documentos firmados estén operativos cuando se requieran.
     \item Autenticación: Proceso de verificación de que una entidad es efectivamente quien dice ser, vinculando la identidad institucional con las acciones realizadas en el sistema.
-    \item Control de Acceso (Autorización): Prevención del uso no autorizado de los recursos. Se implementa mediante el modelo de \textit{Role-Based Access Control} (RBAC), el cual define los derechos y permisos de los usuarios sobre los documentos según su función administrativa. Este enfoque permite mapear fielmente el organigrama jerárquico de la FACET, estructurando los permisos de acuerdo a las responsabilidades específicas de las distintas Secretarías y Departamentos.
+    \item Control de Acceso (Autorización): Prevención del uso no autorizado de los recursos. Puede implementarse mediante el modelo de \textit{Role-Based Access Control} (RBAC), el cual define los derechos y permisos de los usuarios sobre los documentos según la función que cada usuario cumple dentro de la organización. Este enfoque permite estructurar los permisos de acuerdo con responsabilidades diferenciadas y niveles de intervención sobre la documentación.
     \item No Repudio: Servicio que impide que un emisor o receptor niegue su participación en una transacción técnica, otorgando validez administrativa a las intervenciones de los usuarios.
 \end{itemize}
 
@@ -45,6 +56,8 @@ El flujo técnico empleado por la plataforma Documenso \cite{documenso_docs_sign
 
 Es importante destacar un aspecto arquitectónico clave del sistema: la firma digital se aplica a nivel de plataforma y no por cada firmante individual. Las acciones de cada usuario (como trazos de firma, textos o casillas de verificación) son registradas por el sistema y, una vez que todos los participantes completan sus acciones, el documento final es sellado criptográficamente en su conjunto bajo el certificado de la instancia institucional.
 
+De acuerdo con la documentación de Documenso, esta firma digital proporciona dos garantías principales: integridad y autenticidad \cite{documenso_docs_signing}. La primera implica que el documento no ha sido alterado desde el momento del sellado; la segunda, que el PDF fue firmado por el titular del certificado, es decir, por la instancia de Documenso que ejecutó el proceso. Si el archivo se modifica después de la firma, esta deja de ser válida y los lectores PDF muestran una advertencia indicando que el documento fue alterado \cite{documenso_docs_signing}.
+
 \begin{figure}[H]
     \centering
     \includegraphics[width=0.8\textwidth]{figuras/capitulo2/ProcesodeFirma.png}
@@ -55,9 +68,13 @@ Es importante destacar un aspecto arquitectónico clave del sistema: la firma di
 \subsection{Certificados de Clave Pública y CA Interna}
 Debido a que la $KU$ es de acceso general, se emplean certificados digitales que vinculan la clave con su titular mediante la firma de una Autoridad de Certificación (CA). 
 
-En esta implementación, se utiliza una CA interna (mediante un certificado auto-firmado) instanciada en el entorno de despliegue institucional. Su propósito es garantizar la integridad técnica de la infraestructura de firma de la facultad. Aunque esta CA no posea validez legal ante terceros externos fuera del acuerdo de partes de la organización y pueda mostrar advertencias de validación en lectores PDF estándar (al no pertenecer a una lista de confianza comercial) \cite{documenso_docs_cert_config}, cumple con todos los requisitos técnicos de seguridad y autenticidad necesarios para los flujos internos.
+En esta implementación, se utiliza un certificado auto-firmado generado dentro del entorno institucional para que la plataforma pueda sellar digitalmente los documentos emitidos en el ámbito interno de la organización. Este certificado no posee validez legal ante terceros externos fuera del acuerdo de partes de la organización y, por no pertenecer a una cadena de confianza comercial, puede generar advertencias de validación en lectores PDF estándar \cite{documenso_docs_cert_config}. Sin embargo, esa limitación no impide su uso en circuitos administrativos internos.
 
-No obstante, es fundamental destacar que esta restricción legal es inherente al certificado aprovisionado y no a la plataforma en sí. La arquitectura de Documenso soporta de manera nativa la configuración de certificados X.509 emitidos por Autoridades Certificantes (CA) licenciadas \cite{documenso_docs_cert_config}. En caso de que la institución requiera en el futuro validación de terceros y cumplimiento normativo estricto, el sistema permite reemplazar el certificado local sin alterar la infraestructura base \cite{documenso_docs_cert_config}.
+La documentación de Documenso distingue entre confianza del certificado y validez criptográfica de la firma \cite{documenso_docs_signing,documenso_docs_cert_config}. Los lectores PDF comparan el certificado utilizado con su lista de Autoridades de Certificación confiables. Por eso, con un certificado auto-firmado suele mostrarse una advertencia indicando que el emisor no pertenece a una fuente confiable. Esa advertencia no implica que el documento haya sido alterado: solamente indica que la identidad del emisor no fue validada por una tercera parte. Aun en ese caso, la firma preserva la integridad del PDF y permite verificar que el documento proviene de la instancia de Documenso que lo firmó \cite{documenso_docs_signing}.
+
+En un despliegue autoalojado, Documenso permite utilizar un certificado propio para el sellado de documentos \cite{documenso_docs_cert_config}. En la implementación desarrollada para este trabajo, dicho material criptográfico se administró como un contenedor PKCS\#12 codificado en Base64 e inyectado mediante variables de entorno, tal como se documenta en el Apéndice~\ref{AppendixB:Crypto}.
+
+La restricción legal señalada depende, por tanto, del certificado utilizado y no de la plataforma en sí. La arquitectura de Documenso soporta de manera nativa la configuración de certificados X.509 emitidos por Autoridades Certificantes (CA) licenciadas \cite{documenso_docs_cert_config}. Si en el futuro la institución requiriera validación de terceros y cumplimiento normativo estricto, el certificado local podría reemplazarse sin necesidad de modificar la infraestructura base \cite{documenso_docs_cert_config}.
 
 \section{Marco Legal Argentino: Ley 25.506}
 \label{sec:marco_legal}
@@ -69,17 +86,17 @@ La validez jurídica de la solución se encuadra en la Ley 25.506 de Firma Digit
     \item Firma Electrónica (Art. 5): Se entiende por firma electrónica al conjunto de datos electrónicos integrados, ligados o asociados de manera lógica a otros datos electrónicos, utilizado por el signatario como su medio de identificación, que carezca de alguno de los requisitos legales para ser considerada firma digital. En caso de ser desconocida, corresponde a quien la invoca acreditar su validez.
 \end{itemize}
 
-Dado que el sistema utiliza una Autoridad Certificante (CA) propia sin licencia estatal (incumpliendo el requisito de validez del Art. 9), el proyecto se clasifica legalmente como un sistema de Firma Electrónica. Su validez administrativa es plena dentro de la FACET, fundamentada en el acuerdo entre las partes y la trazabilidad técnica que proporciona la plataforma.
+Dado que el sistema utiliza una Autoridad Certificante (CA) propia sin licencia estatal (incumpliendo el requisito de validez del Art. 9), el proyecto se clasifica legalmente como un sistema de Firma Electrónica. A pesar de ello, su validez administrativa es plena dentro del ámbito interno de la organización, fundamentada en el acuerdo entre las partes y la trazabilidad técnica que proporciona la plataforma.
 
 \section{Infraestructura de Virtualización y Despliegue}
 \label{sec:infraestructura}
 
-El diseño de la arquitectura subyacente del proyecto prioriza la modularidad, el aislamiento y la facilidad de mantenimiento. Para lograrlo, se implementó un conjunto de tecnologías que abstraen la complejidad del hardware y automatizan el ciclo de vida de la aplicación.
+El diseño de la arquitectura subyacente del proyecto prioriza la modularidad, el aislamiento y la facilidad de mantenimiento. Para ello, se adoptó una arquitectura en capas que desacopla la ejecución de los servicios de la administración directa del hardware físico y simplifica las tareas de despliegue, recuperación y operación cotidiana.
 
 \subsection{Proxmox VE: Hipervisor y Gestión de Recursos}
-La capa base de la infraestructura se sustenta en Proxmox Virtual Environment (VE), una plataforma de gestión de servidores de código abierto orientada a la virtualización empresarial \cite{proxmox_docs}. Esta solución opera como un hipervisor de Tipo 1 (\textit{Bare Metal}), ejecutándose directamente sobre el hardware físico de la facultad para ofrecer el máximo rendimiento.
+Desde el punto de vista teórico, la virtualización puede entenderse como una capa de abstracción que permite particionar los recursos físicos de un servidor en múltiples entornos de ejecución independientes \cite{bilbao_lutz_virtualizacion_2024}. En este proyecto, esa capa se materializa mediante Proxmox Virtual Environment (VE), una plataforma de gestión de servidores de código abierto orientada a la virtualización empresarial \cite{proxmox_docs}. Esta solución opera como un hipervisor de Tipo 1 (\textit{Bare Metal}), ejecutándose directamente sobre el hardware físico de la institución.
 
-Proxmox integra dos tecnologías de virtualización, como se ilustra en la Figura \ref{fig:proxmox_arch}: el hipervisor KVM (\textit{Kernel-based Virtual Machine}) para máquinas virtuales completas, y LXC (\textit{Linux Containers}) para contenedores ligeros \cite{proxmox_docs}. Para este proyecto, se aprovisionó un Contenedor Linux (LXC) no privilegiado que actúa como el sistema operativo base. Esta decisión garantiza un aislamiento eficiente respecto al servidor físico y proporciona un entorno robusto, dedicado exclusivamente a alojar la plataforma de gestión (Coolify) y, subsecuentemente, los contenedores del sistema de firmas.
+Tal como se remarca en el taller de virtualización de Proxmox, esta plataforma combina virtualización completa mediante KVM/QEMU con virtualización a nivel de sistema operativo mediante contenedores LXC, además de incorporar funciones de administración y red en una misma interfaz \cite{bilbao_lutz_virtualizacion_2024}. Proxmox integra ambas tecnologías, como se ilustra en la Figura \ref{fig:proxmox_arch}: el hipervisor KVM (\textit{Kernel-based Virtual Machine}) para máquinas virtuales completas, y LXC (\textit{Linux Containers}) para contenedores ligeros \cite{proxmox_docs}. En la infraestructura disponible al inicio de este trabajo ya existía un contenedor LXC que servía como base para la plataforma de gestión. Sobre ese contenedor ya se encontraba desplegado Coolify, y a partir de esa base se implementaron los servicios del sistema de firmas.
 
 \begin{figure}[H]
     \centering
@@ -89,57 +106,66 @@ Proxmox integra dos tecnologías de virtualización, como se ilustra en la Figur
 \end{figure}
 
 \subsection{Docker: Contenerización de Servicios}
-En lugar de instalar el sistema de firmas y sus dependencias (como la base de datos PostgreSQL o los entornos de ejecución) de forma tradicional directamente sobre el sistema operativo del contenedor LXC, se adoptó Docker como motor de contenerización.
-
-En el contexto de este proyecto, Docker permite empaquetar la plataforma Documenso en contenedores aislados y estandarizados \cite{docker_docs}. A diferencia de las máquinas virtuales tradicionales, los contenedores comparten el mismo kernel del sistema anfitrión (el contenedor LXC de Proxmox), lo que los hace extremadamente ligeros y eficientes en el consumo de recursos \cite{docker_docs}. Esta abstracción técnica garantiza que el despliegue sea reproducible, facilitando la administración o recuperación del sistema por parte del equipo de TI de la FACET.
+Docker es una plataforma de contenerización que permite empaquetar aplicaciones y sus dependencias en unidades de ejecución aisladas y estandarizadas \cite{docker_docs}. A diferencia de las máquinas virtuales tradicionales, los contenedores comparten el kernel del sistema anfitrión, por lo que introducen una sobrecarga menor en términos de recursos y facilitan despliegues consistentes entre distintos entornos \cite{docker_docs}. En este marco teórico, su relevancia radica en que constituye la base técnica sobre la cual se apoyan tanto la PaaS adoptada como los servicios que integran la solución; la justificación de su uso concreto en la infraestructura institucional se desarrolla en el Capítulo~\ref{chap:diseno_implementacion}.
 
 \subsection{Coolify: Plataforma como Servicio (PaaS) Auto-alojada}
-Para orquestar los contenedores de Docker y automatizar la administración del servidor, se implementó Coolify. Se trata de una alternativa de código abierto y auto-alojable a plataformas comerciales en la nube (\textit{Platform as a Service} o PaaS) \cite{coolify_docs}.
+Coolify es una plataforma de código abierto orientada a simplificar el autoalojamiento de aplicaciones, bases de datos y servicios sobre servidores propios \cite{coolify_docs}. En términos conceptuales, puede entenderse como una alternativa autoalojable a otras plataformas PaaS comerciales, con la diferencia de que la infraestructura permanece bajo control de la organización y no de un proveedor externo \cite{coolify_docs}.
 
-La adopción de Coolify eleva significativamente el nivel de abstracción operativa. Al actuar como una PaaS interna, la herramienta asume la carga de gestionar el ciclo de vida de los contenedores, aislar las bases de datos en redes privadas de Docker y proveer una interfaz gráfica centralizada \cite{coolify_docs}. Esto permite enfocar los esfuerzos de ingeniería en la lógica del sistema de firmas documentales en lugar de invertir horas en la administración manual del sistema operativo y la escritura de archivos de configuración (\textit{scripts} de Bash o YAML).
+Dentro de este marco teórico, su interés radica en que agrega una capa de gestión sobre Docker: permite administrar despliegues, variables de entorno, dominios y servicios desde un panel web unificado, sin dejar de operar sobre infraestructura propia \cite{coolify_docs}. La justificación de su utilización concreta en la infraestructura institucional se desarrolla en el Capítulo~\ref{chap:diseno_implementacion}.
 
-\subsection{Proxy Inverso y Enrutamiento Dinámico (Traefik)}
-Para exponer los contenedores internos hacia la red de la facultad de manera segura, es indispensable un intermediario que gestione el tráfico. Coolify integra nativamente Traefik, un Proxy Inverso moderno diseñado para infraestructuras dinámicas \cite{traefik_docs}.
+\subsection{Reverse Proxy y Enrutamiento Dinámico (Traefik)}
+Para exponer servicios contenerizados de manera ordenada y segura, suele utilizarse un reverse proxy que reciba las peticiones entrantes y las dirija hacia el servicio correspondiente. En este marco, Traefik constituye una herramienta ampliamente utilizada para el enrutamiento dinámico de tráfico en entornos basados en contenedores \cite{traefik_docs}.
 
-La función principal de este proxy inverso es recibir las peticiones de los usuarios desde la red externa y distribuirlas hacia los servicios internos correspondientes, ocultando la topología real de la red. El flujo de tráfico se gestiona mediante componentes clave:
+Como se observa en la Figura \ref{fig:traefik_arch}, su funcionamiento se basa en recibir solicitudes de red y resolver, mediante reglas de enrutamiento, a qué servicio interno deben dirigirse. El flujo de tráfico se gestiona mediante componentes clave:
 
 \begin{itemize}
     \item Entrypoints: Definen los puertos de red que reciben los paquetes entrantes, típicamente los puertos 80 (HTTP) y 443 (HTTPS) para el tráfico web \cite{traefik_docs}.
-    \item Routers: Son los encargados de analizar las peticiones entrantes (por ejemplo, evaluando si el usuario solicita el dominio \texttt{documentos.facet.unt.edu.ar}) y conectarlas con el contenedor interno capaz de procesarlas \cite{traefik_docs}.
+    \item Routers: Son los encargados de analizar las peticiones entrantes (por ejemplo, evaluando si el usuario solicita el dominio \texttt{documentos.institucion.edu.ar}) y conectarlas con el contenedor interno capaz de procesarlas \cite{traefik_docs}.
 \end{itemize}
 
-El uso de Traefik abstrae la complejidad de la exposición de red. En lugar de abrir directamente los puertos de la aplicación al exterior, el proxy centraliza la seguridad, automatiza la terminación SSL (gestión de certificados HTTPS) y enruta el tráfico únicamente a contenedores sanos, siendo un pilar fundamental para la disponibilidad del servicio.
+El interés teórico de Traefik radica en que desacopla la dirección pública de un servicio respecto de su ubicación real dentro de la infraestructura, permitiendo que el tráfico sea encaminado de manera flexible hacia los contenedores disponibles. De este modo, simplifica la publicación de servicios y contribuye a la disponibilidad general de la plataforma \cite{traefik_docs}.
 
 \begin{figure}[H]
     \centering
     \includegraphics[width=0.8\textwidth]{figuras/capitulo2/traefik-architecture.png}
-    \caption[Arquitectura de un Proxy Inverso (Traefik)]{Arquitectura conceptual y flujo de tráfico en Traefik. Extraído de \cite{traefik_docs}.}
+    \caption[Arquitectura de un Reverse Proxy (Traefik)]{Arquitectura conceptual y flujo de tráfico en Traefik. Extraído de \cite{traefik_docs}.}
     \label{fig:traefik_arch}
 \end{figure}
 
 \section{Arquitectura de Almacenamiento de Objetos}
 \label{sec:almacenamiento}
 
-La persistencia de los documentos digitales en este sistema se resuelve mediante una arquitectura de capas que separa la gestión física de los discos del acceso lógico a los archivos. Para ello, se utiliza TrueNAS SCALE \cite{truenas} como plataforma de almacenamiento base y MinIO \cite{minio} como motor de almacenamiento de objetos compatible con el protocolo S3.
+La persistencia de los documentos digitales en este sistema se resuelve mediante una arquitectura de capas que separa la gestión física de los discos del acceso lógico a los archivos. Desde la terminología de seguridad presentada en la Sección~\ref{sec:fundamentos_seguridad}, esta capa se vincula de manera directa con la disponibilidad, ya que de ella depende que los documentos y servicios asociados permanezcan accesibles cuando se los requiere. Para ello, se utiliza TrueNAS Community Edition \cite{truenas} como plataforma de almacenamiento base y MinIO \cite{minio} como motor de almacenamiento de objetos compatible con el protocolo S3.
 
 \subsection{TrueNAS y ZFS: Gestión Física}
-TrueNAS SCALE aporta la capa de infraestructura mediante el sistema de archivos ZFS (Zettabyte File System). Este sistema garantiza la integridad de los datos a nivel de hardware mediante dos mecanismos clave:
+TrueNAS Community Edition aporta la capa de infraestructura mediante el sistema de archivos ZFS (Zettabyte File System). Este sistema contribuye a la disponibilidad e integridad de los datos mediante dos mecanismos clave:
 \begin{itemize}
-    \item Resiliencia (RAID-Z): Asegura la disponibilidad del almacenamiento y la recuperación de datos frente a fallas físicas de los discos rígidos.
-    \item Protección contra \textit{bit-rot}: Utiliza sumas de verificación (\textit{checksums}) de extremo a extremo para detectar y reparar automáticamente la corrupción silenciosa de datos, asegurando que los archivos PDF no sufran degradación técnica con el transcurso del tiempo.
+    \item Resiliencia del subsistema de discos: Asegura la disponibilidad del almacenamiento y la recuperación de datos frente a fallas físicas de las unidades.
+    \item Protección contra \textit{bit-rot}: Utiliza sumas de verificación (\textit{checksums}) para detectar y corregir daños graduales o alteraciones no intencionales en los datos almacenados.
 \end{itemize}
+
+\subsection{Arreglos Redundantes de Discos Independientes (RAID)}
+\label{subsec:teoria_raid}
+
+Los arreglos redundantes de discos independientes (RAID, por sus siglas en inglés) constituyen una técnica de virtualización del almacenamiento que agrupa múltiples unidades físicas en un volumen lógico. Según el nivel adoptado, este esquema puede priorizar la tolerancia a fallos, la mejora del rendimiento de entrada y salida o una combinación de ambos objetivos \cite{techtarget_raid6}.
+
+Entre los niveles orientados a disponibilidad, RAID 6 distribuye los datos sobre el conjunto de discos y añade un esquema de doble paridad. Esta organización permite sostener la operación aun ante la falla simultánea de hasta dos unidades físicas, a costa de destinar parte de la capacidad total a redundancia y de asumir escrituras y reconstrucciones más costosas que en niveles con menor protección \cite{techtarget_raid6}.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.9\textwidth]{figuras/capitulo2/storage_raid_06.png}
+    \caption[Esquema conceptual de RAID 6]{Esquema conceptual de la distribución de datos y doble paridad en un arreglo RAID 6. Extraído de \cite{techtarget_raid6}.}
+    \label{fig:raid6_scheme}
+\end{figure}
+
+Desde el punto de vista conceptual, un arreglo RAID incrementa la continuidad física del subsistema de almacenamiento, pero no reemplaza una política de respaldo. La redundancia protege frente a fallas de hardware, pero no evita la pérdida de información por errores de software, eliminaciones accidentales o la manipulación indebida de los datos. Por ello, RAID debe entenderse como una capa complementaria dentro de una estrategia más amplia de disponibilidad, retención y recuperación \cite{techtarget_raid6,techtarget_retention}.
 
 \subsection{MinIO: Almacenamiento de Objetos S3}
 Sobre la infraestructura de TrueNAS se utiliza MinIO para la gestión de los documentos mediante el protocolo S3. Este componente es clave en el diseño por los siguientes motivos:
 
 \begin{itemize}
-    \item Abstracción del sistema de archivos: Al utilizar una interfaz S3 (API estándar), la plataforma no depende de la estructura de directorios local del servidor. Esto facilita la portabilidad de los datos y permite que el almacenamiento escale independientemente de la lógica de la aplicación.
-    \item Protección de la integridad lógica: Mediante la funcionalidad de \textit{Object Lock}, MinIO implementa un modelo de inmutabilidad WORM (\textit{Write-Once Read-Many}) que protege las versiones de los objetos almacenados contra eliminaciones o modificaciones \cite{minio_object_locking}. Esta funcionalidad requiere que el \textit{bucket} tenga habilitado el versionado, de modo que cada operación de escritura genere una nueva versión del objeto en lugar de sobrescribirlo. MinIO ofrece dos modos de retención \cite{minio_object_locking}:
-    \begin{itemize}
-        \item Modo \textit{Governance}: Impide la eliminación o modificación del objeto por parte de usuarios no privilegiados. Los usuarios que posean el permiso \texttt{s3:BypassGovernanceRetention} pueden, de forma excepcional, modificar o liberar el bloqueo antes de su expiración.
-        \item Modo \textit{Compliance}: Impone inmutabilidad absoluta. Ningún usuario ---incluida la cuenta administrativa raíz de MinIO--- puede modificar o eliminar el objeto ni alterar la regla de retención hasta que el período configurado haya transcurrido.
-    \end{itemize}
-    En ambos modos, MinIO libera el bloqueo automáticamente una vez cumplido el período de retención establecido. Para los documentos firmados de una institución pública, estas garantías resultan fundamentales: permiten demostrar ante auditorías que un documento no fue alterado después de su sellado criptográfico.
+    \item Separación entre aplicación y almacenamiento: En este caso, Documenso guarda y recupera documentos a través de una interfaz S3, sin depender de carpetas locales definidas dentro del servidor donde corre la aplicación. Esto facilita trasladar o ampliar el almacenamiento sin modificar la lógica principal del sistema y, a futuro, habilita esquemas de respaldo híbrido entre infraestructura local y servicios externos compatibles.
+    \item Retención e inmutabilidad: Mediante \textit{Object Lock}, MinIO puede aplicar políticas de conservación que evitan la modificación o eliminación prematura de los documentos almacenados \cite{minio_object_locking}. Para los documentos firmados, esta capacidad resulta especialmente valiosa, ya que ayuda a preservar evidencia de que el archivo almacenado no fue alterado después de su incorporación al repositorio.
 \end{itemize}
 
 De esta manera, mientras ZFS se ocupa de la redundancia y la integridad física en los discos, MinIO proporciona el control necesario para garantizar la persistencia e inmutabilidad de los archivos firmados a nivel de software.
@@ -149,34 +175,29 @@ De esta manera, mientras ZFS se ocupa de la redundancia y la integridad física 
 
 Un despliegue \textit{on-premise} exige que la institución asuma la responsabilidad completa sobre la preservación de los datos, dado que no existe un proveedor externo que gestione copias de seguridad o garantice la recuperación ante desastres \cite{techtarget_retention}. La definición de políticas de respaldo y retención constituye, por tanto, un componente indispensable del diseño de infraestructura.
 
-Dos métricas fundamentales guían el dimensionamiento de cualquier estrategia de respaldo \cite{techtarget_retention}:
+En este contexto, una política de respaldo define qué información debe copiarse, con qué frecuencia, dónde se conserva y bajo qué procedimiento puede recuperarse en caso de incidente \cite{techtarget_retention}. Una política de retención, en cambio, establece durante cuánto tiempo se conservan esas copias, cuándo deben archivarse y en qué momento pueden eliminarse de acuerdo con criterios operativos, normativos o de capacidad \cite{techtarget_retention,pgbarman_retention}.
+
+En una plataforma documental como la analizada en este trabajo, las políticas de respaldo y retención deben contemplar al menos dos dominios con necesidades distintas:
 
 \begin{itemize}
-    \item RPO (\textit{Recovery Point Objective}): Define la cantidad máxima de datos que la organización puede tolerar perder, medida como el intervalo de tiempo entre la última copia de seguridad válida y el momento del incidente. Un RPO de 24 horas implica que, en el peor escenario, se podrían perder las transacciones del último día.
-    \item RTO (\textit{Recovery Time Objective}): Define el tiempo máximo aceptable para restaurar el servicio a un estado operativo tras un fallo. Un RTO bajo exige mecanismos de recuperación rápidos, como \textit{snapshots} o réplicas activas, mientras que un RTO más flexible permite recurrir a copias almacenadas en medios de menor velocidad de acceso.
-\end{itemize}
-
-En el contexto de este proyecto, la estrategia de respaldo abarca dos dominios de datos con características y herramientas diferenciadas:
-
-\begin{itemize}
-    \item Datos transaccionales (PostgreSQL): El motor relacional almacena los metadatos del sistema ---usuarios, roles, estados de firma, registros de auditoría--- cuya pérdida implicaría la imposibilidad de reconstruir el historial de trazabilidad. PostgreSQL ofrece mecanismos nativos de respaldo lógico (\texttt{pg\_dump}) que permiten generar un volcado consistente de la base de datos en un punto determinado del tiempo. Complementariamente, herramientas especializadas como Barman permiten configurar políticas de retención basadas en redundancia (cantidad de copias conservadas) o en ventana de recuperación (período de tiempo cubierto) \cite{pgbarman_retention}.
-    \item Documentos firmados (MinIO/ZFS): Los archivos PDF almacenados en el \textit{bucket} S3 constituyen el activo documental de la plataforma. En la capa de almacenamiento de objetos, la inmutabilidad proporcionada por \textit{Object Lock} protege contra eliminaciones o alteraciones, pero no sustituye un respaldo externo ante un fallo catastrófico del servidor. En la capa de sistema de archivos, ZFS ofrece la capacidad de crear \textit{snapshots} ---capturas de solo lectura del estado del \textit{dataset} en un instante determinado--- con un costo de almacenamiento proporcional únicamente a los bloques modificados desde la captura. Estas instantáneas permiten revertir el \textit{dataset} a un estado anterior sin necesidad de restaurar desde un respaldo externo completo \cite{truenas}.
+    \item Datos transaccionales: incluyen usuarios, permisos, estados de firma y registros de auditoría. Su pérdida comprometería la trazabilidad operativa del sistema.
+    \item Repositorio documental: comprende los archivos cargados y sus versiones firmadas, cuya preservación requiere no solo capacidad de almacenamiento, sino también reglas claras de conservación e inmutabilidad.
 \end{itemize}
 
 La implementación concreta de estas políticas ---frecuencias de ejecución, períodos de retención y procedimientos de restauración--- se documenta en el Capítulo~\ref{chap:diseno_implementacion} como parte del diseño operativo de la infraestructura.
 
-\section{Gestión de Identidad y Autorización: OAuth 2.0 y OIDC}
+\section{Gestión de Identidad y Autorización: Google OAuth 2.0}
 \label{sec:identidad}
 
-El control de acceso a la plataforma se delega en el proveedor de identidad institucional (Google Workspace) mediante los protocolos OAuth 2.0 y OpenID Connect (OIDC) \cite{oauth2}. Esta arquitectura permite desacoplar la autenticación de la lógica de la aplicación, eliminando la necesidad de gestionar credenciales en el servidor local.
+El control de acceso a la plataforma se delega en Google Workspace mediante OAuth 2.0 \cite{oauth2}. Esta arquitectura permite desacoplar la autenticación de la lógica de la aplicación y evita que el servidor local deba procesar o almacenar contraseñas de los usuarios.
 
-Bajo este esquema, la aplicación nunca procesa ni almacena las contraseñas de los usuarios. El flujo técnico se resume en los siguientes puntos:
+Bajo este esquema, el usuario inicia sesión directamente ante Google y la aplicación recibe únicamente la respuesta necesaria para validar la identidad. Como se observa en la Figura~\ref{fig:oauth_flow}, el flujo se resume en los siguientes pasos:
 
 \begin{enumerate}
-    \item Redirección: El sistema redirige la solicitud de inicio de sesión hacia los servidores de autenticación de Google.
-    \item Autenticación externa: El usuario valida su identidad ante el proveedor institucional, heredando automáticamente políticas de seguridad críticas como la Autenticación de Dos Factores (2FA).
-    \item Intercambio de tokens: Tras la validación, Google emite un código de autorización. El servidor de Documenso intercambia este código por un \textit{Access Token} y un \textit{ID Token} mediante una comunicación directa entre servidores.
-    \item Establecimiento de sesión: La plataforma utiliza la información del token para identificar al usuario y otorgar los permisos correspondientes.
+    \item Redirección del usuario: Documenso envía la solicitud de inicio de sesión hacia los servidores de autenticación de Google.
+    \item Autenticación externa: El usuario valida allí su identidad con las políticas que tenga definidas su cuenta institucional.
+    \item Devolución de un código de autorización: Google responde con un código temporal asociado a esa autenticación.
+    \item Intercambio del lado servidor: El backend de la aplicación utiliza ese código para obtener los datos necesarios y establecer la sesión del usuario.
 \end{enumerate}
 
 \begin{figure}[H]
@@ -186,21 +207,17 @@ Bajo este esquema, la aplicación nunca procesa ni almacena las contraseñas de 
     \label{fig:oauth_flow}
 \end{figure}
 
-Para la implementación, se requiere el registro de la instancia en la consola de Google Cloud para obtener un \textit{Client ID} y un \textit{Client Secret}. Estos identificadores permiten establecer el canal de comunicación seguro entre la plataforma y el proveedor de identidad, garantizando una gestión de usuarios centralizada y robusta.
+Para la implementación, se requiere registrar la instancia en Google Cloud para obtener un \textit{Client ID} y un \textit{Client Secret}. Estos identificadores permiten que la aplicación complete de forma segura el intercambio con Google y mantenga la autenticación delegada en el proveedor institucional.
 
-El detalle operativo de las variables de entorno, credenciales inyectadas por el orquestador y parámetros concretos de configuración utilizados durante el despliegue se presenta en el Apéndice~\ref{AppendixB}.
+El detalle operativo de las variables de entorno, credenciales inyectadas por la PaaS y parámetros concretos de configuración utilizados durante el despliegue se presenta en el Apéndice~\ref{AppendixB}.
 
 \subsection{Control de Acceso Basado en Roles (RBAC) y Mínimo Privilegio}
 \label{subsec:rbac}
 
-Para garantizar que la confidencialidad y la integridad de los documentos no se vean comprometidas por errores operativos o accesos indebidos, la arquitectura de seguridad se fundamenta en el modelo de Control de Acceso Basado en Roles (RBAC).
+El Control de Acceso Basado en Roles (RBAC) es un modelo de autorización en el que los permisos no se asignan directamente a cada usuario, sino a roles previamente definidos. De este modo, cada persona accede únicamente a las funciones y recursos asociados al rol que le corresponde dentro de la organización.
 
-En este paradigma, los permisos del sistema no se asignan a usuarios individuales de forma aislada, sino a roles lógicos predefinidos (por ejemplo: Administrador, Creador de Plantillas, Firmante o Espectador). Cuando un miembro de la FACET ingresa a la plataforma mediante OAuth 2.0, adquiere exclusivamente los permisos y alcances que su rol institucional dicta.
+Este enfoque resulta especialmente adecuado para entornos institucionales, donde las responsabilidades suelen estar organizadas de manera jerárquica y funcional. En una plataforma documental, por ejemplo, distintos roles pueden concentrar capacidades diferentes, como administrar la configuración general, preparar documentos, firmarlos o solamente visualizarlos.
 
-Este modelo de roles es la implementación práctica del Principio de Mínimos Privilegios (PoLP). Esta política de seguridad de la información establece que cualquier entidad —ya sea un usuario humano, un contenedor de software o un proceso de red— debe poseer únicamente los permisos estrictamente necesarios para cumplir con su función legítima, y ninguno más.
+RBAC se complementa de forma natural con el Principio de Mínimos Privilegios (PoLP), según el cual toda entidad debe contar solo con los permisos estrictamente necesarios para cumplir su función, y no más. En conjunto, ambos conceptos permiten reducir la exposición ante errores operativos, accesos indebidos o usos no previstos del sistema.
 
-En el diseño de este trabajo, la filosofía de mínimos privilegios se aplica en dos capas críticas:
-\begin{itemize}
-    \item Capa de Aplicación (Documenso): Asegura que un usuario estándar solo pueda visualizar y firmar los documentos en los que ha sido explícitamente etiquetado como destinatario, bloqueando cualquier intento de modificar configuraciones globales o acceder a bandejas de otras áreas administrativas.
-    \item Capa de Infraestructura: Restringe las comunicaciones de red internas. Por ejemplo, el contenedor de la aplicación solo tiene las credenciales justas para escribir en su \textit{bucket} de MinIO, y la base de datos PostgreSQL no está expuesta a la red pública de la facultad, siendo accesible únicamente de forma interna por el \textit{backend} de la plataforma.
-\end{itemize}
+En una plataforma documental, esta lógica se traduce en perfiles de acceso diferenciados que ayudan a ordenar la operación del sistema y a resguardar la confidencialidad e integridad de los documentos.
