@@ -1,0 +1,35 @@
+\chapter{Manual de Mantenimiento del Sistema}
+\label{AppendixC}
+
+Este apéndice documenta los procedimientos operativos de mantenimiento del sistema de firma electrónica desplegado en la FACET. Su propósito es complementar la Sección~\ref{sec:validacion_respaldo} del Capítulo~\ref{chap:ensayos_resultados}, concentrando el detalle paso a paso de las tareas de restauración en un único documento de referencia para el personal de TI.
+
+Los procedimientos descritos asumen que los artefactos de respaldo (volcados \texttt{.dmp} y archivos \texttt{.tar.gz}) se encuentran disponibles en los buckets correspondientes del servidor MinIO, tal como se verifica en la Sección~\ref{sec:validacion_respaldo}.
+
+%----------------------------------------------------------------------------------------
+
+\section{Restauración de la Base de Datos}
+\label{AppendixC:RestauracionBD}
+
+% TODO: Documentar el procedimiento paso a paso de restauración de PostgreSQL a partir
+% de un volcado .dmp almacenado en el bucket documenso-backup-databases de MinIO.
+%
+% Estructura sugerida:
+%   1. Prerequisitos (acceso al panel de Coolify, credenciales del bucket MinIO)
+%   2. Descarga del volcado desde MinIO
+%   3. Restauración mediante la interfaz de Coolify (importar backup)
+%   4. Verificación post-restauración (consulta de tablas, integridad referencial)
+
+%----------------------------------------------------------------------------------------
+
+\section{Restauración de Configuración del Stack}
+\label{AppendixC:RestauracionConfig}
+
+% TODO: Documentar el procedimiento paso a paso de restauración de la configuración
+% del stack a partir de un archivo .tar.gz almacenado en el bucket backups-coolify de MinIO.
+%
+% Estructura sugerida:
+%   1. Prerequisitos (acceso SSH al LXC o acceso a Coolify)
+%   2. Descarga del archivo .tar.gz desde MinIO
+%   3. Extracción y verificación del contenido (archivos .env y docker-compose.yml)
+%   4. Re-despliegue del stack desde Coolify con la configuración restaurada
+%   5. Verificación de estado Healthy de los contenedores (referencia §4.2)
