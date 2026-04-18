@@ -123,7 +123,7 @@
 \juradoTRES{Ing. Javier Bilbao}
 
 \fechaINICIO{noviembre de 2025}
-\fechaFINAL{marzo de 2026}
+\fechaFINAL{abril de 2026}
 
 % Your subject area, this is not currently used anywhere in the template, print it elsewhere with \subjectname
 \subject{Informe del Trabajo de Graduación de la Carrera de Ingeniero en Computación de la Universidad Nacional de Tucumán} 
@@ -234,8 +234,9 @@
 %The Thesis Abstract is written here (and usually kept to just this page). The page is kept centered vertically so can expand into the blank space above the title too\ldots
 \centering
 
-Este trabajo de graduación describe el diseño, implementación y despliegue de un sistema de firma electrónica de documentos on-premise para la Facultad de Ciencias Exactas y Tecnología (FACET) de la Universidad Nacional de Tucumán. Ante la necesidad de centralizar y agilizar los procesos administrativos de firma, actualmente manuales y distribuidos, se seleccionó y desplegó la plataforma de código abierto (Open Source) Documenso sobre una infraestructura de virtualización basada en Proxmox VE y orquestada por Coolify. La solución garantiza la soberanía de los datos mediante el auto-alojamiento y el uso de almacenamiento de objetos compatible con S3 (MinIO). El sistema se integra con el dominio institucional de Google Workspace mediante OAuth 2.0 para la autenticación de usuarios y utiliza un servicio de correo transaccional para las notificaciones automáticas. Como resultado, se entrega una solución funcional ``llave en mano'', incluyendo manuales técnicos y de procedimientos que aseguran la trazabilidad documental y la autonomía operativa del personal de TI de la facultad.
-				
+Este trabajo describe el diseño, la implementación y el despliegue de un sistema de firma electrónica de documentos sobre la infraestructura propia de la Facultad de Ciencias Exactas y Tecnología de la Universidad Nacional de Tucumán. Ante la necesidad de centralizar y agilizar los procesos de firma, hasta entonces manuales y distribuidos, se seleccionó una plataforma de código abierto y se desplegó sobre el entorno de virtualización institucional. La solución integra almacenamiento de objetos, control de acceso restringido a las cuentas de la facultad y notificaciones automáticas por correo electrónico, garantizando el control total de la información sin depender de servicios externos con costos recurrentes de licenciamiento.
+
+El desarrollo requirió conocimientos de redes de computadoras, virtualización, contenerización de servicios, seguridad informática y administración de sistemas. Como resultado, se entregó una solución funcional que incluye manuales técnicos y procedimientos de mantenimiento orientados a asegurar la trazabilidad documental y la autonomía operativa del personal de la facultad.
 
 \end{abstract}
 
@@ -301,6 +302,7 @@ A mis tutores, Carlos Albaca Paraván y Esteban Daniel Volentini, por su guía, 
 \include{apendices/apendice1}
 \include{apendices/apendice2}
 \include{apendices/apendice3}
+\include{apendices/apendice4}
 
 %----------------------------------------------------------------------------------------
 %	BIBLIOGRAPHY

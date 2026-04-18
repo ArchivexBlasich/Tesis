@@ -1,0 +1,41 @@
+\chapter{Conclusiones}
+\label{chap:conclusiones}
+
+%----------------------------------------------------------------------------------------
+
+\section{Conclusiones Generales}
+\label{sec:conclusiones_generales}
+
+El presente trabajo abordó el diseño, la implementación y el despliegue de una solución de firma electrónica de documentos sobre la infraestructura propia de la FACET. La plataforma resultante integra Documenso como núcleo de aplicación, PostgreSQL para la persistencia transaccional, Browserless para el renderizado del certificado de firma, MinIO como almacenamiento de objetos y el proxy Socat para la conectividad entre la red Docker y el servidor físico de almacenamiento, todo ello orquestado mediante la PaaS Coolify y el enrutador Traefik dentro de un contenedor LXC aprovisionado en Proxmox VE. Las verificaciones presentadas en el Capítulo~\ref{chap:ensayos_resultados} ---desde los \textit{healthchecks} individuales hasta el ciclo de firma completo de extremo a extremo y la restauración de respaldos--- confirmaron que el sistema satisface los objetivos funcionales, de seguridad, de rendimiento y de continuidad operativa definidos en la Sección~\ref{sec:objetivos_alcance}, tal como lo sintetiza la matriz de trazabilidad de la Subsección~\ref{subsec:trazabilidad_requisitos}.
+
+Una de las lecciones más relevantes del proceso fue reconocer el valor de adoptar, auditar y desplegar soluciones de código abierto creadas por la comunidad, en lugar de desarrollar software desde cero. La evaluación comparativa del Capítulo~\ref{chap:introduccion} demostró que las alternativas comerciales de tipo SaaS implican costos recurrentes significativos para una institución pública, mientras que la Community Edition de Documenso, distribuida bajo licencia AGPL-3.0, proporcionó las funcionalidades necesarias sin depender de un esquema propietario de licenciamiento. Este enfoque permitió concentrar el esfuerzo de ingeniería en la integración, la configuración de seguridad y la adaptación al entorno institucional, actividades que en sí mismas constituyen un aporte técnico sustancial.
+
+Este trabajo representa, además, uno de los primeros servicios productivos desplegados íntegramente sobre la infraestructura de la FACET. La experiencia demuestra que los recursos de virtualización, almacenamiento y red con los que cuenta la facultad ---Proxmox VE, TrueNAS/MinIO, Coolify--- son capaces de sostener aplicaciones en producción con requerimientos reales de disponibilidad y seguridad. En ese sentido, el proyecto aspira a servir como referencia y estímulo para que otros alumnos y áreas institucionales aprovechen estos recursos locales, un privilegio con el que pocas universidades cuentan.
+
+A lo largo del desarrollo se aplicaron conocimientos adquiridos en diversas asignaturas de la carrera de Ingeniería en Computación:
+
+\begin{itemize}
+    \item \textit{Redes de Computadoras:} la configuración de dominios, DNS y reverse proxy, así como el diseño e implementación del servicio Socat para resolver la conectividad entre la red Docker y el servidor MinIO (Sección~\ref{sec:proxy_socat}).
+    \item \textit{Sistemas Operativos:} los conceptos de virtualización a nivel de sistema operativo, aplicados en la auditoría del contenedor LXC sobre Proxmox y en la orquestación de servicios mediante Docker Compose (Sección~\ref{sec:infraestructura_base}).
+    \item \textit{Gestión de la Tecnología:} la gestión de riesgos, las políticas de respaldo y retención, y los procedimientos de recuperación ante desastres, materializados en la estrategia de respaldo automatizado (Sección~\ref{sec:estrategia_respaldo_retencion}) y en el manual de mantenimiento (Apéndice~\ref{AppendixC}).
+    \item \textit{Arquitectura de Computadoras:} la comprensión del hardware a bajo nivel, que resultó determinante para diagnosticar la incompatibilidad de instrucciones AVX del procesador del servidor con las versiones superiores de Documenso (Subsección~\ref{subsec:documenso_core}).
+    \item \textit{Programación:} el desarrollo de \textit{scripts} en Bash para automatizar el respaldo selectivo de las configuraciones exportables de Coolify hacia un \textit{bucket} S3 en MinIO (Apéndice~\ref{AppendixB:ConfigBackup}).
+\end{itemize}
+
+El ciclo de vida del sistema en producción aportó lecciones que exceden el alcance académico habitual. La gestión de versiones, el monitoreo continuo mediante registros de contenedores y métricas de consumo de recursos (Sección~\ref{sec:metricas_rendimiento}), y la ejecución de procedimientos de actualización sin afectar la disponibilidad del servicio (Apéndice~\ref{AppendixC:ActualizacionVersion}) evidenciaron la importancia de un enfoque operativo disciplinado. En particular, la criticidad de ejecutar respaldos verificados antes de cualquier intervención sobre el entorno productivo quedó demostrada tanto en la validación de la restauración de la base de datos (Sección~\ref{sec:validacion_respaldo}) como en los procedimientos documentados para la recuperación de configuraciones.
+
+Desde la perspectiva de continuidad operativa, la estrategia de respaldo automatizado ---volcados diarios de PostgreSQL, empaquetado selectivo de configuraciones y transferencia hacia MinIO mediante \texttt{rclone}--- junto con los procedimientos de restauración documentados en el Apéndice~\ref{AppendixC}, aseguran que la institución pueda recuperar el servicio ante incidentes sin depender del conocimiento de una persona en particular. La guía de inicio rápido para usuarios (Apéndice~\ref{AppendixD}) complementa esta transferencia de conocimiento, proporcionando al personal docente y administrativo las instrucciones necesarias para operar la plataforma de forma autónoma.
+
+%----------------------------------------------------------------------------------------
+
+\section{Trabajo Futuro}
+\label{sec:trabajo_futuro}
+
+Si bien el sistema cumple con los objetivos planteados y se encuentra operativo en producción, se identifican líneas de mejora que podrían ampliar su alcance y robustez:
+
+\begin{itemize}
+    \item \textbf{Migración de hardware y actualización de versión.} El servidor actual utiliza procesadores sin soporte de instrucciones AVX, lo que restringe el despliegue a Documenso v2.1.0. Una migración a hardware compatible habilitaría la adopción de versiones superiores con nuevas funcionalidades. El procedimiento de actualización ya se encuentra documentado en el Apéndice~\ref{AppendixC:ActualizacionVersion}.
+    \item \textbf{Extensión a otras dependencias de la universidad.} El modelo de organizaciones y equipos que ofrece Documenso permite incorporar nuevas facultades o dependencias de la UNT al servicio existente, sin necesidad de duplicar infraestructura.
+    \item \textbf{Integración con sistemas de gestión existentes.} Explorar la vinculación con los sistemas administrativos de la universidad para automatizar flujos de documentación que actualmente requieren intervención manual.
+    \item \textbf{Obtención de un certificado emitido por una CA reconocida.} La infraestructura desplegada soporta de forma nativa la configuración de certificados X.509 emitidos por Autoridades Certificantes licenciadas. La incorporación de un certificado reconocido elevaría el sistema de firma electrónica a firma digital conforme a la Ley~25.506, sin necesidad de modificar la arquitectura base.
+\end{itemize}

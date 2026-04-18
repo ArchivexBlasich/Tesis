@@ -285,7 +285,7 @@ El contenedor principal de Documenso expuso la interfaz web, concentró la lógi
 \begin{lstlisting}[language=YAML, caption={Definición del servicio principal de Documenso con dependencias y variables de entorno inyectadas por Coolify}, label={lst:documenso_core_service}]
 services:
     documenso:
-        image: 'documenso/documenso:v2.0.14'
+        image: 'documenso/documenso:v2.1.0'
         depends_on:
             database:
                 condition: service_healthy
@@ -324,13 +324,13 @@ services:
 
 El Código~\ref{lst:documenso_core_service} muestra que la configuración se resolvió mediante inyección de variables de entorno desde Coolify, Esta práctica de diseño evita codificar de forma rígida credenciales y parámetros de configuración dentro del archivo \texttt{docker-compose.yml}. En esta subsección interesan dos de ellas: \texttt{NEXT\_PRIVATE\_BROWSERLESS\_URL}, que definió la conexión WebSocket con Browserless, y \texttt{NEXT\_PRIVATE\_INTERNAL\_WEBAPP\_URL}, que fijó la dirección interna de Documenso dentro de la red del despliegue. El inventario completo de variables se documenta en el Apéndice~\ref{AppendixB}.
 
-La imagen se fijó en \texttt{v2.0.14} en lugar de usar la etiqueta \texttt{latest}. Al evaluar una actualización a versiones posteriores (v2.1.0 y superiores), el contenedor terminaba inmediatamente con el error:
+La imagen se fijó en \texttt{v2.1.0} en lugar de usar la etiqueta \texttt{latest}. Al evaluar una actualización a versiones posteriores (v2.2.0 y superiores), el contenedor terminaba inmediatamente con el error:
 
 \begin{quote}
 \texttt{Illegal instruction (core dumped)}
 \end{quote}
 
-Desde la versión 2.1.0, Documenso incorpora dependencias internas ---en particular Sharp (libvips)--- que requieren instrucciones AVX/AVX2 del procesador \cite{documenso_issue_2292}. El servidor físico de la FACET utiliza procesadores Intel Xeon E5620, pertenecientes a la familia Westmere, cuyo repertorio SIMD se limita a SSE 4.2 y no incluye AVX. Esta restricción se verificó con \texttt{lscpu} ejecutado en el contenedor LXC, donde las \textit{flags} \texttt{avx} y \texttt{avx2} no estaban presentes. En consecuencia, el despliegue quedó anclado en \texttt{v2.0.14}, última versión operable sobre el hardware disponible. El requerimiento de AVX/AVX2 para ramas posteriores quedó además documentado en el \textit{issue} \#2292 del repositorio oficial \cite{documenso_issue_2292}.
+Desde la versión 2.2.0, Documenso incorpora dependencias internas ---en particular Sharp (libvips)--- que requieren instrucciones AVX/AVX2 del procesador \cite{documenso_issue_2292}. El servidor físico de la FACET utiliza procesadores Intel Xeon E5620, pertenecientes a la familia Westmere, cuyo repertorio SIMD se limita a SSE 4.2 y no incluye AVX. Esta restricción se verificó con \texttt{lscpu} ejecutado en el contenedor LXC, donde las \textit{flags} \texttt{avx} y \texttt{avx2} no estaban presentes. En consecuencia, el despliegue quedó anclado en \texttt{v2.1.0}, última versión operable sobre el hardware disponible. El requerimiento de AVX/AVX2 para ramas posteriores quedó además documentado en el \textit{issue} \#2292 del repositorio oficial \cite{documenso_issue_2292}.
 
 Dentro del despliegue, Documenso resolvió sus dependencias internas mediante los nombres de servicio \texttt{database} y \texttt{browserless}, mientras que Traefik expuso únicamente la interfaz web. En la configuración del dominio de la aplicación, la forma https://documentos.facet.unt.edu.ar:3000 no representó la apertura del puerto \texttt{3000} hacia el exterior, sino una regla declarativa consumida por el proxy interno para enrutar el tráfico HTTPS entrante hacia ese puerto dentro del contenedor. La Figura~\ref{fig:zoom_seccion_servicios} resume esta organización y justifica la nomenclatura adoptada en el diagrama de red.
 \begin{figure}[H]

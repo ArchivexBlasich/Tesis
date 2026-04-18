@@ -19,7 +19,7 @@ Para complementar la Sección~\ref{sec:configuracion_servicios}, en este apartad
 \begin{lstlisting}[language=YAML, caption={Archivo docker-compose.yml completo utilizado como base del despliegue}, label={lst:docker_compose_full}]
 services:
     documenso:
-        image: 'documenso/documenso:v2.0.14'
+        image: 'documenso/documenso:v2.1.0'
         depends_on:
             database:
                 condition: service_healthy
@@ -61,7 +61,7 @@ services:
             - 'POSTGRES_PASSWORD=${SERVICE_PASSWORD_POSTGRES}'
             - 'POSTGRES_DB=${POSTGRES_DB:-documensoprod-db}'
         volumes:
-            - 'documensoprod_postgresql_data:/var/lib/postgresql/data'
+            - 'documensoprod-postgresql-data:/var/lib/postgresql/data'
         healthcheck:
             test:
                 - CMD-SHELL
@@ -94,7 +94,8 @@ services:
             timeout: 10s
             retries: 3
 volumes:
-    documensoprod_postgresql_data: null
+    documensoprod-postgresql-data:
+        external: true
 \end{lstlisting}
 
 \section{Automatización del Resguardo de Configuración}
@@ -138,6 +139,8 @@ Su ejecución se programó con la expresión \textit{cron} \nolinkurl{0 4 * * * 
 Coolify incorpora un mecanismo de variables mágicas que permite inyectar automáticamente credenciales, usuarios y otros valores sensibles generados de forma segura durante el despliegue \cite{coolify_magic_env_vars}. En lugar de codificar secretos en texto plano dentro del archivo \texttt{docker-compose.yml}, la PaaS expone variables derivadas del contexto del servicio, las cuales se resuelven en tiempo de ejecución.
 
 En esta implementación, dicho mecanismo se utilizó para variables como \texttt{SERVICE\_PASSWORD\_DOCUMENSO}, \texttt{SERVICE\_USER\_POSTGRES} y \texttt{SERVICE\_PASSWORD\_POSTGRES}. Esta estrategia redujo la exposición accidental de secretos, simplificó la rotación de credenciales y mantuvo desacoplada la definición declarativa de los contenedores respecto de los valores concretos del entorno institucional.
+
+Además de las variables generadas automáticamente, desde el mismo panel se definieron variables manuales. En particular, \texttt{DOCUMENSO\_DISABLE\_TELEMETRY=true} desactiva la recopilación de datos de telemetría anónima que Documenso habilita por defecto en instancias autoalojadas, cuyo propósito original es reunir estadísticas de uso del producto. Su inclusión responde al criterio de evitar comunicaciones hacia servidores externos no contemplados en el diseño de la infraestructura institucional.
 
 \section{Generación de Material Criptográfico Institucional}
 \label{AppendixB:Crypto}
