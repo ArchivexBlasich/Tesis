@@ -4,7 +4,7 @@
 
 Este apéndice documenta los procedimientos operativos de mantenimiento del sistema de firma electrónica desplegado en la FACET. Su propósito es complementar la Sección~\ref{sec:validacion_respaldo} del Capítulo~\ref{chap:ensayos_resultados}, concentrando el detalle paso a paso de las tareas de restauración en un único documento de referencia para el personal de TI.
 
-Los procedimientos descritos asumen que los artefactos de respaldo (volcados \texttt{.dmp} y archivos \texttt{.tar.gz}) se encuentran disponibles en los buckets correspondientes del servidor MinIO, tal como se verifica en la Sección~\ref{sec:validacion_respaldo}.
+Los procedimientos descritos asumen que los artefactos de respaldo (volcados \texttt{.dmp} y archivos \texttt{.tar.gz}) se encuentran disponibles en los \textit{buckets} correspondientes del servidor MinIO, tal como se verifica en la Sección~\ref{sec:validacion_respaldo}.
 
 %----------------------------------------------------------------------------------------
 
@@ -54,7 +54,7 @@ Este procedimiento permite restaurar PostgreSQL a partir de un volcado \texttt{.
 
     \item \textbf{Verificación posterior.} Una vez completada la operación, verificar la integridad del sistema:
     \begin{itemize}
-        \item Consultar el endpoint \nolinkurl{https://documentos.facet.unt.edu.ar/api/health} y confirmar que los campos \texttt{status}, \texttt{database} y \texttt{certificate} reportan \texttt{\char34 ok\char34}.
+        \item Consultar el \textit{endpoint} \nolinkurl{https://documentos.facet.unt.edu.ar/api/health} y confirmar que los campos \texttt{status}, \texttt{database} y \texttt{certificate} reportan \texttt{\char34 ok\char34}.
         \item Iniciar sesión en la interfaz web y comprobar que los documentos, firmantes y equipos previos se encuentran íntegros.
     \end{itemize}
 \end{enumerate}
@@ -101,14 +101,14 @@ El valor \texttt{YYYY-MM-DD} debe reemplazarse por la fecha del respaldo que cor
 
 \subsection{Identificación de servicios}
 
-Coolify organiza los archivos de cada servicio bajo identificadores únicos. Las rutas críticas dentro del directorio extraído para el despliegue institucional son:
+Coolify organiza los archivos de cada servicio bajo identificadores únicos generados en el momento del despliegue. Las rutas críticas para el despliegue institucional actual son:
 
 \begin{itemize}
     \item \textbf{Stack Documenso} (aplicación, base de datos y Browserless): \nolinkurl{/data/coolify/services/y4gssggkgc4s088kg48wks88/}
     \item \textbf{Servicio Socat}: \nolinkurl{/data/coolify/services/i040ggc0c84c0sc0ss4cs0co/}
 \end{itemize}
 
-Cada directorio contiene un archivo \texttt{docker-compose.yml} y un archivo \texttt{.env} con la definición de servicios y los secretos necesarios para su operación.
+Cada directorio contiene un archivo \texttt{docker-compose.yml} y un archivo \texttt{.env} con la definición de servicios y los secretos necesarios para su operación. Estos identificadores corresponden al despliegue vigente al momento de redactar este documento; ante una reinstalación o migración de Coolify, los identificadores se regeneran y las rutas cambian. En ese caso, se debe localizar el directorio correcto consultando el panel de Coolify o listando el contenido de \nolinkurl{/data/coolify/services/} en el servidor.
 
 \subsection{Restauración desde la interfaz de Coolify}
 
@@ -126,9 +126,9 @@ Navegar en el panel de Coolify hacia \texttt{Proyecto Documenso} $\rightarrow$ \
 
     \item \textbf{Restaurar las variables de entorno.} Ir a la pestaña \textbf{Environment Variables}, activar \textbf{Developer View} para obtener el editor de texto plano y pegar el contenido completo del archivo \texttt{.env} restaurado. Presionar \textbf{Save}.
 
-    \item \textbf{Repetir para el servicio Socat.} Navegar al servicio del proxy Socat en Coolify y aplicar los pasos~1 y 2 con los archivos de su identificador (\texttt{i040ggc0c84c0sc0ss4cs0co}).
+    \item \textbf{Repetir para el servicio Socat.} Navegar al servicio del \textit{proxy} Socat en Coolify y aplicar los pasos~1 y 2 con los archivos de su identificador (\texttt{i040ggc0c84c0sc0ss4cs0co}).
 
-    \item \textbf{Desplegar y verificar.} Presionar \textbf{Deploy} en cada servicio. Tras el redespliegue, confirmar que los cuatro contenedores alcancen el estado \texttt{Healthy} en el panel de Coolify (Subsección~\ref{subsec:validacion_healthcheck}) y que el endpoint \nolinkurl{https://documentos.facet.unt.edu.ar/api/health} reporte \texttt{\char34 ok\char34} en todos sus campos.
+    \item \textbf{Desplegar y verificar.} Presionar \textbf{Deploy} en cada servicio. Tras el redespliegue, confirmar que los cuatro contenedores alcancen el estado \texttt{Healthy} en el panel de Coolify (Subsección~\ref{subsec:validacion_healthcheck}) y que el \textit{endpoint} \nolinkurl{https://documentos.facet.unt.edu.ar/api/health} reporte \texttt{\char34 ok\char34} en todos sus campos.
 \end{enumerate}
 
 %----------------------------------------------------------------------------------------
@@ -152,7 +152,7 @@ Cuando el certificado autofirmado se aproxima a su fecha de caducidad, se debe g
 
     \item \textbf{Actualizar la contraseña (condicional).} Si al generar el nuevo PKCS\#12 se utilizó una contraseña distinta a la original, también se debe actualizar el valor de la variable \texttt{SERVICE\_PASSWORD\_DOCUMENSO} en la misma pestaña.
 
-    \item \textbf{Aplicar los cambios.} Presionar \textbf{Save} y luego \textbf{Deploy} para reiniciar el contenedor de Documenso con el nuevo certificado. El éxito de la operación se comprueba consultando el endpoint \nolinkurl{https://documentos.facet.unt.edu.ar/api/health} y verificando que el campo \texttt{certificate} reporte \texttt{\char34 ok\char34}.
+    \item \textbf{Aplicar los cambios.} Presionar \textbf{Save} y luego \textbf{Deploy} para reiniciar el contenedor de Documenso con el nuevo certificado. El éxito de la operación se comprueba consultando el \textit{endpoint} \nolinkurl{https://documentos.facet.unt.edu.ar/api/health} y verificando que el campo \texttt{certificate} reporte \texttt{\char34 ok\char34}.
 \end{enumerate}
 
 La renovación del certificado \textbf{no invalida ni corrompe} los documentos que ya fueron firmados con el certificado anterior. Cada PDF sellado conserva incrustada la firma y el certificado con el que fue emitido, por lo que su verificabilidad no depende del certificado activo en la plataforma. El nuevo certificado se utiliza exclusivamente para el sellado de los documentos que se procesen a partir del redespliegue.
@@ -220,23 +220,23 @@ Tras el despliegue, el administrador debe confirmar que la actualización se com
 \begin{enumerate}
     \item \textbf{Revisar los registros del servicio.} En Coolify, acceder a la pestaña \textbf{Logs} del servicio Documenso y verificar que las migraciones de Prisma hayan finalizado sin errores. Los mensajes indicativos de éxito incluyen líneas del tipo \texttt{All migrations have been successfully applied}.
 
-    \item \textbf{Consultar el endpoint de salud.} Acceder a \nolinkurl{https://documentos.facet.unt.edu.ar/api/health} y verificar que los campos \texttt{status}, \texttt{database} y \texttt{certificate} reporten \texttt{\char34 ok\char34}.
+    \item \textbf{Consultar el \textit{endpoint} de salud.} Acceder a \nolinkurl{https://documentos.facet.unt.edu.ar/api/health} y verificar que los campos \texttt{status}, \texttt{database} y \texttt{certificate} reporten \texttt{\char34 ok\char34}.
 
     \item \textbf{Validación funcional.} Iniciar sesión en la interfaz web y comprobar que los documentos, firmantes y equipos existentes se muestren correctamente. Se recomienda ejecutar un ciclo de firma de prueba de extremo a extremo para confirmar la operación completa del sistema.
 \end{enumerate}
 
 \subsection{Procedimiento de rollback}
 
-Si la actualización falla o produce un comportamiento inesperado, las migraciones de esquema aplicadas por Prisma \textbf{no se pueden revertir de forma automática}. Además, las políticas de reinicio automático de Docker provocan que el contenedor fallido intente arrancar de forma reiterada, y cada intento puede ejecutar migraciones parciales que corrompan la base de datos. Por este motivo, la primera acción debe ser detener el servicio antes de cualquier operación de restauración.
+Si la actualización falla o produce un comportamiento inesperado, las migraciones de esquema aplicadas por Prisma \textbf{no se pueden revertir de forma automática}. Por este motivo, la primera acción debe ser detener el servicio antes de cualquier operación de restauración.
 
 \begin{enumerate}
     \item \textbf{Detener el servicio fallido.} En el panel de Coolify, acceder a \texttt{DocumensoProd} y presionar el botón \textbf{Stop}. Esto detiene el contenedor de la aplicación y evita que siga intentando aplicar migraciones sobre la base de datos. \textbf{No detener el contenedor de PostgreSQL}, ya que debe permanecer activo para el paso siguiente.
 
     \item \textbf{Restaurar la base de datos.} Con el contenedor de la aplicación detenido, acceder al servicio \texttt{database} en Coolify y ejecutar el procedimiento de importación desde S3 descrito en la Sección~\ref{AppendixC:RestauracionBD}, utilizando el respaldo creado en la etapa de preparación.
 
-    \item \textbf{Revertir la imagen.} Volver al servicio \texttt{DocumensoProd}, presionar \textbf{Edit Compose File} y restaurar el \textit{tag} de la imagen a la versión estable anterior (por ejemplo, \texttt{documenso/documenso:v2.1.0}). Presionar \textbf{Save}.
+    \item \textbf{Revertir la imagen.} Volver al servicio \texttt{DocumensoProd}, presionar \textbf{Edit Compose File} y restaurar el \textit{tag} de la imagen a la versión estable anterior (por ejemplo, documenso/documenso:v2.1.0). Presionar \textbf{Save}.
 
-    \item \textbf{Redesplegar.} Presionar el botón \textbf{Deploy}. Coolify recreará el contenedor de la aplicación con la versión correcta y lo reconectará a la base de datos ya restaurada. Verificar la operación mediante el endpoint \texttt{/api/health} y una prueba funcional en la interfaz web.
+    \item \textbf{Redesplegar.} Presionar el botón \textbf{Deploy}. Coolify recreará el contenedor de la aplicación con la versión correcta y lo reconectará a la base de datos ya restaurada. Verificar la operación mediante el \textit{endpoint} \texttt{/api/health} y una prueba funcional en la interfaz web.
 \end{enumerate}
 
 %----------------------------------------------------------------------------------------
@@ -263,8 +263,8 @@ La Tabla~\ref{tab:apC_troubleshooting} resume los síntomas más comunes, el com
 \hline
 \textbf{Síntoma / Error} & \textbf{Componente a revisar / Referencia} \\
 \hline
-El endpoint \texttt{/api/health} reporta error en \texttt{database} & Estado del contenedor \texttt{database} en Coolify; verificar credenciales en el \texttt{.env}. \\[6pt]
-El endpoint \texttt{/api/health} reporta error en \texttt{certificate} & El certificado caducó o el \texttt{BASE64} es inválido (Sección~\ref{AppendixC:RenovacionCertificado}). \\[6pt]
+El \textit{endpoint} \texttt{/api/health} reporta error en \texttt{database} & Estado del contenedor \texttt{database} en Coolify; verificar credenciales en el \texttt{.env}. \\[6pt]
+El \textit{endpoint} \texttt{/api/health} reporta error en \texttt{certificate} & El certificado cadució o el \texttt{BASE64} es inválido (Sección~\ref{AppendixC:RenovacionCertificado}). \\[6pt]
 Los correos de invitación no llegan & Configuración SMTP y registros del contenedor Documenso (Sección~\ref{AppendixB:SMTP}). \\[6pt]
 Error al procesar la firma o al cargar el editor de documentos & Registros del contenedor Browserless; verificar estado \texttt{Healthy} (Subsección~\ref{subsec:browserless}). \\[6pt]
 \texttt{Illegal instruction (core dumped)} & Incompatibilidad de CPU con instrucciones AVX (Sección~\ref{AppendixC:ActualizacionVersion}). \\[6pt]
@@ -294,6 +294,6 @@ openssl pkcs12 -export -out certificate.p12 \
     -certfile chain.crt
 \end{lstlisting}
 
-Una vez obtenido el archivo \texttt{certificate.p12}, el procedimiento operativo es idéntico al de la Sección~\ref{AppendixC:RenovacionCertificado}: codificar el archivo en Base64, reemplazar el valor de la variable \texttt{CERTIFICADO\_P12\_BASE64} en Coolify y, si la frase de paso difiere de la actual, actualizar también \texttt{SERVICE\_PASSWORD\_DOCUMENSO}. Tras presionar \textbf{Deploy}, los documentos firmados a partir de ese momento llevarán un certificado reconocido por las cadenas de confianza de los lectores PDF estándar.
+Una vez obtenido el archivo \texttt{certificate.p12}, el procedimiento operativo es idéntico al de la Sección~\ref{AppendixC:RenovacionCertificado}: codificar el archivo en Base64, reemplazar el valor de la variable \texttt{CERTIFICADO\_\allowbreak P12\_\allowbreak BASE64} en Coolify y, si la frase de paso difiere de la actual, actualizar también \texttt{SERVICE\_\allowbreak PASSWORD\_\allowbreak DOCUMENSO}. Tras presionar \textbf{Deploy}, los documentos firmados a partir de ese momento llevarán un certificado reconocido por las cadenas de confianza de los lectores PDF estándar.
 
 Para conversiones desde otros formatos de certificado (como DER o PEM sin cadena), se puede consultar la guía oficial de Documenso en \url{https://docs.documenso.com/docs/self-hosting/configuration/signing-certificate/local#using-an-existing-certificate}.

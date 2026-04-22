@@ -6,7 +6,7 @@ En este apéndice se presentan versiones ampliadas de los diagramas incluidos en
 \section{Topología General de la Infraestructura}
 \label{AppendixA:TopologiaGeneral}
 
-La Figura~\ref{fig:topologia_ampliada} reproduce en mayor tamaño la topología general de la infraestructura. Esta vista permite distinguir con más claridad las capas involucradas en el despliegue ---red externa, LAN institucional, contenedor LXC y servicios contenerizados--- y el recorrido del tráfico hasta la aplicación.
+La figura reproduce en mayor tamaño la topología general de la plataforma. Esta vista permite distinguir con claridad las diferentes zonas de red involucradas en el despliegue ---red externa (\textit{WAN}), \textit{LAN} institucional, contenedor LXC y servicios contenerizados---, así como el recorrido completo del tráfico hasta alcanzar la aplicación.
 
 \begin{figure}[H]
     \centering
@@ -20,7 +20,7 @@ La Figura~\ref{fig:topologia_ampliada} reproduce en mayor tamaño la topología 
 \section{Arquitectura Interna de la PaaS y Servicios Contenerizados}
 \label{AppendixA:Coolify}
 
-La Figura~\ref{fig:zoom_coolify_anexo} amplía la arquitectura interna de la PaaS Coolify. En ella se distinguen el contenedor LXC base, las redes virtuales de Docker y la separación entre la capa de control de la plataforma y los servicios desplegados sobre ella.
+Profundizando en la capa de orquestación, la figura detalla la arquitectura interna de la plataforma Coolify. En ella se aprecia el aislamiento provisto por el contenedor LXC base, la segmentación mediante redes virtuales de Docker y la separación lógica entre el plano de control de la PaaS y los servicios de usuario desplegados sobre ella.
 
 \begin{figure}[H]
     \centering
@@ -35,7 +35,7 @@ La Figura~\ref{fig:zoom_coolify_anexo} amplía la arquitectura interna de la Paa
 \section{Topología Interna de la Red Docker del Stack Documenso}
 \label{AppendixA:RedDocker}
 
-La Figura~\ref{fig:red_docker_anexo} amplía la topología interna del despliegue de Documenso. Esta vista permite identificar con mayor precisión los servicios del \textit{stack}, sus dependencias internas y el rol de Traefik como punto de entrada a la red privada administrada por Coolify.
+A nivel de aplicación, la figura expone la topología interna específica del despliegue de Documenso. La vista identifica con precisión los componentes del \textit{stack}, sus dependencias internas y el rol fundamental de Traefik como punto único de entrada a la red privada administrada por Coolify.
 \begin{figure}[H]
     \centering
     \includegraphics[width=\textwidth,height=0.88\textheight,keepaspectratio]{figuras/capitulo3/3.3.png}
@@ -48,7 +48,7 @@ La Figura~\ref{fig:red_docker_anexo} amplía la topología interna del despliegu
 \section{Flujos de Acceso a MinIO a Través del Proxy Socat}
 \label{AppendixA:FlujoMinIO}
 
-La Figura~\ref{fig:flujo_minio_anexo} amplía el esquema de conectividad con MinIO descrito en la Sección~\ref{sec:proxy_socat}. Las líneas discontinuas representan los dos flujos que llegan al dominio público de almacenamiento: En verde el flujo directo originado en el navegador para recursos gráficos y en naranja el flujo indirecto originado en el \textit{backend} de Documenso para la gestión de documentos PDF. A partir de su convergencia en el reverse proxy perimetral, el recorrido común se muestra mediante líneas continuas a través de Traefik, el contenedor \texttt{socat} y el servidor físico TrueNAS/MinIO.
+Finalmente, la figura desglosa el esquema de conectividad hacia el almacenamiento descrito en la Sección~\ref{sec:proxy_socat}. Las líneas discontinuas representan los dos flujos convergentes hacia el dominio público: en verde, el flujo directo originado en el navegador para los recursos gráficos; y en naranja, el flujo indirecto originado en el \textit{backend} de Documenso para la gestión de documentos PDF. A partir de su convergencia en el \textit{reverse proxy} perimetral, el recorrido unificado se ilustra mediante líneas continuas a través de Traefik, el túnel TCP del contenedor \texttt{socat} y, finalmente, el servidor físico TrueNAS/MinIO.
 
 \begin{figure}[H]
     \centering

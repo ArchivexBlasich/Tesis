@@ -33,6 +33,7 @@
 \documentclass[
 	11pt, % The default document font size, options: 10pt, 11pt, 12pt
 	%oneside, % Two side (alternating margins) for binding by default, uncomment to switch to one side
+	openany, % Chapters can start on any page (prevents double blank pages between chapters)
 	%chapterinoneline,% Have the chapter title next to the number in one single line
 	%english, % ngerman for German
 	spanish,
@@ -44,6 +45,8 @@
 	parskip, % Uncomment to add space between paragraphs
 	%nohyperref, % Uncomment to not load the hyperref package
 	headsepline, % Uncomment to get a line under the header
+	fleqn, % Ecuaciones alineadas a la izquierda (Reglamento 4.1)
+	leqno, % Número de ecuación a la izquierda (Reglamento 4.1)
 ]{MastersDoctoralThesis} % The class file specifying the document structure
 
 % Required for inputting international characters
@@ -66,6 +69,8 @@
 \usepackage{subcaption}
 \usepackage{todonotes}
 \usepackage{multirow}
+\usepackage{longtable}
+\usepackage{tabularx}
 \usepackage{listings}
 
 %\usepackage[hyphens]{url}
@@ -95,6 +100,11 @@
 \usepackage{placeins}
 \usepackage{amsmath}
 \usepackage{amssymb}
+
+% Hoja en blanco incondicional entre capítulos/apéndices (parity-independent).
+% \cleardoublepage solo inserta blank si la página actual es par; \blankpage
+% siempre lo hace mediante \null (contenido mínimo) + \clearpage.
+\newcommand{\blankpage}{\null\thispagestyle{empty}\clearpage}
 
 %----------------------------------------------------------------------------------------
 %	INFORMACIÓN DE LA MEMORIA
@@ -223,6 +233,7 @@
 	\end{center}
 \end{titlepage}
 
+\blankpage
 
 %----------------------------------------------------------------------------------------
 %	RESUMEN - ABSTRACT 
@@ -240,6 +251,9 @@ El desarrollo requirió conocimientos de redes de computadoras, virtualización,
 
 \end{abstract}
 
+\clearpage
+\blankpage
+
 %----------------------------------------------------------------------------------------
 %	CONTENIDO DE LA MEMORIA  - AGRADECIMIENTOS
 %----------------------------------------------------------------------------------------
@@ -250,9 +264,12 @@ El desarrollo requirió conocimientos de redes de computadoras, virtualización,
 
 A mis padres y a mi hermana, pilares fundamentales de mi vida, por brindarme la oportunidad, la confianza y el apoyo necesarios para recorrer este camino. A mi familia, tanto a quienes me acompañaron incondicionalmente a la distancia como a quienes me recibieron y me hicieron sentir en casa aquí en Tucumán.
 
-A mis tutores, Carlos Albaca Paraván y Esteban Daniel Volentini, por su guía, paciencia y acompañamiento constante para llevar este proyecto a su cierre. A mis docentes, compañeros y amigos, por todo lo compartido a lo largo de la carrera y por haber contribuido, cada uno a su manera, a mi formación personal y profesional. A la cátedra de Informática/Programación 1, en la que tuve la oportunidad de trabajar durante dos años y obtener mi primer trabajo oficial, por haber sido una experiencia formativa clave en mi recorrido. A la Universidad Nacional de Tucumán, por brindarme la posibilidad de acceder a una educación pública, gratuita y de excelencia.
+A mis tutores, Carlos Albaca Paraván y Esteban Daniel Volentini, por su guía, paciencia y acompañamiento constante para llevar este Trabajo a su cierre. Al Ing. Javier Bilbao, por su enorme predisposición y generosidad al resolver cada obstáculo de infraestructura de red que este proyecto demandó: desde la configuración del espacio de trabajo institucional en Google hasta la gestión del dominio propio del sistema. Sin ese respaldo, la puesta en producción no habría sido posible. A mis docentes, compañeros y amigos, por todo lo compartido a lo largo de la carrera y por haber contribuido, cada uno a su manera, a mi formación personal y profesional. A la cátedra de Informática/Programación 1, en la que tuve la oportunidad de trabajar durante dos años y obtener mi primer trabajo oficial, por haber sido una experiencia formativa clave en mi recorrido. A la Universidad Nacional de Tucumán, por brindarme la posibilidad de acceder a una educación pública, gratuita y de excelencia, a la altura de cualquier institución de referencia en el mundo.
 
 \end{acknowledgements}
+
+\clearpage
+\blankpage
 
 %----------------------------------------------------------------------------------------
 %	LISTA DE CONTENIDOS/FIGURAS/TABLAS
@@ -283,10 +300,15 @@ A mis tutores, Carlos Albaca Paraván y Esteban Daniel Volentini, por su guía, 
 % Incluir los capítulos como archivos separados desde la carpeta Chapters
 % Descomentar las líneas a medida que se escriben los capítulos
 
+\blankpage
 \include{capitulos/capitulo1}
+\blankpage
 \include{capitulos/capitulo2}
+\blankpage
 \include{capitulos/capitulo3}
+\blankpage
 \include{capitulos/capitulo4}
+\blankpage
 \include{capitulos/capitulo5}
 
 %----------------------------------------------------------------------------------------
@@ -294,14 +316,18 @@ A mis tutores, Carlos Albaca Paraván y Esteban Daniel Volentini, por su guía, 
 %----------------------------------------------------------------------------------------
 
 % indicativo para indicarle a LaTeX los siguientes "capítulos" son apéndices
+\blankpage
 \appendix 
 
 % Incluir los apéndices de la memoria como archivos separadas desde la carpeta Appendices
 % Descomentar las líneas a medida que se escriben los apéndices
 
 \include{apendices/apendice1}
+\blankpage
 \include{apendices/apendice2}
+\blankpage
 \include{apendices/apendice3}
+\blankpage
 \include{apendices/apendice4}
 
 %----------------------------------------------------------------------------------------

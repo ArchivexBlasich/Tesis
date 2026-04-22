@@ -51,7 +51,7 @@ services:
       timeout: 20s
       retries: 10
   browserless:
-    image: 'browserless/chrome:latest'
+    image: 'browserless/chrome:1.61-chrome-stable'
     restart: always
     deploy:
       resources:
@@ -59,7 +59,7 @@ services:
           cpus: '2.0'
           memory: 2G
     environment:
-      - MAX_CONCURRENT_SESSIONS=10
+      - MAX_CONCURRENT_SESSIONS=5
       - MAX_QUEUE_LENGTH=20
       - TIMEOUT=60000
       - DEFAULT_IGNORE_HTTPS_ERRORS=true
