@@ -78,12 +78,12 @@ Esta sección valida que los canales de comunicación entre los componentes del 
 
 Los logs HTTP del servidor MinIO registran los dos flujos de acceso al \textit{bucket} \texttt{documenso-prod}: el directo, originado desde el navegador del usuario, y el indirecto, originado desde el \textit{backend} de la aplicación.
 
-La Figura~\ref{fig:minio_log_flujo_directo} muestra una operación \texttt{PUT 200 OK} cuyo campo \texttt{User-Agent} identifica al cliente como un navegador Chrome con IP de origen externa a la red institucional, lo que confirma que la solicitud atravesó el recorrido completo: \textit{reverse proxy} perimetral, Traefik, contenedor Socat y servidor físico TrueNAS.
+La Figura~\ref{fig:minio_log_flujo_directo} muestra una operación \texttt{PUT 200 OK} cuyo campo \texttt{User-Agent} identifica al cliente como un navegador Microsoft Edge con IP de origen externa a la red institucional, lo que confirma que la solicitud atravesó el recorrido completo: \textit{reverse proxy} perimetral, Traefik, contenedor Socat y servidor físico TrueNAS.
 
 \begin{figure}[!htbp]
     \centering
     \includegraphics[width=\textwidth]{figuras/capitulo4/4.3/minio_logs_flujo_directo.png}
-    \caption[Registro de acceso HTTP de MinIO: flujo directo desde el navegador]{Registro de acceso HTTP del servidor MinIO mostrando una operación \texttt{PUT 200 OK} originada desde un navegador Chrome. El campo \texttt{User-Agent} identifica el flujo directo documentado en la Sección~\ref{sec:proxy_socat}.}
+    \caption[Registro de acceso HTTP de MinIO: flujo directo desde el navegador]{Registro de acceso HTTP del servidor MinIO mostrando una operación \texttt{PUT 200 OK} originada desde un navegador Microsoft Edge. El campo \texttt{User-Agent} identifica el flujo directo documentado en la Sección~\ref{sec:proxy_socat}.}
     \label{fig:minio_log_flujo_directo}
 \end{figure}
 
@@ -119,6 +119,7 @@ http://documenso:3000/api/jobs/internal.seal-document/[JOB_ID]
 
 El Código~\ref{lst:browserless_seal_success} registra la respuesta de Browserless, comprendida entre los instantes 17:48:52 y 17:49:11 UTC.
 
+\pagebreak
 \begin{lstlisting}[caption={Registros del contenedor Browserless: recepción y completado del job de renderizado}, label={lst:browserless_seal_success}]
 17:48:52 browserless:job    [...]: Inbound WebSocket request.
 17:48:52 browserless:job    [...]: Adding new job to queue.
@@ -160,7 +161,7 @@ Esta sección verifica que el mecanismo de acceso a la plataforma opera según l
 \subsection{Restricción del inicio de sesión con Google OAuth 2.0}
 \label{subsec:validacion_oauth}
 
-Al intentar iniciar sesión con una cuenta externa al dominio institucional, Google interrumpió el flujo de OAuth antes de emitir el código de autorización: el servidor de autorización devolvió el código \texttt{Error 403: org\_internal} con el mensaje \texttt{Acceso bloqueado: SistemaFirmasFACET solo se puede usar dentro de su organización} (Figura~\ref{fig:oauth_error_gmail}). Este comportamiento es consecuencia directa de haber configurado el tipo de aplicación como \textit{Interna} en Google Cloud Console, tal como se describió en la Subsección~\ref{subsec:google_oauth}: la restricción opera en la capa de autorización de Google y no depende de ninguna validación adicional por parte de la aplicación.
+Al intentar iniciar sesión con una cuenta externa al dominio institucional, Google interrumpió el flujo de OAuth antes de emitir el código de autorización: el servidor de autorización devolvió el código \texttt{Error 403: org\_internal} con el mensaje \texttt{Acceso bloqueado: Sistema\allowbreak FirmasFACET solo se puede usar dentro de su organización} (Figura~\ref{fig:oauth_error_gmail}). Este comportamiento es consecuencia directa de haber configurado el tipo de aplicación como \textit{Interna} en Google Cloud Console, tal como se describió en la Subsección~\ref{subsec:google_oauth}: la restricción opera en la capa de autorización de Google y no depende de ninguna validación adicional por parte de la aplicación.
 
 \begin{figure}[!htbp]
     \centering
@@ -198,7 +199,7 @@ Esta sección valida la capa de sistema definida en la Sección~\ref{sec:metodol
 \subsection{Ciclo completo de firma documental}
 \label{subsec:ciclo_e2e}
 
-Se ejecutó un ciclo completo de firma sobre el documento \texttt{ejemplo1.pdf} con dos destinatarios: una cuenta institucional (\texttt{@herrera.unt.edu.ar}) y una cuenta externa al dominio (\texttt{@gmail.com}). El flujo recorrió las etapas de carga del documento, asignación de firmantes, posicionamiento de campos, notificación por correo electrónico y aplicación de la firma. El destinatario externo accedió mediante el enlace recibido por correo y completó la acción sin requerir cuenta local en la plataforma, lo que confirmó la operación del acceso por enlace documentado en la Subsección~\ref{subsec:google_oauth}. Al completarse ambas firmas, la plataforma disparó el job de sellado criptográfico descrito en la Subsección~\ref{subsec:validacion_browserless} y el ciclo concluyó sin errores.
+Se ejecutó un ciclo completo de firma sobre el documento \texttt{ejemplo1.pdf} con dos destinatarios: una cuenta institucional (\texttt{@herrera.unt.edu.ar}) y una cuenta externa al dominio (\texttt{@\allowbreak gmail.com}). El flujo recorrió las etapas de carga del documento, asignación de firmantes, posicionamiento de campos, notificación por correo electrónico y aplicación de la firma. El destinatario externo accedió mediante el enlace recibido por correo y completó la acción sin requerir cuenta local en la plataforma, lo que confirmó la operación del acceso por enlace documentado en la Subsección~\ref{subsec:google_oauth}. Al completarse ambas firmas, la plataforma disparó el job de sellado criptográfico descrito en la Subsección~\ref{subsec:validacion_browserless} y el ciclo concluyó sin errores.
 
 El procedimiento paso a paso de este ciclo completo se documenta en el Apéndice~\ref{AppendixD}.
 
@@ -219,7 +220,7 @@ La Figura~\ref{fig:e2e_cierre} registra el cierre del ciclo. Al completarse amba
         \caption{\textit{Bucket} \texttt{documenso-prod}: artefacto \texttt{\_signed.pdf} persistido en MinIO.}
         \label{fig:e2e_minio_signed}
     \end{subfigure}
-    \caption[Cierre del ciclo de firma: notificación de completado y persistencia en MinIO]{Correo de notificación emitido al concluir el ciclo con el PDF firmado adjunto~(a); registro del artefacto \texttt{\_signed.pdf} en el \textit{bucket} \texttt{documenso-prod} de MinIO~(b).}
+    \caption[Cierre del ciclo de firma: notificación de completado y persistencia en MinIO]{Correo de notificación emitido al concluir el ciclo con el PDF firmado adjunto~(A); registro del artefacto \texttt{\_signed.pdf} en el \textit{bucket} \texttt{documenso-prod} de MinIO~(B).}
     \label{fig:e2e_cierre}
 \end{figure}
 
@@ -230,6 +231,8 @@ La Figura~\ref{fig:e2e_cierre} registra el cierre del ciclo. Al completarse amba
 
 El PDF descargado al concluir el ciclo documentado en la Subsección~\ref{subsec:ciclo_e2e} se analizó en Adobe Acrobat para confirmar que el sellado criptográfico realizado por Documenso es verificable desde un visor estándar.
 
+El panel de firmas (Figura~\ref{fig:adobe_panel_firmas}) indica que no hubo modificaciones en el documento desde que se firmó; la advertencia de validez desconocida responde a que el certificado es autofirmado y no pertenece a una cadena de confianza comercial, comportamiento previsto en el diseño y documentado en la Subsección~\ref{sec:mecanismo_tecnico}.
+
 \begin{figure}[!htbp]
     \centering
     \includegraphics[width=0.88\textwidth]{figuras/capitulo4/4.5/panel_firmas_adobe.png}
@@ -237,14 +240,12 @@ El PDF descargado al concluir el ciclo documentado en la Subsección~\ref{subsec
     \label{fig:adobe_panel_firmas}
 \end{figure}
 
-El panel de firmas (Figura~\ref{fig:adobe_panel_firmas}) indica que no hubo modificaciones en el documento desde que se firmó; la advertencia de validez desconocida responde a que el certificado es autofirmado y no pertenece a una cadena de confianza comercial, comportamiento previsto en el diseño y documentado en la Subsección~\ref{sec:mecanismo_tecnico}.
-
-La Figura~\ref{fig:adobe_visor_cert} detalla el certificado utilizado: emisor y sujeto son documentos.facet.unt.edu.ar (FACET), con vigencia del 28/03/2026 al 25/03/2036. Este intervalo corresponde al parámetro \texttt{-days 3650} utilizado en la generación del certificado. La concordancia entre la vigencia exhibida por Adobe Acrobat y el parámetro de generación confirma que el visor reconoce el material criptográfico institucional producido durante el despliegue (Apéndice~\ref{AppendixB:Crypto}).
+La Figura~\ref{fig:adobe_visor_cert} detalla el certificado utilizado: emisor y sujeto son documentos.facet.unt.edu.ar (FACET), con vigencia del 28/03/2026 al 25/03/2036. Este intervalo corresponde al parámetro \texttt{-days 3650} utilizado en la generación del certificado. La concordancia entre la vigencia exhibida por Microsoft Edge y el parámetro de generación confirma que el visor reconoce el material criptográfico institucional producido durante el despliegue (Apéndice~\ref{AppendixB:Crypto}).
 
 \begin{figure}[!htbp]
     \centering
-    \includegraphics[width=0.62\textwidth]{figuras/capitulo4/4.5/visor_certificados_adobe.png}
-    \caption[Detalle del certificado institucional FACET en el visor de Adobe Acrobat]{Visor de certificados de Adobe Acrobat. Emisor y sujeto son \texttt{documentos.facet.unt.edu.ar} (FACET); vigencia del 28/03/2026 al 25/03/2036.}
+    \colorbox{black}{\includegraphics[width=0.80\textwidth]{figuras/capitulo4/4.5/visor_certificados_adobe.png}}
+    \caption[Detalle del certificado institucional FACET en el visor de Microsoft Edge]{Visor de certificados de Microsoft Edge. Emisor y sujeto son \texttt{documentos.facet.unt.edu.ar} (FACET); vigencia del 28/03/2026 al 25/03/2036.}
     \label{fig:adobe_visor_cert}
 \end{figure}
 
@@ -253,7 +254,7 @@ La Figura~\ref{fig:adobe_visor_cert} detalla el certificado utilizado: emisor y 
 \section{Métricas de Rendimiento del Sistema}
 \label{sec:metricas_rendimiento}
 
-Las métricas de consumo de CPU y RAM se registraron por contenedor mediante Netdata. Los valores se contrastan a continuación con la capacidad auditada del LXC: 8~vCPUs y 8~GiB de RAM (Subsección~\ref{sec:infraestructura_base}).
+Las métricas de consumo de CPU y RAM se registraron por contenedor mediante Netdata. Los valores se contrastan a continuación con la capacidad auditada del LXC: 8~vCPUs y 8~GiB de RAM (Subsección~\ref{sec:infraestructura_base}). En todas las gráficas de esta sección, la curva amarilla corresponde a Documenso, la naranja a Browserless, la azul a PostgreSQL y la rosa al \textit{proxy} Socat.
 
 \subsection{Consumo de recursos en operación normal (baseline)}
 \label{subsec:baseline}
@@ -267,13 +268,13 @@ La Figura~\ref{fig:baseline_ram} registra el consumo de RAM de los cuatro conten
 \begin{figure}[!htbp]
     \centering
     \includegraphics[width=\textwidth]{figuras/capitulo4/4.6/BloqueA/baseline_ram.png}
-    \caption[Consumo de RAM en baseline: cuatro contenedores del \textit{stack}]{Consumo de RAM (en MiB) de los contenedores del \textit{stack} durante el período de observación en baseline. Documenso: \(\approx\) 351~MiB; Browserless: \(\approx\) 308~MiB; PostgreSQL: \(\approx\) 76~MiB; \textit{proxy} Socat: \(\approx\) 2,2~MiB. Total del \textit{stack}: \(\approx\) 737~MiB sobre 8~GiB asignados al LXC.}
+    \caption[Consumo de RAM en baseline: cuatro contenedores del \textit{stack}]{Consumo de RAM (en MiB) de los contenedores del \textit{stack} durante parte del período de observación en baseline. Documenso: \(\approx\) 215,5~MiB; Browserless: \(\approx\) 102,0~MiB; PostgreSQL: \(\approx\) 77,0~MiB; \textit{proxy} Socat: \(\approx\) 2,2~MiB. Total del \textit{stack}: \(\approx\) 396,7~MiB sobre 8~GiB asignados al LXC.}
     \label{fig:baseline_ram}
 \end{figure}
 
 \FloatBarrier
 
-El consumo total del \textit{stack} en reposo fue de aproximadamente 737~MiB, equivalente al 9\,\% de la capacidad del LXC. Documenso concentró la mayor parte de ese consumo (351~MiB), seguido de Browserless (308~MiB). PostgreSQL y Socat aportaron conjuntamente menos de 80~MiB.
+El consumo total del \textit{stack} en reposo fue de aproximadamente 396,7~MiB, equivalente al 5\,\% de la capacidad del LXC. Documenso concentró la mayor parte de ese consumo (215,5~MiB), seguido de Browserless (102,0~MiB). PostgreSQL y Socat aportaron conjuntamente menos de 80~MiB.
 
 \subsubsection*{CPU}
 
@@ -282,13 +283,13 @@ En condición de reposo, los cuatro contenedores registraron consumos de CPU est
 \begin{figure}[!htbp]
     \centering
     \includegraphics[width=\textwidth]{figuras/capitulo4/4.6/BloqueA/baseline_cpu.png}
-    \caption[Consumo de CPU en condición de reposo: los cuatro contenedores]{Uso de CPU (\% del límite del cgroup) durante el período de observación. Picos máximos: Documenso 7,8\,\%; Browserless 2,5\,\%; PostgreSQL 1,3\,\%; \textit{proxy} Socat 0,5\,\%.}
+    \caption[Consumo de CPU en baseline: cuatro contenedores del \textit{stack}]{Consumo de CPU (\% del límite del cgroup) de los contenedores del \textit{stack} durante parte del período de observación en baseline. Picos máximos: Documenso: 5,9\,\%; Browserless: 2,6\,\%; PostgreSQL: 1,2\,\%; \textit{proxy} Socat: 0,43\,\%.}
     \label{fig:baseline_cpu}
 \end{figure}
 
 \FloatBarrier
 
-Los picos de Documenso (máximo 7,8\,\%) correspondieron a solicitudes de renderizado de página y no a procesamiento sostenido. Entre los instantes de actividad, todos los contenedores retornaron a valores próximos a cero. La holgura disponible respecto a los 8~vCPUs del LXC resultó amplia bajo esta carga.
+Los picos de Documenso (máximo 5,9\,\%) correspondieron a solicitudes de renderizado de página y no a procesamiento sostenido. Entre los instantes de actividad, todos los contenedores retornaron a valores próximos a cero. La holgura disponible respecto a los 8~vCPUs del LXC resultó amplia bajo esta carga.
 
 \subsection{Consumo de recursos bajo carga controlada}
 \label{subsec:carga_controlada}
@@ -304,23 +305,23 @@ Las Figuras~\ref{fig:carga_1firma_cpu} y \ref{fig:carga_1firma_ram} registran el
     \begin{subfigure}[b]{0.95\textwidth}
         \centering
         \includegraphics[width=\textwidth]{figuras/capitulo4/4.6/BloqueB/carga_controlada_1firma_cpu.png}
-        \caption{CPU durante el sellado de un documento.}
+        \caption{Consumo de CPU (\% del límite del cgroup) durante el sellado de un documento. Pico máximo: Browserless 86,00\,\%; Documenso 16,66\,\%.}
         \label{fig:carga_1firma_cpu}
     \end{subfigure}
     \vspace{1em}
     \begin{subfigure}[b]{0.95\textwidth}
         \centering
         \includegraphics[width=\textwidth]{figuras/capitulo4/4.6/BloqueB/carga_controlada_1firma_ram.png}
-        \caption{RAM durante el sellado de un documento.}
+        \caption{Consumo de RAM (en MiB) durante el sellado de un documento. Browserless: 102~MiB \(\to\) 600~MiB (pico, +498~MiB), estabilizado en 124,3~MiB (+22,3~MiB retenidos). Documenso: 215,5~MiB \(\to\) 308,8~MiB (+93,3~MiB retenidos). PostgreSQL: pico transitorio de 97~MiB (+20~MiB).}
         \label{fig:carga_1firma_ram}
     \end{subfigure}
-    \caption[CPU y RAM durante el sellado de un documento (1 firma)]{Consumo de CPU y RAM del \textit{stack} durante el sellado de un documento. La actividad se concentró en un único instante (22:11:32--22:11:34 UTC): Browserless alcanzó un pico máximo de 104,5\,\% de CPU y 707,7~MiB de RAM antes de liberar ambos recursos al concluir el job.}
+    \caption[CPU y RAM durante el sellado de un documento (1 firma)]{Consumo de CPU y RAM del \textit{stack} durante el sellado de un documento. Browserless alcanzó un pico máximo de 86,00\,\% de CPU y 600~MiB de RAM; al concluir el job, la CPU retornó al baseline mientras la RAM se estabilizó en 124,3~MiB. Documenso retuvo 93,3~MiB adicionales de forma permanente tras el evento.}
     \label{fig:carga_1_firma}
 \end{figure}
 
 \FloatBarrier
 
-En CPU, el evento se manifestó como un pico aislado de 2~segundos de duración: Browserless alcanzó un máximo de 104,5\,\% mientras Documenso no superó el 19\,\%. El resto del \textit{stack} permaneció en valores de baseline. En RAM, Browserless escaló abruptamente desde 310~MiB hasta 707,7~MiB (+397~MiB) para instanciar el proceso de Chrome encargado del renderizado. Al concluir el job, el proceso fue destruido y el sistema operativo recuperó la memoria; ambas curvas retornaron a sus valores de baseline en el siguiente intervalo de muestreo. El impacto sobre Documenso (+30~MiB) y PostgreSQL (+13~MiB) resultó marginal.
+En CPU, el evento se manifestó como un pico aislado de 2~segundos de duración: Browserless alcanzó un máximo de 86,00\,\% mientras Documenso no superó el 16,66\,\%. El resto del \textit{stack} permaneció en valores de baseline. En RAM, Browserless escaló abruptamente desde 102~MiB hasta 600~MiB (+498~MiB) para instanciar el proceso de Chrome encargado del renderizado. Al concluir el job, el proceso fue destruido y el sistema operativo recuperó la memoria; Browserless se estabilizó en 124,3~MiB (+22,3~MiB sobre su baseline) y Documenso en 308,8~MiB (+93,3~MiB). El impacto sobre PostgreSQL fue transitorio (pico de 97~MiB, +20~MiB) y retornó a su valor de baseline al concluir el job.
 
 \subsubsection*{Ensayo 2: ráfaga de cinco documentos}
 
@@ -331,25 +332,25 @@ Las Figuras~\ref{fig:carga_5firmas_cpu} y \ref{fig:carga_5firmas_ram} registran 
     \begin{subfigure}[b]{0.95\textwidth}
         \centering
         \includegraphics[width=\textwidth]{figuras/capitulo4/4.6/BloqueB/cpu_bajo_carga_controlada_5firmas.png}
-        \caption{CPU durante la ráfaga de cinco documentos.}
+        \caption{Consumo de CPU (\% del límite del cgroup) durante la ráfaga de cinco documentos. Pico máximo sostenido: Browserless 100\,\%; Documenso 25\,\% al inicio del proceso.}
         \label{fig:carga_5firmas_cpu}
     \end{subfigure}
     \vspace{1em}
     \begin{subfigure}[b]{0.95\textwidth}
         \centering
         \includegraphics[width=\textwidth]{figuras/capitulo4/4.6/BloqueB/ram_bajo_carga_controlada_5firmas.png}
-        \caption{RAM durante la ráfaga de cinco documentos.}
+        \caption{Consumo de RAM (en MiB) durante la ráfaga de cinco documentos. Pico máximo de Browserless: 1\,331~MiB. Total del \textit{stack} en el pico: \(\approx\) 1\,826~MiB sobre 8~GiB asignados al LXC.}
         \label{fig:carga_5firmas_ram}
     \end{subfigure}
-    \caption[CPU y RAM durante la ráfaga de cinco documentos concurrentes]{Consumo de CPU y RAM del \textit{stack} durante la ráfaga de cinco documentos. La ventana de actividad sostenida se extendió entre las 17:27:40 y las 17:29:20 UTC. Browserless alcanzó un pico de CPU de 104,5\,\% y un pico de RAM de 1\,331~MiB antes de liberar ambos recursos al completarse todos los jobs.}
+    \caption[CPU y RAM durante la ráfaga de cinco documentos concurrentes]{Consumo de CPU y RAM del \textit{stack} durante la ráfaga de cinco documentos. La ventana de actividad se extendió entre las 00:46:28 y las 00:47:40 UTC (\(\approx\)~1~min 12~s). Browserless alcanzó un pico sostenido de 100\,\% de CPU y un pico de RAM de 1\,331~MiB antes de liberar ambos recursos al completarse todos los jobs.}
     \label{fig:carga_5_firmas}
 \end{figure}
 
 \FloatBarrier
 
-En este ensayo, el bloque de actividad se extendió entre las 17:27:40 y las 17:29:20 UTC, aproximadamente dos minutos: Browserless procesó los cinco jobs en forma secuencial, lo que explica la forma escalonada de la curva de RAM (Figura~\ref{fig:carga_5firmas_ram}), donde cada peldaño corresponde al lanzamiento de un proceso de Chrome adicional. El pico máximo de RAM de Browserless fue de 1\,331~MiB. Al completarse el último job, la curva cayó a los 298~MiB de baseline en un único intervalo de muestreo.
+En este ensayo, el bloque de actividad se extendió entre las 00:46:28 y las 00:47:40 UTC, aproximadamente 1~minuto 12~segundos: Browserless procesó los cinco jobs en forma secuencial, lo que explica la forma escalonada de la curva de RAM (Figura~\ref{fig:carga_5firmas_ram}), donde cada peldaño corresponde al lanzamiento de un proceso de Chrome adicional. El pico máximo de RAM de Browserless fue de 1\,331~MiB. Al completarse el último job, la curva cayó a los 298~MiB de baseline en un único intervalo de muestreo.
 
-El pico de CPU de 104,5\,\% observado en Browserless corresponde a 1,04 núcleos virtuales sobre los 8~vCPUs del LXC (el 13\,\% de la capacidad total). Documenso registró picos de hasta 20\,\% durante el mismo intervalo, asociados al encolamiento y despacho de los jobs de sellado.
+En CPU, Browserless registró un pico agudo inicial de 100\,\% a las 00:46:28, un breve descenso hacia el baseline a las 00:46:32 y luego una actividad sostenida al 100\,\% durante aproximadamente 1~minuto hasta las 00:47:38. El pico de 100\,\% corresponde a 1 núcleo virtual sobre los 8~vCPUs del LXC (el 12,5\,\% de la capacidad total). Documenso registró un pico de 25\,\% al inicio del proceso, asociado al despacho inicial de los jobs de sellado, retornando luego al baseline.
 
 \subsubsection*{Tabla comparativa de rendimiento}
 
@@ -364,19 +365,19 @@ La Tabla~\ref{tab:metricas_rendimiento} consolida los valores registrados en amb
         \textbf{Componente} & \textbf{Baseline} & \textbf{Pico (ráfaga)} & \textbf{Impacto sobre LXC} \\
         \midrule
         \multicolumn{4}{l}{\textbf{Uso de CPU} (capacidad total: 8~vCPUs)} \\
-        \quad Browserless   & 2,5\,\%    & 104,5\,\%              & \(\approx\) 13\,\% (\(\approx\) 1~vCPU) \\
-        \quad Documenso     & 7,77\,\%   & \(\approx\) 20\,\%   & \(\approx\) 2,5\,\% (\(\approx\) 0,2~vCPU) \\
+        \quad Browserless   & 2,6\,\%    & 100\,\%              & \(\approx\) 12,5\,\% (\(\approx\) 1~vCPU) \\
+        \quad Documenso     & 5,9\,\%    & 25\,\%   & \(\approx\) 3,1\,\% (\(\approx\) 0,25~vCPU) \\
         \midrule
         \multicolumn{4}{l}{\textbf{Uso de RAM} (capacidad total: 8\,192~MiB)} \\
-        \quad Browserless             & \(\approx\) 308~MiB  & \(\approx\) 1\,331~MiB & \(\approx\) 16\,\% \\
-        \quad \textbf{\textit{Stack} total}    & \textbf{\(\approx\) 737~MiB (9\,\%)} & \textbf{\(\approx\) 1\,826~MiB} & \textbf{\(\approx\) 22\,\%} \\
+        \quad Browserless             & \(\approx\) 102,0~MiB  & \(\approx\) 1\,331~MiB & \(\approx\) 16\,\% \\
+        \quad \textbf{\textit{Stack} total}    & \textbf{\(\approx\) 396,7~MiB (5\,\%)} & \textbf{\(\approx\) 1\,826~MiB} & \textbf{\(\approx\) 22\,\%} \\
         \bottomrule
     \end{tabular}
 \end{table}
 
 \FloatBarrier
 
-El recurso con mayor variación bajo carga fue la RAM de Browserless, que se multiplicó por 4,3 respecto al baseline. Aun en el peor caso registrado, el \textit{stack} consumió el 22\,\% de la RAM del LXC, lo que dejó un margen de aproximadamente 6\,366~MiB (\(\approx\) 6,2~GiB) disponibles. La CPU no representó un cuello de botella en ninguno de los dos ensayos.
+El recurso con mayor variación bajo carga fue la RAM de Browserless, que se multiplicó por \(\approx\)~13 respecto al baseline. Aun en el peor caso registrado, el \textit{stack} consumió el 22\,\% de la RAM del LXC, lo que dejó un margen de aproximadamente 6\,366~MiB (\(\approx\) 6,2~GiB) disponibles. La CPU no representó un cuello de botella en ninguno de los dos ensayos.
 
 \section{Validación del Respaldo y Recuperación}
 \label{sec:validacion_respaldo}
@@ -431,7 +432,9 @@ En el dominio de configuraciones, la comprobación se efectuó sobre un respaldo
 
 Las políticas de ciclo de vida configuradas en la Sección~\ref{sec:estrategia_respaldo_retencion} del Capítulo~\ref{chap:diseno_implementacion} se verificaron mediante el comando \texttt{mc ilm ls} del cliente de MinIO, ejecutado sobre cada uno de los tres \textit{buckets} del sistema. Esta verificación es crítica porque, aunque la aplicación no explota versiones de objetos en su operación diaria, la activación de \textit{Object Lock} fuerza el versionado a nivel de infraestructura. En este contexto, la salida del comando demuestra que el motor ILM opera como mecanismo de \textit{Garbage Collection} para purgar \textit{Delete Markers} y evitar el colapso de las cuotas de almacenamiento. La Figura~\ref{fig:minio_ilm_policies} presenta la salida del comando.
 
-\begin{figure}[!t]
+Las reglas registradas son coherentes con el diseño: el \textit{bucket} documental (\texttt{documenso-prod}) conserva la versión vigente de cada objeto durante 1\,825~días (cinco años) y elimina las versiones anteriores tras un día, mientras que los \textit{buckets} de respaldo aplican retenciones de 30 y 180~días respectivamente. En los tres casos, el campo \texttt{KEEP VERSIONS} registra el valor 0, lo que indica que las versiones no vigentes no se acumulan más allá del plazo configurado.
+
+\begin{figure}[!htbp]
     \centering
     \begin{subfigure}[b]{0.85\textwidth}
         \centering
@@ -446,7 +449,10 @@ Las políticas de ciclo de vida configuradas en la Sección~\ref{sec:estrategia_
         \caption{\textit{Bucket} \texttt{documenso-backup-databases}: expiración y eliminación de versiones anteriores a los 30~días.}
         \label{fig:ilm_documenso_db_backups}
     \end{subfigure}
-    \vspace{0.5em}
+\end{figure}
+\begin{figure}[!htbp]
+    \ContinuedFloat
+    \centering
     \begin{subfigure}[b]{0.85\textwidth}
         \centering
         \includegraphics[width=\textwidth]{figuras/capitulo3/backups-coolify_retention-policies.png}
@@ -459,11 +465,9 @@ Las políticas de ciclo de vida configuradas en la Sección~\ref{sec:estrategia_
 
 \FloatBarrier
 
-Las reglas registradas son coherentes con el diseño: el \textit{bucket} documental (\texttt{documenso-prod}) conserva la versión vigente de cada objeto durante 1\,825~días (cinco años) y elimina las versiones anteriores tras un día, mientras que los \textit{buckets} de respaldo aplican retenciones de 30 y 180~días respectivamente. En los tres casos, el campo \texttt{KEEP VERSIONS} registra el valor 0, lo que indica que las versiones no vigentes no se acumulan más allá del plazo configurado.
-
 La interfaz web de MinIO permite corroborar la configuración de cada \textit{bucket} desde una perspectiva complementaria. La Figura~\ref{fig:minio_ui_buckets} muestra el panel de administración con el estado del versionado, el bloqueo de objetos y la política de retención activa.
 
-\begin{figure}[!htbp]
+\begin{figure}[H]
     \centering
     \begin{subfigure}[b]{0.85\textwidth}
         \centering
@@ -471,14 +475,20 @@ La interfaz web de MinIO permite corroborar la configuración de cada \textit{bu
         \caption{\textit{Bucket} \texttt{documenso-prod}: Object Locking habilitado, versionado activo, retención Governance de 1\,825~días, cuota de 2,0~TiB.}
         \label{fig:minio_ui_documenso_prod}
     \end{subfigure}
-    \vspace{0.5em}
+\end{figure}
+
+\begin{figure}[H]
+    \ContinuedFloat
+    \centering
     \begin{subfigure}[b]{0.85\textwidth}
         \centering
         \includegraphics[width=\textwidth]{figuras/capitulo3/documenso-backup-databases.png}
         \caption{\textit{Bucket} \texttt{documenso-backup-databases}: Object Locking habilitado, versionado activo, retención Governance de 30~días, cuota de 5,0~GiB.}
         \label{fig:minio_ui_documenso_db_backups}
     \end{subfigure}
+    
     \vspace{0.5em}
+    
     \begin{subfigure}[b]{0.85\textwidth}
         \centering
         \includegraphics[width=\textwidth]{figuras/capitulo3/backups-coolify.png}

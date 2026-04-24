@@ -25,6 +25,8 @@ En este esquema, ni la dirección IP del servidor ni los puertos internos de Doc
     \label{fig:arquitectura_global}
 \end{figure}
 
+Una versión ampliada de este diagrama se encuentra disponible en la Sección~\ref{AppendixA:TopologiaGeneral} del Apéndice~\ref{AppendixA}.
+
 \begin{figure}[!htbp]
     \centering
     \includegraphics[width=0.95\textwidth]{figuras/capitulo3/headers_https_documenso-server_ngnix.png}
@@ -65,9 +67,9 @@ En la práctica, la PaaS resolvió tareas que, en un despliegue manual, hubieran
     \item Respaldo: integración con almacenamiento S3 compatible, utilizada más adelante para automatizar los respaldos de PostgreSQL sobre MinIO.
 \end{itemize}
 
-En esta arquitectura conviene diferenciar el rol de cada capa. Proxmox VE corre sobre el servidor físico, cuya IP en la LAN es \texttt{192.168.80.39}. Su función consiste en asignar recursos de cómputo, memoria y almacenamiento a los contenedores y máquinas virtuales que administra. El hipervisor no participa del enrutamiento ni del procesamiento del tráfico HTTP/HTTPS de las aplicaciones.
+En esta arquitectura conviene diferenciar el rol de cada capa. Proxmox VE corre sobre el servidor físico, cuya IP en la LAN es \texttt{192.168.X.Y}. Su función consiste en asignar recursos de cómputo, memoria y almacenamiento a los contenedores y máquinas virtuales que administra. El hipervisor no participa del enrutamiento ni del procesamiento del tráfico HTTP/HTTPS de las aplicaciones.
 
-El contenedor LXC, en cambio, se conecta a la LAN de la facultad mediante un puente virtual (bridge) configurado en Proxmox y obtiene su propia IP, \texttt{192.168.80.65}, como un nodo independiente de la red local. Para Docker y Traefik, ese LXC actúa como sistema anfitrión: allí se publican los puertos \texttt{80} y \texttt{443} y desde allí se resuelve el enrutamiento interno hacia los contenedores. Así, Proxmox queda en el plano de gestión de la infraestructura, mientras que el LXC concentra el plano de datos de la aplicación.
+El contenedor LXC, en cambio, se conecta a la LAN de la facultad mediante un puente virtual (bridge) configurado en Proxmox y obtiene su propia IP, \texttt{192.168.X.Z}, como un nodo independiente de la red local. Para Docker y Traefik, ese LXC actúa como sistema anfitrión: allí se publican los puertos \texttt{80} y \texttt{443} y desde allí se resuelve el enrutamiento interno hacia los contenedores. Así, Proxmox queda en el plano de gestión de la infraestructura, mientras que el LXC concentra el plano de datos de la aplicación.
 
 La Figura \ref{fig:zoom_coolify} muestra esta arquitectura anidada y el modo en que Coolify gestiona el enrutamiento interno mediante Traefik, manteniendo a Documenso separado de otros servicios desplegados sobre ese LXC.
 
@@ -77,6 +79,8 @@ La Figura \ref{fig:zoom_coolify} muestra esta arquitectura anidada y el modo en 
     \caption[Topología interna de la PaaS Coolify]{Arquitectura anidada y segmentación de redes virtuales Docker dentro del contenedor LXC base.}
     \label{fig:zoom_coolify}
 \end{figure}
+
+Una versión ampliada de este diagrama se encuentra disponible en la Sección~\ref{AppendixA:Coolify} del Apéndice~\ref{AppendixA}.
 
 \section{Configuración de Servicios y Despliegue de Documenso}
 \label{sec:configuracion_servicios}
@@ -141,7 +145,7 @@ La imagen se fijó en \texttt{v2.1.0} en lugar de usar la etiqueta \texttt{lates
 \texttt{Illegal instruction (core dumped)}
 \end{quote}
 
-Desde la versión 2.2.0, Documenso incorpora dependencias internas ---en particular Sharp (libvips)--- que requieren instrucciones AVX/AVX2 del procesador \cite{documenso_issue_2292}. El servidor físico de la FACET utiliza procesadores Intel Xeon E5620, de la familia Westmere, que carecen de soporte AVX. Esta ausencia se verificó con \texttt{lscpu} en el contenedor LXC, donde las flags \texttt{avx} y \texttt{avx2} no estaban presentes. En consecuencia, el despliegue quedó anclado en \texttt{v2.1.0}, última versión operable sobre el hardware disponible. El requerimiento de AVX/AVX2 para ramas posteriores quedó además documentado en el issue \#2292 del repositorio oficial \cite{documenso_issue_2292}. Esta restricción impone una deuda técnica temporal, ya que impide adoptar parches de seguridad y mejoras funcionales de versiones superiores; en el corto plazo, debe priorizarse la migración a un servidor con soporte AVX.
+Desde la versión 2.2.0, Documenso incorpora dependencias internas (en particular Sharp/libvips) que requieren instrucciones AVX/AVX2 del procesador \cite{documenso_issue_2292}. El servidor físico de la FACET utiliza procesadores Intel Xeon E5620, de la familia Westmere, que carecen de soporte AVX. Esta ausencia se verificó con \texttt{lscpu} en el contenedor LXC, donde las flags \texttt{avx} y \texttt{avx2} no estaban presentes. En consecuencia, el despliegue quedó anclado en \texttt{v2.1.0}, última versión operable sobre el hardware disponible. El requerimiento de AVX/AVX2 para ramas posteriores quedó además documentado en el issue \#2292 del repositorio oficial \cite{documenso_issue_2292}. Esta restricción impone una deuda técnica temporal, ya que impide adoptar parches de seguridad y mejoras funcionales de versiones superiores; en el corto plazo, debe priorizarse la migración a un servidor con soporte AVX.
 
 Dentro del despliegue, Documenso resolvió sus dependencias internas mediante los nombres de servicio \texttt{database} y \texttt{browserless}, mientras que Traefik expuso únicamente la interfaz web. En la configuración del dominio de la aplicación, la forma https://documentos.facet.unt.edu.ar:3000 no representó la apertura del puerto \texttt{3000} hacia el exterior, sino una regla declarativa consumida por el proxy interno para enrutar el tráfico HTTPS entrante hacia ese puerto dentro del contenedor. La Figura~\ref{fig:zoom_seccion_servicios} resume esta organización y justifica la nomenclatura adoptada en el diagrama de red.
 
@@ -152,26 +156,28 @@ Dentro del despliegue, Documenso resolvió sus dependencias internas mediante lo
     \label{fig:zoom_seccion_servicios}
 \end{figure}
 
+Una versión ampliada de este diagrama se encuentra disponible en la Sección~\ref{AppendixA:RedDocker} del Apéndice~\ref{AppendixA}.
+
 
 \section{Conectividad con el Almacenamiento de Objetos (Proxy Socat)}
 \label{sec:proxy_socat}
 
 La conectividad entre Documenso y MinIO estuvo condicionada por una restricción de diseño de la aplicación: el sistema centraliza la configuración de su almacenamiento S3 a través de una única variable de entorno denominada \texttt{NEXT\_PRIVATE\_UPLOAD\_ENDPOINT}. Al disponer de un único parámetro de configuración, la arquitectura obligó a que tanto el navegador web del usuario (tráfico externo) como el propio servidor interno de la aplicación (tráfico interno) utilizaran una única ruta para acceder al almacenamiento. La solución adoptada fue establecer \nolinkurl{minio.facet.unt.edu.ar} como el dominio público unificado.
 
-Bajo esta configuración, la plataforma opera con dos flujos de datos diferenciados. El primer flujo corresponde a los recursos gráficos de la interfaz, como las imágenes de branding. En este caso, Documenso genera URLs prefirmadas que el navegador consume directamente contra MinIO \cite{documenso_storage_config,documenso_backups}. Si la variable de entorno hubiera contenido una dirección privada de la LAN, como \texttt{192.168.80.24:9000}, este flujo habría fallado porque esa dirección no es enrutable desde Internet y, por lo tanto, no puede ser alcanzada por clientes externos. A esto se suma que las políticas de seguridad del navegador bloquean peticiones desde un origen HTTPS hacia un destino HTTP plano (Mixed Content).
+Bajo esta configuración, la plataforma opera con dos flujos de datos diferenciados. El primer flujo corresponde a los recursos gráficos de la interfaz, como las imágenes de branding. En este caso, Documenso genera URLs prefirmadas que el navegador consume directamente contra MinIO \cite{documenso_storage_config,documenso_backups}. Si la variable de entorno hubiera contenido una dirección privada de la LAN, como \texttt{192.168.X.W:9000}, este flujo habría fallado porque esa dirección no es enrutable desde Internet y, por lo tanto, no puede ser alcanzada por clientes externos. A esto se suma que las políticas de seguridad del navegador bloquean peticiones desde un origen HTTPS hacia un destino HTTP plano (Mixed Content).
 
 La publicación del dominio \nolinkurl{minio.facet.unt.edu.ar} a través del \textit{reverse proxy} perimetral resolvió este impedimento, pero exigió dos ajustes. Primero, fue necesario configurar el parámetro \texttt{client\_max\_body\_size} en Nginx. Documenso admite cargas de hasta 50~MB por archivo (valor por defecto de la aplicación), por lo que se fijó ese mismo límite para \nolinkurl{documentos.facet.unt.edu.ar}; para \nolinkurl{minio.facet.unt.edu.ar} se estableció 75~MB como margen de seguridad para el peor caso operativo: durante el sellado, la incrustación de firma criptográfica, certificados y metadatos incrementa el tamaño del PDF. De este modo, si un usuario carga un archivo cercano a 50~MB, el sistema conserva holgura suficiente para almacenar la versión firmada sin rechazar la petición. Segundo, en el flujo directo del navegador, fue obligatorio autorizar en MinIO el origen institucional \nolinkurl{https://documentos.facet.unt.edu.ar}. Esto permitió satisfacer las políticas CORS (Cross-Origin Resource Sharing) de MinIO para las peticiones iniciadas desde el navegador. La Figura~\ref{fig:socat_evidencia} evidencia esta secuencia.
 
 \begin{figure}[H]
      \centering
-     \begin{subfigure}[b]{0.85\textwidth}
+     \begin{subfigure}[b]{0.7\textwidth}
          \centering
          \includegraphics[width=\textwidth]{figuras/capitulo3/requestToMinIO.png}
          \caption{Solicitud preflight OPTIONS del protocolo CORS hacia MinIO.}
          \label{fig:devtools_preflight}
      \end{subfigure}
      \hfill
-     \begin{subfigure}[b]{0.85\textwidth}
+     \begin{subfigure}[b]{0.7\textwidth}
          \centering
          \includegraphics[width=\textwidth]{figuras/capitulo3/requestToMinIO2.png}
          \caption{Petición PUT de carga del recurso gráfico hacia el \textit{bucket} S3.}
@@ -192,7 +198,7 @@ La Figura~\ref{fig:indirect_flow_devtools} presenta la evidencia de este comport
     \label{fig:indirect_flow_devtools}
 \end{figure}
 
-Para enlazar la red virtual de contenedores con el servidor de almacenamiento TrueNAS, se implementó un contenedor basado en \texttt{socat} dentro de Coolify. El contenedor expone el puerto \texttt{9000} dentro de la red interna de Docker, donde la utilidad queda a la escucha mediante \texttt{TCP4-LISTEN:9000}, y redirige el tráfico TCP hacia la IP del servidor de almacenamiento TrueNAS (\texttt{TCP4:192.168.80.24:9000}). En esta topología, Traefik recibe las peticiones dirigidas a \nolinkurl{minio.facet.unt.edu.ar} y deriva el tráfico entrante hacia ese puerto del contenedor \texttt{socat}, que actúa como puente de red hacia TrueNAS. La composición de este servicio se incluye en el Apéndice~\ref{AppendixB:Compose}. El servicio se desplegó de forma independiente del \textit{stack} principal de Documenso para mantener un túnel reutilizable hacia almacenamiento S3 en futuros proyectos de la facultad.
+Para enlazar la red virtual de contenedores con el servidor de almacenamiento TrueNAS, se implementó un contenedor basado en \texttt{socat} dentro de Coolify. El contenedor expone el puerto \texttt{9000} dentro de la red interna de Docker, donde la utilidad queda a la escucha mediante \texttt{TCP4-LISTEN:9000}, y redirige el tráfico TCP hacia la IP del servidor de almacenamiento TrueNAS (\texttt{TCP4:192.168.X.W:9000}). En esta topología, Traefik recibe las peticiones dirigidas a \nolinkurl{minio.facet.unt.edu.ar} y deriva el tráfico entrante hacia ese puerto del contenedor \texttt{socat}, que actúa como puente de red hacia TrueNAS. La composición de este servicio se incluye en el Apéndice~\ref{AppendixB:Compose}. El servicio se desplegó de forma independiente del \textit{stack} principal de Documenso para mantener un túnel reutilizable hacia almacenamiento S3 en futuros proyectos de la facultad.
 
 El diseño final hizo que ambos flujos convergieran en un mismo dominio público, de modo que todo el tráfico dirigido al almacenamiento ---ya se originara externamente en el navegador o fuera reinyectado internamente por el servidor de la aplicación--- atravesara el \textit{reverse proxy} perimetral de la facultad.
 
@@ -204,6 +210,8 @@ La Figura~\ref{fig:flujo_socat_minio} ilustra esta convergencia de los dos flujo
     \caption[Flujos de acceso a MinIO a través del \textit{proxy} Socat]{Convergencia del flujo directo del navegador y del flujo indirecto del \textit{backend} hacia el servidor de almacenamiento TrueNAS/MinIO a través del \textit{reverse proxy} perimetral, Traefik y el contenedor Socat.}
     \label{fig:flujo_socat_minio}
 \end{figure}
+
+Una versión ampliada de este diagrama se encuentra disponible en la Sección~\ref{AppendixA:FlujoMinIO} del Apéndice~\ref{AppendixA}.
 
 \section{Estrategia de Respaldo y Retención de Datos}
 \label{sec:estrategia_respaldo_retencion}
@@ -286,16 +294,18 @@ Se implementó un flujo OAuth 2.0 restringido al ámbito \textit{Interno} de Goo
 
 Para completar la restricción de acceso, se deshabilitó el registro local de nuevas cuentas mediante la configuración correspondiente en las variables de entorno de la aplicación. Con esta medida, el único mecanismo de ingreso quedó limitado a la autenticación mediante Google. El detalle de las variables utilizadas se documenta en el Apéndice~\ref{AppendixB:GoogleOAuth}.
 
+La Figura~\ref{fig:google_oauth_disable_signup} muestra el cambio visible en la interfaz de acceso. Con el registro local habilitado aparece el enlace ``\textquestiondown No tienes una cuenta? Reg\'istrate''; al deshabilitarlo, ese enlace desaparece y el ingreso queda limitado a cuentas institucionales.
+
 \begin{figure}[!htbp] 
     \centering
-    \begin{subfigure}[t]{0.38\textwidth}
+    \begin{subfigure}[t]{0.34\textwidth}
         \centering
         \includegraphics[width=\textwidth]{figuras/capitulo3/login_signup_enabled.png}
         \caption{Pantalla de acceso con registro local habilitado.}
         \label{fig:login_signup_enabled}
     \end{subfigure}
     \hfill
-    \begin{subfigure}[t]{0.38\textwidth}
+    \begin{subfigure}[t]{0.34\textwidth}
         \centering
         \includegraphics[width=\textwidth]{figuras/capitulo3/login_signup_disabled.png}
         \caption{Pantalla de acceso con registro local deshabilitado.}
@@ -304,5 +314,3 @@ Para completar la restricción de acceso, se deshabilitó el registro local de n
     \caption[Restricción del registro local en Documenso]{Comparación de la interfaz de acceso de Documenso con el registro local habilitado y deshabilitado. La eliminación del enlace de registro evidencia que el ingreso al sistema queda limitado a cuentas institucionales.}
     \label{fig:google_oauth_disable_signup}
 \end{figure}
-
-La Figura~\ref{fig:google_oauth_disable_signup} muestra el cambio visible en la interfaz de acceso. Con el registro local habilitado aparece el enlace ``\textquestiondown No tienes una cuenta? Reg\'istrate''; al deshabilitarlo, ese enlace desaparece y el ingreso queda limitado a cuentas institucionales.

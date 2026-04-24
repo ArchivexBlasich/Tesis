@@ -1,17 +1,17 @@
 \chapter{Diagramas y Topologías de Red}
 \label{AppendixA}
 
-En este apéndice se presentan versiones ampliadas de los diagramas incluidos en el Capítulo~\ref{chap:diseno_implementacion}. Su propósito es facilitar la lectura de etiquetas, relaciones de red y recorridos de tráfico que, por razones de escala, en el cuerpo principal del documento se muestran de forma resumida. Los diagramas fueron elaborados con la herramienta FossFLOW \cite{fossflow_github}.
+En este apéndice se presentan versiones ampliadas de los diagramas incluidos en el Capítulo~\ref{chap:diseno_implementacion}. Su propósito es facilitar la lectura de etiquetas, relaciones de red y recorridos de tráfico que, por razones de escala, en el cuerpo principal del documento se muestran de forma reducida. Los diagramas fueron elaborados con la herramienta FossFLOW \cite{fossflow_github}.
 
 \section{Topología General de la Infraestructura}
 \label{AppendixA:TopologiaGeneral}
 
 La figura reproduce en mayor tamaño la topología general de la plataforma. Esta vista permite distinguir con claridad las diferentes zonas de red involucradas en el despliegue ---red externa (\textit{WAN}), \textit{LAN} institucional, contenedor LXC y servicios contenerizados---, así como el recorrido completo del tráfico hasta alcanzar la aplicación.
 
-\begin{figure}[H]
+\begin{figure}[htbp]
     \centering
-    \includegraphics[width=\textwidth,height=0.88\textheight,keepaspectratio]{figuras/capitulo3/TopologiadeRedyArquitecturaGeneral.png}
-    \caption[Topología general de la infraestructura]{Vista ampliada de la topología general de la infraestructura y del flujo de tráfico entre WAN, LAN institucional y entorno contenerizado.}
+    \includegraphics[width=\textwidth]{figuras/capitulo3/TopologiadeRedyArquitecturaGeneral.png}
+    \caption[Topología general de la infraestructura (versión ampliada)]{Vista ampliada de la topología general de la infraestructura y del flujo de tráfico entre WAN, LAN institucional y entorno contenerizado. Versión a escala completa de la Fig.~\ref{fig:arquitectura_global} del Capítulo~\ref{chap:diseno_implementacion}.}
     \label{fig:topologia_ampliada}
 \end{figure}
 
@@ -22,10 +22,10 @@ La figura reproduce en mayor tamaño la topología general de la plataforma. Est
 
 Profundizando en la capa de orquestación, la figura detalla la arquitectura interna de la plataforma Coolify. En ella se aprecia el aislamiento provisto por el contenedor LXC base, la segmentación mediante redes virtuales de Docker y la separación lógica entre el plano de control de la PaaS y los servicios de usuario desplegados sobre ella.
 
-\begin{figure}[H]
+\begin{figure}[htbp]
     \centering
-    \includegraphics[width=\textwidth,height=0.88\textheight,keepaspectratio]{figuras/capitulo3/ZoomProxmoxCoolify.png}
-    \caption[Arquitectura interna de la PaaS y servicios contenerizados]{Vista ampliada de la arquitectura interna de Coolify y de la segmentación de redes entre los servicios contenerizados desplegados en el LXC base.}
+    \includegraphics[width=\textwidth]{figuras/capitulo3/ZoomProxmoxCoolify.png}
+    \caption[Arquitectura interna de la PaaS y servicios contenerizados (versión ampliada)]{Vista ampliada de la arquitectura interna de Coolify y de la segmentación de redes entre los servicios contenerizados desplegados en el LXC base. Versión a escala completa de la Fig.~\ref{fig:zoom_coolify} del Capítulo~\ref{chap:diseno_implementacion}.}
     \label{fig:zoom_coolify_anexo}
 \end{figure}
 
@@ -36,10 +36,10 @@ Profundizando en la capa de orquestación, la figura detalla la arquitectura int
 \label{AppendixA:RedDocker}
 
 A nivel de aplicación, la figura expone la topología interna específica del despliegue de Documenso. La vista identifica con precisión los componentes del \textit{stack}, sus dependencias internas y el rol fundamental de Traefik como punto único de entrada a la red privada administrada por Coolify.
-\begin{figure}[H]
+\begin{figure}[htbp]
     \centering
-    \includegraphics[width=\textwidth,height=0.88\textheight,keepaspectratio]{figuras/capitulo3/3.3.png}
-    \caption[Topología interna de la red Docker del \textit{stack} Documenso]{Vista ampliada de la comunicación entre servicios contenerizados y del enrutamiento de Traefik dentro de la red privada del \textit{stack} desplegado por Coolify.}
+    \includegraphics[width=\textwidth]{figuras/capitulo3/3.3.png}
+    \caption[Topología interna de la red Docker del \textit{stack} Documenso (versión ampliada)]{Vista ampliada de la comunicación entre servicios contenerizados y del enrutamiento de Traefik dentro de la red privada del \textit{stack} desplegado por Coolify. Versión a escala completa de la Fig.~\ref{fig:zoom_seccion_servicios} del Capítulo~\ref{chap:diseno_implementacion}.}
     \label{fig:red_docker_anexo}
 \end{figure}
 
@@ -50,9 +50,9 @@ A nivel de aplicación, la figura expone la topología interna específica del d
 
 Finalmente, la figura desglosa el esquema de conectividad hacia el almacenamiento descrito en la Sección~\ref{sec:proxy_socat}. Las líneas discontinuas representan los dos flujos convergentes hacia el dominio público: en verde, el flujo directo originado en el navegador para los recursos gráficos; y en naranja, el flujo indirecto originado en el \textit{backend} de Documenso para la gestión de documentos PDF. A partir de su convergencia en el \textit{reverse proxy} perimetral, el recorrido unificado se ilustra mediante líneas continuas a través de Traefik, el túnel TCP del contenedor \texttt{socat} y, finalmente, el servidor físico TrueNAS/MinIO.
 
-\begin{figure}[H]
+\begin{figure}[htbp]
     \centering
-    \includegraphics[width=\textwidth,height=0.88\textheight,keepaspectratio]{figuras/capitulo3/3.4.png}
-    \caption[Flujos de acceso a MinIO a través del proxy Socat]{Vista ampliada de la convergencia del flujo directo del navegador y del flujo indirecto del \textit{backend} hacia el servidor físico TrueNAS/MinIO, a través del reverse proxy perimetral, Traefik y el contenedor Socat.}
+    \includegraphics[width=\textwidth]{figuras/capitulo3/3.4.png}
+    \caption[Flujos de acceso a MinIO a través del proxy Socat (versión ampliada)]{Vista ampliada de la convergencia del flujo directo del navegador y del flujo indirecto del \textit{backend} hacia el servidor físico TrueNAS/MinIO, a través del reverse proxy perimetral, Traefik y el contenedor Socat. Versión a escala completa de la Fig.~\ref{fig:flujo_socat_minio} del Capítulo~\ref{chap:diseno_implementacion}.}
     \label{fig:flujo_minio_anexo}
 \end{figure}

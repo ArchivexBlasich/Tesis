@@ -36,7 +36,7 @@ Este apéndice consolida los artefactos de configuración referenciados en el Ca
     numbers=left,
     numbersep=5pt,
     numberstyle=\tiny\color{yamlnumber},
-    rulecolor=\color{yamlframe},
+    rulecolor=\color{black},
     showspaces=false,
     showstringspaces=false,
     showtabs=false,
@@ -145,7 +145,7 @@ volumes:
 services:
     minio-proxy:
         image: alpine/socat
-        command: 'TCP4-LISTEN:9000,fork,reuseaddr TCP4:192.168.80.24:9000'
+        command: 'TCP4-LISTEN:9000,fork,reuseaddr TCP4:192.168.X.W:9000'
         expose:
             - '9000'
         healthcheck:
@@ -206,7 +206,9 @@ Su ejecución se programó con la expresión \textit{cron} \nolinkurl{0 4 * * * 
 Coolify incorpora un mecanismo de variables mágicas que permite inyectar automáticamente credenciales, usuarios y otros valores sensibles generados de forma segura durante el despliegue \cite{coolify_magic_env_vars}. En lugar de codificar secretos en texto plano dentro del archivo \texttt{docker-compose.yml}, la PaaS expone variables derivadas del contexto del servicio, las cuales se resuelven en tiempo de ejecución.
 
 
+\begin{sloppypar}
 En este despliegue, Coolify resolvió automáticamente \texttt{SERVICE\_\allowbreak PASSWORD\_\allowbreak DOCUMENSO}, \texttt{SERVICE\_\allowbreak USER\_\allowbreak POSTGRES} y \texttt{SERVICE\_\allowbreak PASSWORD\_\allowbreak POSTGRES} sin requerir valores explícitos en la composición. Con esta estrategia, el repositorio de configuración nunca almacena credenciales en texto plano: los secretos los genera y gestiona la propia PaaS.
+\end{sloppypar}
 
 
 Además de las variables generadas automáticamente, desde el mismo panel se definieron variables manuales. En particular, \texttt{DOCUMENSO\_DISABLE\_TELEMETRY=true} desactiva la recopilación de datos de telemetría anónima que Documenso habilita por defecto en instancias autoalojadas, cuyo propósito original es reunir estadísticas de uso del producto. Su inclusión responde al criterio de evitar comunicaciones hacia servidores externos no contemplados en el diseño de la infraestructura institucional.

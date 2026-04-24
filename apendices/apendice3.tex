@@ -29,19 +29,23 @@ Este procedimiento permite restaurar PostgreSQL a partir de un volcado \texttt{.
 
     \item \textbf{Seleccionar el origen S3.} En el menú desplegable \texttt{S3 Storage}, elegir la conexión previamente configurada en Coolify: \textit{Backup Sistemas de Firmas -- Respaldo del Sistema de Firmas Documenso}.
 
-    \item \textbf{Validar el archivo.} En el campo \texttt{S3 File Path (within bucket)}, pegar la ruta (\texttt{Location}) copiada en el paso~1. Presionar el botón \textbf{Check File} y verificar que la sección \textbf{File Information} muestre el nombre y el tamaño del volcado. Esta comprobación confirma que el objeto existe en MinIO y que la conexión S3 es funcional.
+    \item \begin{sloppypar}\textbf{Validar el archivo.} En el campo \texttt{S3 File Path (within bucket)}, pegar la ruta (\texttt{Location}) copiada en el paso~1. Presionar el botón \textbf{Check File} y verificar que la sección \textbf{File Information} muestre el nombre y el tamaño del volcado. Esta comprobación confirma que el objeto existe en MinIO y que la conexión S3 es funcional.\end{sloppypar}
 
     \item \textbf{Modificar el comando de restauración.} Este es el paso más crítico del procedimiento. El comando de importación que Coolify genera por defecto es:
 
+    \begin{sloppypar}
     \begin{quote}
-    \texttt{pg\_restore -U \$POSTGRES\_USER -d \$\{POSTGRES\_DB:-\$\{POSTGRES\_USER:-postgres\}\}}
+    \texttt{pg\_restore -U \$POSTGRES\_USER -d \$\{POSTGRES\_DB:-\allowbreak\$\{POSTGRES\_USER:-postgres\}\}}
     \end{quote}
+    \end{sloppypar}
 
     \textbf{Advertencia:} si la base de datos de destino ya contiene datos ---que es el caso habitual en un entorno de producción activo---, la ejecución sin modificaciones fallará por colisión de objetos existentes. El administrador \textbf{debe} agregar la bandera \texttt{-{}-clean} al final del campo \texttt{Custom Import Command} para que \texttt{pg\_restore} elimine los objetos de la base antes de recrearlos. El comando final debe quedar de la siguiente forma:
 
+    \begin{sloppypar}
     \begin{quote}
-    \texttt{pg\_restore -U \$POSTGRES\_USER -d \$\{POSTGRES\_DB:-\$\{POSTGRES\_USER:-postgres\}\} -{}-clean}
+    \texttt{pg\_restore -U \$POSTGRES\_USER -d \$\{POSTGRES\_DB:-\allowbreak\$\{POSTGRES\_USER:-postgres\}\} -{}-clean}
     \end{quote}
+    \end{sloppypar}
 
     \item \textbf{Ejecutar la restauración.} Una vez configurados los campos anteriores, presionar el botón \textbf{Restore Database from S3} (Figura~\ref{fig:apC_import_backup}). Coolify descargará el volcado desde MinIO y ejecutará \texttt{pg\_restore -{}-clean} contra el contenedor de PostgreSQL.
 
@@ -64,7 +68,9 @@ Este procedimiento permite restaurar PostgreSQL a partir de un volcado \texttt{.
 \section{Restauración de la Configuración del Stack}
 \label{AppendixC:RestauracionConfig}
 
-Este procedimiento describe cómo reconstruir la configuración del despliegue ---archivos docker-compose.yml y variables de entorno--- a partir de los respaldos almacenados en el \textit{bucket} \texttt{backups-coolify} de MinIO. El flujo de trabajo combina la terminal integrada de Coolify con su interfaz gráfica.
+\begin{sloppypar}
+Este procedimiento describe cómo reconstruir la configuración del despliegue ---archivos docker-compose.yml y variables de entorno--- a partir de los respaldos almacenados en el \textit{bucket} \nolinkurl{backups-coolify} de MinIO. El flujo de trabajo combina la terminal integrada de Coolify con su interfaz gráfica.
+\end{sloppypar}
 
 \textbf{Prerrequisitos:} acceso al panel de Coolify con permisos de administrador. La utilidad \texttt{rclone} ya se encuentra instalada en el LXC como parte de la automatización de respaldos documentada en el Apéndice~\ref{AppendixB:ConfigBackup}.
 
@@ -103,19 +109,21 @@ El valor \texttt{YYYY-MM-DD} debe reemplazarse por la fecha del respaldo que cor
 
 Coolify organiza los archivos de cada servicio bajo identificadores únicos generados en el momento del despliegue. Las rutas críticas para el despliegue institucional actual son:
 
+\begin{sloppypar}
 \begin{itemize}
     \item \textbf{Stack Documenso} (aplicación, base de datos y Browserless): \nolinkurl{/data/coolify/services/y4gssggkgc4s088kg48wks88/}
     \item \textbf{Servicio Socat}: \nolinkurl{/data/coolify/services/i040ggc0c84c0sc0ss4cs0co/}
 \end{itemize}
+\end{sloppypar}
 
 Cada directorio contiene un archivo \texttt{docker-compose.yml} y un archivo \texttt{.env} con la definición de servicios y los secretos necesarios para su operación. Estos identificadores corresponden al despliegue vigente al momento de redactar este documento; ante una reinstalación o migración de Coolify, los identificadores se regeneran y las rutas cambian. En ese caso, se debe localizar el directorio correcto consultando el panel de Coolify o listando el contenido de \nolinkurl{/data/coolify/services/} en el servidor.
 
 \subsection{Restauración desde la interfaz de Coolify}
 
-Navegar en el panel de Coolify hacia \texttt{Proyecto Documenso} $\rightarrow$ \texttt{production} $\rightarrow$ \texttt{DocumensoProd} y seguir los pasos indicados a continuación.
+\begin{sloppypar}Navegar en el panel de Coolify hacia \texttt{Proyecto Documenso} $\rightarrow$ \texttt{production} $\rightarrow$ \texttt{DocumensoProd} y seguir los pasos indicados a continuación.\end{sloppypar}
 
 \begin{enumerate}
-    \item \textbf{Restaurar el archivo Compose.} Presionar el botón \textbf{Edit Compose File}. En el editor emergente (Figura~\ref{fig:apC_edit_compose}), reemplazar todo el contenido con el texto del archivo \texttt{docker-compose.yml} extraído en la ruta del identificador correspondiente y presionar \textbf{Save}.
+    \item \textbf{Restaurar el archivo Compose.} Presionar el botón \textbf{Edit Compose File}. En el editor emergente (Figura~\ref{fig:apC_edit_compose}), reemplazar todo el contenido con el texto del archivo \nolinkurl{docker-compose.yml} extraído en la ruta del identificador correspondiente y presionar \textbf{Save}.
 
     \begin{figure}[H]
         \centering
@@ -141,7 +149,7 @@ Cuando el certificado autofirmado se aproxima a su fecha de caducidad, se debe g
 \begin{enumerate}
     \item \textbf{Generar el nuevo material criptográfico.} Abrir una terminal en la computadora local del administrador y ejecutar los comandos de generación de clave privada, certificado X.509 y empaquetado PKCS\#12 detallados en la Sección~\ref{AppendixB:Crypto}. Al finalizar, se obtendrá un archivo de texto con la cadena codificada en Base64 del nuevo certificado. No es necesario ni recomendable ejecutar este procedimiento dentro del servidor de producción.
 
-    \item \textbf{Actualizar la variable de entorno.} En la interfaz de Coolify, navegar a \texttt{Proyecto Documenso} $\rightarrow$ \texttt{production} $\rightarrow$ \texttt{DocumensoProd} y acceder a la pestaña \textbf{Environment Variables}. Ubicar la variable \texttt{CERTIFICADO\_P12\_BASE64} (Figura~\ref{fig:apC_env_cert}) y reemplazar su valor por la nueva cadena en Base64 generada en el paso anterior. Presionar \textbf{Update}.
+    \item \begin{sloppypar}\textbf{Actualizar la variable de entorno.} En la interfaz de Coolify, navegar a \texttt{Proyecto Documenso} $\rightarrow$ \texttt{production} $\rightarrow$ \texttt{DocumensoProd} y acceder a la pestaña \textbf{Environment Variables}. Ubicar la variable \texttt{CERTIFICADO\_P12\_BASE64} (Figura~\ref{fig:apC_env_cert}) y reemplazar su valor por la nueva cadena en Base64 generada en el paso anterior. Presionar \textbf{Update}.\end{sloppypar}
 
     \begin{figure}[H]
         \centering
@@ -200,7 +208,7 @@ Antes de modificar cualquier archivo del despliegue, se deben completar dos tare
 Una vez verificada la compatibilidad de hardware y completado el respaldo, la actualización se ejecuta desde la interfaz de Coolify:
 
 \begin{enumerate}
-    \item \textbf{Editar la composición Docker.} Navegar a \texttt{Proyecto Documenso} $\rightarrow$ \texttt{production} $\rightarrow$ \texttt{DocumensoProd} y presionar \textbf{Edit Compose File}. Localizar la línea de la imagen del servicio principal y modificar el \textit{tag} de versión:
+    \item \begin{sloppypar}\textbf{Editar la composición Docker.} Navegar a \texttt{Proyecto Documenso} $\rightarrow$ \texttt{production} $\rightarrow$ \texttt{DocumensoProd} y presionar \textbf{Edit Compose File}. Localizar la línea de la imagen del servicio principal y modificar el \textit{tag} de versión:\end{sloppypar}
 
     \begin{quote}
     \texttt{image: 'documenso/documenso:vX.Y.Z'}

@@ -53,11 +53,8 @@
 \usepackage[utf8]{inputenc} 
 % Output font encoding for international characters
 \usepackage[T1]{fontenc} 
-% Use the Palatino font by default
-\usepackage{cmbright} 
-\DeclareFontShape{T1}{cmbr}{m}{sc}{<->ssub * cmr/m/sc}{}
-\DeclareFontShape{T1}{cmbr}{b}{sc}{<->ssub * cmr/bx/n}{}
-\DeclareFontShape{T1}{cmbr}{bx}{sc}{<->ssub * cmr/bx/n}{}
+% Times New Roman para texto y matemáticas (Reglamento §4.1)
+\usepackage{mathptmx} 
 % Use the bibtex backend for bibliography
 \usepackage[backend=biber,natbib=true, style=numeric, sorting=none]{biblatex} 
 % The filename of the bibliography
@@ -67,11 +64,13 @@
 
 \usepackage{caption}
 \usepackage{subcaption}
+\renewcommand{\thesubfigure}{\Alph{subfigure}}
 \usepackage{todonotes}
 \usepackage{multirow}
 \usepackage{longtable}
 \usepackage{tabularx}
 \usepackage{listings}
+\lstset{frame=single} % Marco perimetral en todos los bloques de código (Fase 1.5)
 
 %\usepackage[hyphens]{url}
 %\usepackage[hidelinks]{hyperref}
@@ -87,13 +86,15 @@
 %----------------------------------------------------------------------------------------
 
 \geometry{
-	paper=a4paper, % Change to letterpaper for US letter
-	inner=20mm, % Inner margin
-	outer=20mm, % Outer margin
-	bindingoffset=15mm, % Binding offset
-	top=15mm, % Top margin
-	bottom=15mm, % Bottom margin
-	%showframe,% show how the type block is set on the page
+	paper=a4paper,      % Change to letterpaper for US letter
+	left=31.7mm,        % Margen izquierdo (Reglamento §4.1: 3,17 cm)
+	right=31.7mm,       % Margen derecho   (Reglamento §4.1: 3,17 cm)
+	top=25.4mm,         % Margen superior  (Reglamento §4.1: 2,54 cm)
+	bottom=25.4mm,      % Margen inferior  (Reglamento §4.1: 2,54 cm)
+	headheight=14pt,    % Altura mínima del encabezado
+	headsep=8.5mm,      % Encabezado a 1,2 cm del borde superior (Reglamento §4.1)
+	footskip=13mm,      % Pie a 1,25 cm del borde inferior (Reglamento §4.1)
+	%showframe,         % show how the type block is set on the page
 }
 
 \usepackage{float}
@@ -174,7 +175,19 @@
 \renewcommand{\lstlistlistingname}{Índice de \lstlistingname s}
 
 \renewcommand{\listtablename}{Índice de Tablas}
-\renewcommand{\tablename}{Tabla} 
+\renewcommand{\tablename}{Tabla}
+
+% Numeración global y consecutiva de tablas (Reglamento §4.1: "numeradas en forma consecutiva")
+\counterwithout{table}{chapter}
+
+% ---- Encabezados y pies de página (Reglamento §4.1) -------------------------
+% Encabezado: título corto en itálica (izq.) | autor (der.)
+% Pie de página: sección activa (izq.) | número de página (der.)
+\ihead{\small\textit{Sistema de Firma Electrónica On-Premise}}
+\ohead{\small\authorname}
+\ifoot{\small\headmark}
+\ofoot{\pagemark}
+% ------------------------------------------------------------------------------
 
 % Espacio adicional en los footnotes
 \addtolength{\footnotesep}{2mm} 
@@ -191,28 +204,27 @@
 
 \begin{titlepage}
 	\begin{center}
-		\includegraphics[height=35mm]{figuras/unt}
+		\includegraphics[height=30mm]{figuras/unt}
 		\hspace{30mm}
-		\includegraphics[height=35mm]{figuras/facet}
+		\includegraphics[height=30mm]{figuras/facet}
 		
-		\vspace{10mm}
+		\vspace{6mm}
 		
 		\textsc{\huge{Carrera de Ingeniería en Computación}}
-		\vspace{8mm} % Thesis type
+		\vspace{5mm}
 		
 		\textsc{\Large Informe del Trabajo de Graduación}		
-		\vspace{8mm}
+		\vspace{5mm}
 		
 		% Thesis title
 		{\Huge \bfseries \ttitle\par}
-		\vspace{4mm} 
+		\vspace{4mm}
 		\vfill
 		
 		% Author name
-		\vspace{10mm}
 		\LARGE\textbf{Autor:\\ \authorname}\\ 
 		
-		\vspace{10mm}
+		\vspace{6mm}
 		
  		% Supervisor name
  		\large
@@ -222,7 +234,7 @@
 		{Co-Tutor:} \\
 		{\cosupname}
 		
-		\vspace{8mm}
+		\vspace{5mm}
 		Jurados:\\	
 		\jurunoname\\
 		\jurdosname\\
@@ -302,13 +314,9 @@ A mis tutores, Carlos Albaca Paraván y Esteban Daniel Volentini, por su guía, 
 
 \blankpage
 \include{capitulos/capitulo1}
-\blankpage
 \include{capitulos/capitulo2}
-\blankpage
 \include{capitulos/capitulo3}
-\blankpage
 \include{capitulos/capitulo4}
-\blankpage
 \include{capitulos/capitulo5}
 
 %----------------------------------------------------------------------------------------
@@ -316,18 +324,14 @@ A mis tutores, Carlos Albaca Paraván y Esteban Daniel Volentini, por su guía, 
 %----------------------------------------------------------------------------------------
 
 % indicativo para indicarle a LaTeX los siguientes "capítulos" son apéndices
-\blankpage
 \appendix 
 
 % Incluir los apéndices de la memoria como archivos separadas desde la carpeta Appendices
 % Descomentar las líneas a medida que se escriben los apéndices
 
 \include{apendices/apendice1}
-\blankpage
 \include{apendices/apendice2}
-\blankpage
 \include{apendices/apendice3}
-\blankpage
 \include{apendices/apendice4}
 
 %----------------------------------------------------------------------------------------
