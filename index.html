@@ -1,0 +1,1640 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Defensa de Tesis — Fabricio Blasich</title>
+
+  <!-- RevealJS -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@4.6.1/dist/reset.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@4.6.1/dist/reveal.css">
+
+  <!-- Bold Theme Fonts (themes/bold.md §1) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+  <style>
+    /* ================================================================ */
+    /* BOLD THEME — DESIGN TOKENS  (themes/bold.md §1)                 */
+    /* ================================================================ */
+    :root {
+      /* === COLORS — Tema Institucional FACET (Dark Tech) === */
+      --bg-primary:   #0f172a;  /* Slate 900 — fondo principal */
+      --bg-secondary: #1e293b;  /* Slate 800 — cards, filas alternas */
+      --bg-dark:      #0b1120;  /* Slate 950 — section breaks, fondos más profundos */
+      --bg-card:      #162032;  /* intermedio para tarjetas de contenido */
+
+      --text-primary:   #f8fafc;  /* Slate 50 — texto principal */
+      --text-secondary: #94a3b8;  /* Slate 400 — texto secundario */
+      --text-muted:     #64748b;  /* Slate 500 — texto atenuado */
+      --text-on-dark:   #f8fafc;
+
+      --accent-1: #38bdf8;  /* Cian brillante — números, viñetas, flechas */
+      --accent-2: #0ea5e9;  /* Azul medio — bordes, gradientes */
+      --accent-3: #7dd3fc;  /* Sky 300 — acentos secundarios, highlight */
+      --accent-4: #0369a1;  /* Sky 700 — fondo section breaks azules */
+
+      /* === TYPOGRAPHY === */
+      --font-display: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      --font-body:    'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      --font-mono:    'JetBrains Mono', monospace;
+
+      /* === SIZE SCALE === */
+      --size-stat-hero:   clamp(6rem, 15vw, 14rem);
+      --size-stat:        clamp(4rem, 10vw, 8rem);
+      --size-impact-hero: clamp(4rem, 12vw, 7rem);
+      --size-impact:      clamp(3rem,  8vw, 5rem);
+      --size-h1:          clamp(6rem,  8vw, 9rem);
+      --size-h2:          clamp(4rem, 12vw, 7rem);
+      --size-h3:          clamp(1.75rem, 3.5vw, 3rem);
+      --size-h4:          clamp(1.5rem,  2.5vw, 2rem);
+      --size-body:        clamp(1.25rem, 2vw, 2rem);
+      --size-body-lg:     clamp(1.5rem,  2.5vw, 2.25rem);
+      --size-body-xl:     clamp(2.5rem,  3vw,   3.5rem);
+      --size-small:       clamp(1rem,    1.25vw, 1.25rem);
+      --size-label:       clamp(1.5rem,  2.5vw, 2.25rem);
+
+      /* === SPACING === */
+      --space-xs: 0.5rem;
+      --space-sm: 1rem;
+      --space-md: 2rem;
+      --space-lg: 3rem;
+      --space-xl: 4rem;
+
+      /* === COMPONENTS === */
+      --bar-width:    120px;
+      --bar-height:   8px;
+      --card-radius:  8px;
+      --card-padding: 2rem;
+
+      /* === LAYOUT === */
+      --content-max-width: 1400px;
+      --slide-padding:     60px;
+
+      /* Table tag colors (dark theme) */
+      --tag-bad-bg:     #450a0a;
+      --tag-bad-fg:     #fca5a5;
+      --tag-good-bg:    #052e16;
+      --tag-good-fg:    #86efac;
+      --tag-neutral-bg: #422006;
+      --tag-neutral-fg: #fcd34d;
+    }
+
+    /* ================================================================ */
+    /* BASE RESET  (SKILL.md §1.3 + bold.md)                           */
+    /* ================================================================ */
+    .reveal-viewport {
+      background: var(--bg-primary);
+    }
+
+    /* No background on .reveal — let data-background-color work */
+    .reveal {
+      font-family: var(--font-body);
+      font-weight: 400;
+      color: var(--text-primary);
+    }
+
+    /* SKILL.md §1.3: text-align + padding only. NO flex, NO height. */
+    .reveal .slides section {
+      text-align:   left;
+      padding:      60px;
+      box-sizing:   border-box;
+    }
+
+    .reveal .slides section.centered {
+      text-align: center;
+    }
+
+    /* ── Headlines ── */
+    .reveal h1, .reveal h2, .reveal h3, .reveal h4 {
+      font-family:    var(--font-display);
+      font-weight:    700;
+      color:          var(--text-primary);
+      text-transform: none;
+      letter-spacing: -0.02em;
+      line-height:    1.1;
+      margin:         0 0 0.4em 0;
+      text-shadow:    0 2px 20px rgba(0,0,0,0.4);
+    }
+    .reveal h1 { font-size: var(--size-h1); }
+    .reveal h2 { font-size: var(--size-h2); }
+    .reveal h3 { font-size: var(--size-h3); }
+    .reveal h4 { font-size: var(--size-h4); }
+
+    /* ── Body ── */
+    .reveal p {
+      margin:      0 0 0.75em 0;
+      line-height: 1.5;
+      font-size:   var(--size-body);
+    }
+
+    .reveal ul, .reveal ol {
+      margin:               0;
+      padding:              0;
+      list-style-position:  outside;
+      margin-left:          1.5em;
+    }
+
+    .reveal li {
+      margin-bottom: 0.5em;
+      line-height:   1.4;
+      font-size:     var(--size-body);
+    }
+
+    /* ================================================================ */
+    /* BOLD TYPOGRAPHY UTILITIES  (bold.md §2)                         */
+    /* ================================================================ */
+    .reveal .lead {
+      font-size:   var(--size-body-xl);
+      color:       var(--text-secondary);
+      line-height: 1.4;
+    }
+
+    .reveal .label {
+      font-family:    var(--font-mono);
+      font-size:      var(--size-label);
+      font-weight:    500;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color:          var(--accent-1);
+      margin-bottom:  0;
+    }
+
+    .reveal .stat {
+      font-family:   var(--font-mono);
+      font-size:     var(--size-stat);
+      font-weight:   700;
+      line-height:   1;
+      color:         var(--accent-1);
+      margin-bottom: 0;
+    }
+
+    .reveal .stat-hero {
+      font-family:   var(--font-mono);
+      font-size:     var(--size-stat-hero);
+      font-weight:   700;
+      line-height:   0.9;
+      color:         var(--accent-1);
+      margin-bottom: 0;
+    }
+
+    .reveal .stat-label {
+      font-size:   var(--size-body-lg);
+      font-weight: 500;
+      color:       var(--text-secondary);
+      margin-top:  var(--space-sm);
+    }
+
+    .reveal .impact {
+      font-family:   var(--font-display);
+      font-size:     var(--size-impact);
+      font-weight:   700;
+      line-height:   1.1;
+    }
+
+    .reveal .impact-hero {
+      font-family:   var(--font-display);
+      font-size:     var(--size-impact-hero);
+      font-weight:   700;
+      line-height:   1.05;
+    }
+
+    /* ================================================================ */
+    /* COLOR UTILITIES  (bold.md §3) — prefixed for specificity        */
+    /* ================================================================ */
+    .reveal .text-primary   { color: var(--text-primary);   }
+    .reveal .text-secondary { color: var(--text-secondary); }
+    .reveal .text-muted     { color: var(--text-muted);     }
+    .reveal .text-on-dark   { color: var(--text-on-dark);   }
+    .reveal .text-accent-1  { color: var(--accent-1);       }
+    .reveal .text-accent-2  { color: var(--accent-2);       }
+    .reveal .text-accent-3  { color: var(--accent-3);       }
+    .reveal .text-accent-4  { color: var(--accent-4);       }
+
+    .reveal .highlight-1 { color: var(--accent-1); font-weight: 600; }
+    .reveal .highlight-2 { color: var(--accent-2); font-weight: 600; }
+    .reveal .highlight-3 { color: var(--accent-3); font-weight: 600; }
+    .reveal .highlight-4 { color: var(--accent-4); font-weight: 600; }
+
+    /* ================================================================ */
+    /* CORE COMPONENTS  (SKILL.md §3)                                  */
+    /* ================================================================ */
+
+    /* ── Bar (SKILL.md §3.1) ── */
+    .bar {
+      width:         var(--bar-width);
+      height:        var(--bar-height);
+      background:    var(--accent-1);
+      margin-bottom: var(--space-md);
+      border-radius: 2px;
+      flex-shrink:   0;
+    }
+    .bar-accent-2  { background: var(--accent-2); }
+    .bar-accent-3  { background: var(--accent-1); }
+    .bar-accent-4  { background: var(--accent-4); }
+    .bar-porcelain { background: var(--bg-secondary); }
+    .centered .bar { margin-left: auto; margin-right: auto; }
+
+    /* ── Content wrap (SKILL.md §3.2) ── */
+    .content-wrap              { max-width: var(--content-max-width); width: 100%; }
+    .centered .content-wrap    { margin: 0 auto; }
+
+    /* ── Cards (SKILL.md §3.3 + bold.md) ── */
+    .card {
+      background:    var(--bg-secondary);
+      border:        1px solid rgba(56,189,248,0.15);
+      border-left:   4px solid var(--accent-1);
+      border-radius: var(--card-radius);
+      padding:       var(--card-padding);
+    }
+    .card-accent-2 { border-left-color: var(--accent-2); }
+    .card-accent-3 { border-left-color: var(--accent-3); }
+    .card-accent-4 { border-left-color: var(--accent-4); }
+    .card h3       { font-size: var(--size-h4); margin-bottom: var(--space-xs); }
+    .card p        { font-size: var(--size-body); color: var(--text-secondary); margin: 0; }
+
+    /* ── Grids (SKILL.md §3.4) ── */
+    .grid-2   { display: grid; grid-template-columns: repeat(2, 1fr); gap: var(--space-lg); }
+    .grid-3   { display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--space-md); }
+    .grid-4   { display: grid; grid-template-columns: repeat(4, 1fr); gap: var(--space-md); }
+    .grid-2-1 { display: grid; grid-template-columns: 2fr 1fr;        gap: var(--space-lg); }
+    .grid-1-2 { display: grid; grid-template-columns: 1fr 2fr;        gap: var(--space-lg); }
+
+    /* ── Controls & progress ── */
+    .reveal .controls    { color: var(--accent-1); }
+    .reveal .progress    { background: rgba(56,189,248,0.15); color: var(--accent-1); height: 3px; }
+    .reveal .slide-number {
+      font-family: var(--font-body);
+      font-size:   var(--size-small);
+      color:       var(--text-muted);
+      background:  transparent;
+      bottom:      12px;
+      right:       16px;
+    }
+
+    /* SVG text override */
+    .reveal svg text { font-family: var(--font-body); }
+
+    /* ================================================================ */
+    /* SLIDE 1 — PORTADA                                               */
+    /* ================================================================ */
+    .slide-portada {
+      display:         flex !important;
+      flex-direction:  column;
+      justify-content: center;
+      align-items:     center;
+      text-align:      center !important;
+    }
+
+    @property --logos-angle {
+      syntax: "<angle>";
+      initial-value: 0deg;
+      inherits: false;
+    }
+
+    @keyframes logos-border-spin {
+      to { --logos-angle: 360deg; }
+    }
+
+    .portada-logos {
+      display:          flex;
+      flex-direction:   row;
+      align-items:      center;
+      justify-content:  center;
+      gap:              36px;
+      margin-bottom:    var(--space-lg);
+      border-radius:    14px;
+      padding:          10px 22px;
+      border:           3px solid transparent;
+      background-image: linear-gradient(#f8fafc, #f8fafc),
+        conic-gradient(
+          from var(--logos-angle),
+          #38bdf8 0deg 90deg,
+          #0ea5e9 90deg 180deg,
+          #7dd3fc 180deg 270deg,
+          #0369a1 270deg 360deg
+        );
+      background-origin: border-box;
+      background-clip:   padding-box, border-box;
+      animation:         logos-border-spin 4s linear infinite;
+    }
+
+    .portada-logos img {
+      height:         120px;
+      width:          auto;
+      object-fit:     contain;
+      mix-blend-mode: multiply;
+      border-radius:  6px;
+    }
+
+    .slide-portada h1 {
+      font-size:   clamp(2.5rem, 4.5vw, 5.5rem);
+      max-width:   1500px;
+      margin:      0 auto var(--space-md) auto;
+      line-height: 1.2;
+      font-weight: 700;
+    }
+
+    .portada-meta {
+      font-size:   clamp(1.5rem, 2.2vw, 2.25rem);
+      color:       var(--text-secondary);
+      line-height: 2.1;
+      margin-top:  var(--space-sm);
+    }
+
+    .portada-meta .author {
+      font-size:     clamp(2.5rem, 3.5vw, 4rem);
+      font-weight:   600;
+      color:         var(--accent-1);
+      line-height:   1.2;
+      margin-bottom: 0.3em;
+    }
+
+    .portada-meta strong { color: var(--text-primary); font-weight: 600; }
+
+    /* ================================================================ */
+    /* SLIDE 2 — TABLA DE CONTENIDOS                                   */
+    /* ================================================================ */
+    .toc-title {
+      font-family:    var(--font-display);
+      font-size:      var(--size-h2);
+      font-weight:    700;
+      color:          var(--accent-1);
+      text-align:     center;
+      letter-spacing: 0.01em;
+      margin-bottom:  var(--space-lg);
+    }
+
+    .toc-grid {
+      display:        flex;
+      flex-direction: column;
+      gap:            var(--space-sm);
+    }
+
+    .toc-block {
+      display:       flex;
+      align-items:   center;
+      gap:           var(--space-lg);
+      padding:       var(--space-md) var(--space-xl);
+      border-left:   6px solid var(--accent-1);
+      background:    var(--bg-secondary);
+      border-radius: var(--card-radius);
+      border:        1px solid rgba(56,189,248,0.12);
+    }
+
+    .toc-num {
+      color:       var(--accent-1);
+      font-family: var(--font-display);
+      font-size:   clamp(1.8rem, 2.5vw, 3.2rem);
+      font-weight: 700;
+      line-height: 1;
+      flex-shrink: 0;
+      min-width:   2ch;
+      text-align:  right;
+    }
+
+    .toc-label {
+      color:       var(--text-primary);
+      font-size:   clamp(1.8rem, 2.5vw, 3.2rem);
+      font-weight: 500;
+      line-height: 1.2;
+    }
+
+    /* ================================================================ */
+    /* SECTION BREAKS                                                   */
+    /* ================================================================ */
+    .section-tag {
+      font-family:    var(--font-mono);
+      font-size:      var(--size-label);
+      font-weight:    700;
+      letter-spacing: 0.28em;
+      text-transform: uppercase;
+      color:          var(--accent-3);
+      margin:         0 0 var(--space-sm) 0;
+    }
+
+    .section-heading {
+      font-family:    var(--font-display);
+      font-size:      var(--size-h1);
+      font-weight:    700;
+      line-height:    1.1;
+      letter-spacing: -0.02em;
+      margin:         0 0 var(--space-md) 0;
+    }
+
+    /* ================================================================ */
+    /* BULLET LIST — custom style                                       */
+    /* ================================================================ */
+    .reveal ul.styled-list {
+      list-style: none;
+      padding:    0;
+      margin:     0;
+      width:      100%;
+    }
+
+    .reveal ul.styled-list li {
+      font-size:     var(--size-body-lg);
+      font-weight:   400;
+      line-height:   1.45;
+      padding:       0.55em 0 0.55em 1.8em;
+      position:      relative;
+      color:         var(--text-primary);
+      border-bottom: 1px solid rgba(0,0,0,0.08);
+    }
+
+    .reveal ul.styled-list li:last-child { border-bottom: none; }
+
+    .reveal ul.styled-list li::before {
+      content:       '';
+      position:      absolute;
+      left:          0;
+      top:           1.05em;
+      width:         9px;
+      height:        9px;
+      background:    var(--accent-1);
+      border-radius: 50%;
+    }
+
+    /* ================================================================ */
+    /* SLIDE 3 — EL PROBLEMA                                           */
+    /* ================================================================ */
+    .slide-kicker {
+      font-family:    var(--font-mono);
+      font-size:      var(--size-label);
+      font-weight:    600;
+      text-transform: uppercase;
+      letter-spacing: 0.16em;
+      color:          var(--accent-2);
+      border-left:    4px solid var(--accent-2);
+      padding-left:   0.7em;
+      margin:         0 0 var(--space-sm) 0;
+      line-height:    1.2;
+    }
+
+    .problema-layout {
+      display:               grid;
+      grid-template-columns: 1.4fr 1fr;
+      gap:                   var(--space-lg);
+      align-items:           start;
+      margin-top:            0;
+    }
+
+    /* Prob cards */
+    .prob-card {
+      background:    var(--bg-secondary);
+      border-radius: var(--card-radius);
+      border-left:   6px solid var(--accent-1);
+      border:        1px solid rgba(56,189,248,0.12);
+      border-left:   6px solid var(--accent-1);
+      display:       flex;
+      align-items:   center;
+      padding:       var(--space-md) var(--space-lg);
+      margin-bottom: var(--space-lg);
+    }
+
+    .prob-card.fragment.visible {
+      animation: prob-card-in 0.35s cubic-bezier(0.22, 1, 0.36, 1) both;
+    }
+
+    @keyframes prob-card-in {
+      from { opacity: 0; transform: translateX(-18px); }
+      to   { opacity: 1; transform: translateX(0);     }
+    }
+
+    .prob-num {
+      color:        var(--accent-1);
+      font-family:  var(--font-display);
+      font-size:    clamp(2rem, 3.5vw, 4.5rem);
+      font-weight:  700;
+      margin-right: var(--space-md);
+      line-height:  1;
+      flex-shrink:  0;
+    }
+
+    .prob-text {
+      color:       var(--text-primary);
+      font-size:   clamp(1.75rem, 2.5vw, 3rem);
+      font-weight: 600;
+      line-height: 1.3;
+      margin:      0;
+    }
+
+    /* Flow arrows */
+    .flow-arrow {
+      stroke-dasharray: 6 4;
+      animation: flow-dash 1.2s linear infinite;
+    }
+
+    @keyframes flow-dash {
+      from { stroke-dashoffset: 20; }
+      to   { stroke-dashoffset:  0; }
+    }
+
+    /* ================================================================ */
+    /* SLIDE: OBJETIVOS ESPECÍFICOS — Animated border circles         */
+    /* ================================================================ */
+    @property --obj-angle {
+      syntax: '<angle>';
+      inherits: false;
+      initial-value: 0deg;
+    }
+
+    @keyframes obj-spin { to { --obj-angle: 360deg; } }
+
+    .obj-grid {
+      display:               grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap:                   var(--space-md);
+      margin-top:            var(--space-md);
+      align-items:           center;
+      justify-items:         center;
+    }
+
+    .obj-ring {
+      --obj-color: var(--accent-1);
+      color:         var(--obj-color);   /* enables currentColor for icons */
+      width:         clamp(330px, 26vw, 484px);
+      height:        clamp(330px, 26vw, 484px);
+      border-radius: 50%;
+      border:        4px solid transparent;
+      background:
+        linear-gradient(var(--bg-secondary), var(--bg-secondary)) padding-box,
+        conic-gradient(
+          from var(--obj-angle),
+          transparent 0%,
+          var(--obj-color) 35%,
+          transparent 65%
+        ) border-box;
+      animation:      obj-spin 3s linear infinite;
+      display:        flex;
+      flex-direction: column;
+      align-items:    center;
+      justify-content: center;
+      text-align:     center;
+      padding:        var(--space-md);
+      box-sizing:     border-box;
+      gap:            var(--space-xs);
+    }
+
+    .obj-ring-1 { --obj-color: var(--accent-1); animation-duration: 3s;    }
+    .obj-ring-2 { --obj-color: #a78bfa;         animation-duration: 3.5s;  animation-delay: -0.9s;  }
+    .obj-ring-3 { --obj-color: #4ade80;         animation-duration: 2.8s;  animation-delay: -1.75s; }
+    .obj-ring-4 { --obj-color: #fb923c;         animation-duration: 3.2s;  animation-delay: -2.6s;  }
+
+    .obj-icon {
+      width:  clamp(48px, 5.5vw, 84px);
+      height: clamp(48px, 5.5vw, 84px);
+      flex-shrink: 0;
+    }
+    .obj-icon path          { fill: currentColor; }
+    .obj-icon-stroke path   { fill: none; stroke: currentColor; stroke-width: 2;
+                              stroke-linecap: round; stroke-linejoin: round; }
+
+    .obj-num {
+      font-family: var(--font-mono);
+      font-size:   clamp(2.75rem, 3.85vw, 5.5rem);
+      font-weight: 700;
+      color:       var(--obj-color);
+      line-height: 1;
+    }
+
+    .obj-title {
+      font-family: var(--font-display);
+      font-size:   clamp(1.82rem, 2.66vw, 3.63rem);
+      font-weight: 700;
+      color:       var(--text-primary);
+      line-height: 1.2;
+    }
+
+    .obj-sub {
+      font-family: var(--font-body);
+      font-size:   clamp(1.33rem, 1.82vw, 2.66rem);
+      font-weight: 400;
+      color:       var(--text-secondary);
+      line-height: 1.3;
+    }
+
+    /* ================================================================ */
+    /* SLIDE 6 — SVG FLOWCHART TOKENS  (bold.md §1)                   */
+    /* ================================================================ */
+    .np-rect          { fill: var(--bg-secondary); stroke: var(--accent-1); stroke-width: 2; }
+    .np-rect-success  { fill: var(--bg-secondary); stroke: #4ade80;        stroke-width: 2.5; }
+    .np-badge         { fill: var(--accent-1); }
+    .np-badge-success { fill: #4ade80; }
+    .np-badge-num     { fill: var(--bg-primary); }
+    .np-node-title    { fill: var(--text-primary); }
+    .np-node-sub      { fill: var(--text-secondary); }
+    .np-node-sub-ok   { fill: var(--tag-good-fg); }
+    .np-arrow         { stroke: var(--accent-1); fill: none; }
+    .np-arrowhead     { fill: var(--accent-1); }
+
+    /* ================================================================ */
+    /* TABLES  (slides 5 & 6)                                          */
+    /* ================================================================ */
+    .reveal table {
+      width:           100%;
+      border-collapse: collapse;
+      font-size:       var(--size-small);
+      margin-top:      var(--space-md);
+    }
+
+    .reveal table thead tr th {
+      background:  var(--accent-2);
+      color:       var(--text-on-dark);
+      font-weight: 700;
+      padding:     var(--space-sm) var(--space-md);
+      text-align:  left;
+      border:      none;
+    }
+
+    .reveal table thead tr th:first-child { border-radius: 4px 0 0 0; }
+    .reveal table thead tr th:last-child  { border-radius: 0 4px 0 0; }
+
+    .reveal table tbody tr td {
+      padding:        0.6em var(--space-md);
+      border-bottom:  1px solid rgba(56,189,248,0.08);
+      vertical-align: middle;
+      line-height:    1.45;
+      color:          var(--text-primary);
+    }
+
+    .reveal table tbody tr:nth-child(odd)  td { background: var(--bg-primary); }
+    .reveal table tbody tr:nth-child(even) td { background: var(--bg-secondary); }
+    .reveal table tbody tr:last-child      td { border-bottom: none; }
+
+    .tag {
+      display:       inline-block;
+      border-radius: 4px;
+      padding:       2px 9px;
+      font-size:     0.9em;
+      font-weight:   600;
+      white-space:   nowrap;
+    }
+    .tag-bad     { background: var(--tag-bad-bg);     color: var(--tag-bad-fg);     }
+    .tag-good    { background: var(--tag-good-bg);    color: var(--tag-good-fg);    }
+    .tag-neutral { background: var(--tag-neutral-bg); color: var(--tag-neutral-fg); }
+
+    /* ================================================================ */
+    /* SLIDE 7 — STACK TECNOLÓGICO                                     */
+    /* ================================================================ */
+    .stack-grid {
+      display:               grid;
+      grid-template-columns: 1fr 1fr;
+      gap:                   var(--space-md);
+      margin-top:            var(--space-md);
+    }
+
+    .stack-card {
+      background:    var(--bg-secondary);
+      border:        1px solid rgba(56,189,248,0.15);
+      border-top:    3px solid var(--accent-1);
+      border-radius: 0 0 var(--card-radius) var(--card-radius);
+      padding:       var(--card-padding);
+    }
+
+    .stack-card .layer-label {
+      font-family:    var(--font-mono);
+      font-size:      var(--size-label);
+      font-weight:    600;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color:          var(--accent-2);
+      margin-bottom:  var(--space-xs);
+    }
+
+    .stack-card .layer-title {
+      font-family: var(--font-body);
+      font-size:   var(--size-body-lg);
+      font-weight: 600;
+      color:       var(--text-primary);
+      margin:      0;
+    }
+
+    /* ================================================================ */
+    /* SLIDE 8 — ARQUITECTURA                                          */
+    /* ================================================================ */
+    .arch-layout {
+      display:               grid;
+      grid-template-columns: 1fr 1.6fr;
+      gap:                   var(--space-lg);
+      align-items:           start;
+      margin-top:            var(--space-md);
+    }
+
+    /* Placeholder */
+    .placeholder {
+      border:          2px dashed var(--accent-3);
+      border-radius:   10px;
+      background:      var(--bg-secondary);
+      display:         flex;
+      flex-direction:  column;
+      align-items:     center;
+      justify-content: center;
+      color:           var(--text-muted);
+      text-align:      center;
+      padding:         var(--space-xl);
+      min-height:      320px;
+    }
+
+    .placeholder .ph-label {
+      font-family:    var(--font-mono);
+      font-size:      var(--size-label);
+      font-weight:    600;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color:          var(--accent-2);
+      margin-bottom:  var(--space-xs);
+    }
+
+    .placeholder .ph-desc {
+      font-size:   var(--size-small);
+      color:       var(--text-muted);
+      line-height: 1.6;
+    }
+
+    /* ================================================================ */
+    /* SLIDE 9 — CONCLUSIÓN                                            */
+    /* ================================================================ */
+    .conclusion-grid {
+      display:               grid;
+      grid-template-columns: 1fr 1fr;
+      gap:                   var(--space-md);
+      margin-top:            var(--space-md);
+    }
+
+    .conclusion-card {
+      background:    var(--bg-secondary);
+      border:        1px solid rgba(56,189,248,0.15);
+      border-left:   4px solid var(--accent-1);
+      border-radius: 0 var(--card-radius) var(--card-radius) 0;
+      padding:       var(--card-padding);
+    }
+
+    .conclusion-card .c-title {
+      font-size:   var(--size-body-lg);
+      font-weight: 600;
+      color:       var(--text-primary);
+      margin:      0;
+    }
+
+    .demo-banner {
+      grid-column:     1 / -1;
+      background:      var(--accent-1);
+      color:           var(--text-on-dark);
+      border-radius:   var(--card-radius);
+      padding:         var(--space-md) var(--space-lg);
+      text-align:      center;
+      font-size:       var(--size-body-lg);
+      font-weight:     700;
+      letter-spacing:  0.015em;
+      display:         flex;
+      align-items:     center;
+      justify-content: center;
+    }
+
+    /* ================================================================ */
+    /* SLIDE 10 — GRACIAS                                              */
+    /* ================================================================ */
+    .slide-gracias {
+      display:         flex !important;
+      flex-direction:  column;
+      justify-content: center;
+      align-items:     center;
+      text-align:      center;
+      padding:         0 !important;
+      overflow:        hidden;
+    }
+
+    .gracias-bg {
+      position: absolute;
+      inset:    0;
+      z-index:  0;
+    }
+
+    .gracias-bg svg {
+      width:  100%;
+      height: 100%;
+    }
+
+    .slides section.present .ld {
+      animation-play-state: running !important;
+    }
+
+    .gracias-content {
+      position:       relative;
+      z-index:        1;
+      display:        flex;
+      flex-direction: column;
+      align-items:    center;
+      gap:            var(--space-sm);
+    }
+
+    .gracias-card {
+      background:              rgba(15,23,42,0.88);
+      backdrop-filter:         blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border:                  1px solid rgba(56,189,248,0.25);
+      border-radius:           20px;
+      padding:                 var(--space-xl) calc(var(--space-xl) * 2);
+      box-shadow:              0 8px 40px rgba(0,0,0,0.5);
+    }
+
+    .gracias-card h1 {
+      font-family:    var(--font-display);
+      font-size:      var(--size-h1);
+      font-weight:    700;
+      color:          var(--accent-1);
+      margin:         0 0 0.15em 0;
+      letter-spacing: -0.02em;
+    }
+
+    .gracias-card p {
+      font-size:   var(--size-body);
+      color:       var(--text-secondary);
+      margin:      0;
+      font-weight: 500;
+    }
+  </style>
+</head>
+<body>
+<div class="reveal">
+  <div class="slides">
+
+    <!-- ============================================================ -->
+    <!-- SLIDE 1 · PORTADA  (§4.1 Title Slide)                       -->
+    <!-- ============================================================ -->
+    <section class="slide-portada">
+
+      <div class="portada-logos">
+        <img src="figuras/facet.jpg" alt="FACET — Facultad de Ciencias Exactas y Tecnología">
+        <img src="figuras/unt.png"   alt="Universidad Nacional de Tucumán">
+      </div>
+
+      <h1>Diseño, Implementación y Despliegue de un Sistema de Firma Electrónica On-Premise para la FACET</h1>
+
+      <div class="bar" style="margin: var(--space-sm) auto var(--space-md) auto;"></div>
+
+      <div class="portada-meta">
+        <div class="author">Fabricio Blasich</div>
+        Trabajo Final de Graduación &nbsp;·&nbsp; Ingeniería en Computación<br>
+        <strong>Facultad de Ciencias Exactas y Tecnología — UNT</strong><br><br>
+        Tutores: Mg. Carlos Albaca Paraván &nbsp;·&nbsp; Mg. Esteban Daniel Volentini<br>
+        26 de mayo de 2026
+      </div>
+
+      <aside class="notes">
+Bueno, jurado, autoridades, familia, amigos y público en general, bienvenidos a la defensa de mi trabajo de graduación titulado "Diseño, Implementación y Despliegue de un Sistema de Firma Electrónica de Documentos On-Premise para la FACET". [PAUSE]
+
+Este proyecto fue realizado bajo la tutoría del Magíster Carlos Albaca Paraván y el Magíster Esteban Daniel Volentini. Muchas gracias a todos por estar acá. Para arrancar, quiero ponerlos un poco en contexto sobre cuál fue la situación que motivó todo este desarrollo.
+      </aside>
+
+    </section>
+
+    <!-- ============================================================ -->
+    <!-- SLIDE 2 · TABLA DE CONTENIDOS  (§4.9 structure)             -->
+    <!-- ============================================================ -->
+    <section>
+
+      <h1 class="toc-title">Tabla de Contenidos</h1>
+
+      <div class="toc-grid">
+        <div class="toc-block">
+          <div class="toc-num">01</div>
+          <div class="toc-label">Contexto y Problemática</div>
+        </div>
+        <div class="toc-block">
+          <div class="toc-num">02</div>
+          <div class="toc-label">Objetivos del Trabajo</div>
+        </div>
+        <div class="toc-block">
+          <div class="toc-num">03</div>
+          <div class="toc-label">Estado del Arte y Selección de Plataforma</div>
+        </div>
+        <div class="toc-block">
+          <div class="toc-num">04</div>
+          <div class="toc-label">Infraestructura y Arquitectura de Despliegue</div>
+        </div>
+        <div class="toc-block">
+          <div class="toc-num">05</div>
+          <div class="toc-label">Demostración en Vivo</div>
+        </div>
+      </div>
+
+      <aside class="notes">
+La presentación está organizada en cuatro secciones. Primero vamos a ver el contexto y la problemática que motivó este trabajo. Luego el estado del arte y la selección de plataforma. Después la infraestructura y arquitectura de despliegue. Y finalmente una demostración en vivo del sistema funcionando.
+      </aside>
+
+    </section>
+
+    <!-- ============================================================ -->
+    <!-- SECTION BREAK 01 · CONTEXTO Y PROBLEMÁTICA  (§4.2)          -->
+    <!-- ============================================================ -->
+    <section class="centered" data-background-color="#0b1120">
+      <p class="section-tag">Sección 01</p>
+      <h1 class="section-heading text-on-dark">Contexto y<br>Problemática</h1>
+      <div class="bar bar-accent-3"></div>
+      <aside class="notes">Pasamos a la primera sección. [PAUSE]</aside>
+    </section>
+
+    <!-- ============================================================ -->
+    <!-- SLIDE 3 · EL PROBLEMA  (§4.9 Assertion + Evidence)          -->
+    <!-- ============================================================ -->
+    <section>
+
+      <p class="slide-kicker">Proceso de firma actual en la FACET</p>
+
+      <div class="problema-layout">
+
+        <div style="display:flex; align-items:center; justify-content:center;">
+          <!-- SVG FLOWCHART — proceso manual de firma (estático) -->
+          <svg viewBox="0 0 320 420" preserveAspectRatio="xMidYMid meet"
+               xmlns="http://www.w3.org/2000/svg"
+               style="width:100%;max-height:820px;display:block;">
+            <defs>
+              <marker id="fa" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+                <path d="M0,0 L0,6 L7,3 z" fill="#38bdf8"/>
+              </marker>
+            </defs>
+            <!-- NODE 1 · Inicio -->
+            <rect x="55" y="8" width="150" height="32" rx="16" fill="#1e293b" stroke="#38bdf8" stroke-width="2"/>
+            <text x="130" y="28" text-anchor="middle" font-family="Inter,sans-serif" font-size="11" font-weight="600" fill="#f8fafc">Inicio: Doc. Requerido</text>
+            <!-- NODE 2 · Descargar Documento -->
+            <rect x="55" y="60" width="150" height="32" rx="4" fill="#1e293b" stroke="#38bdf8" stroke-width="1.5"/>
+            <text x="130" y="80" text-anchor="middle" font-family="Inter,sans-serif" font-size="11" font-weight="500" fill="#f8fafc">Descargar Documento</text>
+            <!-- NODE 3 · Firmar -->
+            <rect x="55" y="112" width="150" height="38" rx="4" fill="#1e293b" stroke="#38bdf8" stroke-width="1.5"/>
+            <text x="130" y="128" text-anchor="middle" font-family="Inter,sans-serif" font-size="10.5" font-weight="500" fill="#f8fafc">Firmar en Herramienta</text>
+            <text x="130" y="143" text-anchor="middle" font-family="Inter,sans-serif" font-size="10.5" font-weight="500" fill="#f8fafc">Web Externa</text>
+            <!-- NODE 4 · Descargar Firmado -->
+            <rect x="55" y="170" width="150" height="32" rx="4" fill="#1e293b" stroke="#38bdf8" stroke-width="1.5"/>
+            <text x="130" y="190" text-anchor="middle" font-family="Inter,sans-serif" font-size="10.5" font-weight="500" fill="#f8fafc">Descargar Doc. Firmado</text>
+            <!-- NODE 5 · Enviar Email -->
+            <rect x="55" y="222" width="150" height="32" rx="4" fill="#1e293b" stroke="#38bdf8" stroke-width="1.5"/>
+            <text x="130" y="242" text-anchor="middle" font-family="Inter,sans-serif" font-size="11" font-weight="500" fill="#f8fafc">Enviar Email al Siguiente</text>
+            <!-- NODE 6 · ¿Todos firmaron? -->
+            <polygon points="130,274 180,302 130,330 80,302" fill="#1e293b" stroke="#38bdf8" stroke-width="1.5"/>
+            <text x="130" y="297" text-anchor="middle" font-family="Inter,sans-serif" font-size="10" font-weight="500" fill="#f8fafc">¿Todos</text>
+            <text x="130" y="311" text-anchor="middle" font-family="Inter,sans-serif" font-size="10" font-weight="500" fill="#f8fafc">firmaron?</text>
+            <!-- NODE 7 · Fin -->
+            <rect x="162" y="352" width="138" height="32" rx="16" fill="#0ea5e9" stroke="#38bdf8" stroke-width="2"/>
+            <text x="231" y="372" text-anchor="middle" font-family="Inter,sans-serif" font-size="10.5" font-weight="600" fill="#f8fafc">Fin: Doc. Completado</text>
+            <!-- ARROWS -->
+            <line x1="130" y1="40"  x2="130" y2="58"  stroke="#38bdf8" stroke-width="1.5" class="flow-arrow" style="animation-delay:0s"   marker-end="url(#fa)"/>
+            <line x1="130" y1="92"  x2="130" y2="110" stroke="#38bdf8" stroke-width="1.5" class="flow-arrow" style="animation-delay:.15s" marker-end="url(#fa)"/>
+            <line x1="130" y1="150" x2="130" y2="168" stroke="#38bdf8" stroke-width="1.5" class="flow-arrow" style="animation-delay:.3s"  marker-end="url(#fa)"/>
+            <line x1="130" y1="202" x2="130" y2="220" stroke="#38bdf8" stroke-width="1.5" class="flow-arrow" style="animation-delay:.45s" marker-end="url(#fa)"/>
+            <line x1="130" y1="254" x2="130" y2="272" stroke="#38bdf8" stroke-width="1.5" class="flow-arrow" style="animation-delay:.6s"  marker-end="url(#fa)"/>
+            <path d="M 180,302 L 297,302 L 297,350" stroke="#38bdf8" stroke-width="1.5" fill="none" class="flow-arrow" style="animation-delay:.75s" marker-end="url(#fa)"/>
+            <text x="236" y="296" text-anchor="middle" font-family="Inter,sans-serif" font-size="9" font-weight="600" fill="#38bdf8">Sí</text>
+            <path d="M 80,302 L 16,302 L 16,78 L 52,78" stroke="#38bdf8" stroke-width="1.5" fill="none" class="flow-arrow" style="animation-delay:.9s" marker-end="url(#fa)"/>
+            <text x="22" y="68" text-anchor="start" font-family="Inter,sans-serif" font-size="9" font-weight="600" fill="#38bdf8">No</text>
+          </svg>
+        </div>
+
+        <div>
+          <p class="label" style="margin-bottom: var(--space-md);">Problemáticas</p>
+
+          <div class="prob-card fragment">
+            <div class="prob-num">01</div>
+            <div class="prob-text">Tiempo administrativo</div>
+          </div>
+          <div class="prob-card fragment">
+            <div class="prob-num">02</div>
+            <div class="prob-text">Errores humanos</div>
+          </div>
+          <div class="prob-card fragment">
+            <div class="prob-num">03</div>
+            <div class="prob-text">Falta de trazabilidad</div>
+          </div>
+          <div class="prob-card fragment">
+            <div class="prob-num">04</div>
+            <div class="prob-text">Ocupa espacio innecesario</div>
+          </div>
+        </div>
+
+      </div>
+
+      <aside class="notes">
+¿Cómo funciona hoy el proceso de firma? Un usuario necesita firmar un PDF, lo descarga, busca una herramienta externa en internet, lo firma, lo guarda, abre su correo, lo adjunta y se lo manda a la siguiente persona. Este ciclo se repite por cada firmante. [PAUSE]
+
+Esto trae cuatro problemas claros: pérdida de tiempo administrativo enorme en tareas repetitivas; errores humanos como correos que se pierden o archivos que no se adjuntan; falta de trazabilidad — no tenemos registro centralizado de quién firmó ni cuándo; y un almacenamiento ineficiente porque el mismo archivo se replica en decenas de computadoras.
+      </aside>
+
+    </section>
+
+    <!-- ============================================================ -->
+    <!-- SECTION BREAK 02 · OBJETIVOS DEL TRABAJO  (§4.2)            -->
+    <!-- ============================================================ -->
+    <section class="centered" data-background-color="#1e1b4b">
+      <p class="section-tag text-on-dark">Sección 02</p>
+      <h1 class="section-heading text-on-dark">Objetivos del<br>Trabajo</h1>
+      <div class="bar"></div>
+      <aside class="notes">Pasamos a la segunda sección — objetivos del trabajo. [PAUSE]</aside>
+    </section>
+
+    <!-- ============================================================ -->
+    <!-- SLIDE · OBJETIVO GENERAL — FLOWCHART                        -->
+    <!-- ============================================================ -->
+    <section>
+
+      <h3>Objetivo: Implementar y Desplegar Sistema de Firma Digital de Documentos</h3>
+      <div class="bar"></div>
+
+      <!-- SVG FLOWCHART HORIZONTAL — Nuevo Proceso Automatizado -->
+      <svg viewBox="0 0 1440 410" preserveAspectRatio="xMidYMid meet"
+           xmlns="http://www.w3.org/2000/svg"
+           style="width:100%; max-height:640px; display:block; margin-top:var(--space-sm)">
+        <defs>
+          <marker id="obj-main-arr" markerWidth="10" markerHeight="8" refX="9" refY="4" orient="auto">
+            <polygon points="0 0, 10 4, 0 8" fill="#38bdf8"/>
+          </marker>
+        </defs>
+
+        <!-- ── PASO 1 · Carga Única ─────────────────────────────── -->
+        <g class="fragment" data-fragment-index="0">
+          <rect x="40" y="55" width="280" height="300" rx="8"
+                fill="#1e293b" stroke="#38bdf8" stroke-width="2"/>
+          <circle cx="80" cy="93" r="22" fill="#38bdf8"/>
+          <text x="80"  y="100" text-anchor="middle"
+                font-family="Inter,sans-serif" font-size="19" font-weight="700" fill="#0f172a">1</text>
+          <text x="180" y="196" text-anchor="middle"
+                font-family="Inter,sans-serif" font-size="36" font-weight="700" fill="#f8fafc">Carga Única</text>
+          <text x="180" y="242" text-anchor="middle"
+                font-family="Inter,sans-serif" font-size="25" fill="#94a3b8">Docente / Alumno</text>
+          <text x="180" y="272" text-anchor="middle"
+                font-family="Inter,sans-serif" font-size="25" fill="#94a3b8">sube el PDF</text>
+        </g>
+
+        <!-- ── FLECHA 1 + PASO 2 · Configuración Visual ─────────── -->
+        <g class="fragment" data-fragment-index="1">
+          <line x1="324" y1="205" x2="397" y2="205"
+                stroke="#38bdf8" stroke-width="2.5" stroke-dasharray="6 3"
+                marker-end="url(#obj-main-arr)"/>
+          <rect x="400" y="55" width="280" height="300" rx="8"
+                fill="#1e293b" stroke="#38bdf8" stroke-width="2"/>
+          <circle cx="440" cy="93" r="22" fill="#38bdf8"/>
+          <text x="440" y="100" text-anchor="middle"
+                font-family="Inter,sans-serif" font-size="19" font-weight="700" fill="#0f172a">2</text>
+          <text x="540" y="172" text-anchor="middle"
+                font-family="Inter,sans-serif" font-size="36" font-weight="700" fill="#f8fafc">Configuración</text>
+          <text x="540" y="214" text-anchor="middle"
+                font-family="Inter,sans-serif" font-size="36" font-weight="700" fill="#f8fafc">Visual</text>
+          <text x="540" y="254" text-anchor="middle"
+                font-family="Inter,sans-serif" font-size="25" fill="#94a3b8">Firmantes y posición</text>
+          <text x="540" y="284" text-anchor="middle"
+                font-family="Inter,sans-serif" font-size="25" fill="#94a3b8">gráfica en el PDF</text>
+        </g>
+
+        <!-- ── FLECHA 2 + PASO 3 · Motor de Automatización ──────── -->
+        <g class="fragment" data-fragment-index="2">
+          <line x1="684" y1="205" x2="757" y2="205"
+                stroke="#38bdf8" stroke-width="2.5" stroke-dasharray="6 3"
+                marker-end="url(#obj-main-arr)"/>
+          <rect x="760" y="55" width="280" height="300" rx="8"
+                fill="#1e293b" stroke="#38bdf8" stroke-width="2"/>
+          <circle cx="800" cy="93" r="22" fill="#38bdf8"/>
+          <text x="800" y="100" text-anchor="middle"
+                font-family="Inter,sans-serif" font-size="19" font-weight="700" fill="#0f172a">3</text>
+          <text x="900" y="172" text-anchor="middle"
+                font-family="Inter,sans-serif" font-size="36" font-weight="700" fill="#f8fafc">Motor de</text>
+          <text x="900" y="214" text-anchor="middle"
+                font-family="Inter,sans-serif" font-size="36" font-weight="700" fill="#f8fafc">Automatización</text>
+          <text x="900" y="254" text-anchor="middle"
+                font-family="Inter,sans-serif" font-size="25" fill="#94a3b8">Turnos y</text>
+          <text x="900" y="284" text-anchor="middle"
+                font-family="Inter,sans-serif" font-size="25" fill="#94a3b8">notificaciones</text>
+        </g>
+
+        <!-- ── FLECHA 3 + PASO 4 · Salida Trazable (éxito) ──────── -->
+        <g class="fragment" data-fragment-index="3">
+          <line x1="1044" y1="205" x2="1117" y2="205"
+                stroke="#38bdf8" stroke-width="2.5" stroke-dasharray="6 3"
+                marker-end="url(#obj-main-arr)"/>
+          <rect x="1120" y="55" width="280" height="300" rx="8"
+                fill="#1e293b" stroke="#4ade80" stroke-width="2.5"/>
+          <circle cx="1160" cy="93" r="22" fill="#4ade80"/>
+          <text x="1160" y="100" text-anchor="middle"
+                font-family="Inter,sans-serif" font-size="19" font-weight="700" fill="#0f172a">4</text>
+          <text x="1260" y="196" text-anchor="middle"
+                font-family="Inter,sans-serif" font-size="36" font-weight="700" fill="#f8fafc">Salida Trazable</text>
+          <text x="1260" y="242" text-anchor="middle"
+                font-family="Inter,sans-serif" font-size="25" fill="#86efac">Doc. firmado</text>
+          <text x="1260" y="272" text-anchor="middle"
+                font-family="Inter,sans-serif" font-size="25" fill="#86efac">y validado</text>
+        </g>
+
+      </svg>
+
+      <aside class="notes">
+La propuesta reemplaza ese proceso manual de siete pasos por uno automatizado de cuatro. [PAUSE]
+
+Paso uno: carga única. El docente o alumno sube el PDF una sola vez al sistema. Nada de descargas ni reenvíos por email. [PAUSE]
+
+Paso dos: configuración visual. Directamente en la interfaz web, define quiénes deben firmar y en qué lugar físico del documento va la firma de cada uno. [PAUSE]
+
+Paso tres: el motor de automatización de Documenso se encarga del resto — notifica a cada firmante en su turno y gestiona el flujo sin intervención manual. [PAUSE]
+
+Paso cuatro: salida trazable. El documento final queda firmado, con sello criptográfico, validable públicamente, y almacenado en la infraestructura de la FACET.
+      </aside>
+
+    </section>
+
+    <!-- ============================================================ -->
+    <!-- SLIDE · OBJETIVOS ESPECÍFICOS                                -->
+    <!-- ============================================================ -->
+    <section>
+
+      <h3>Objetivos Específicos del Trabajo</h3>
+      <div class="bar"></div>
+
+      <div class="obj-grid">
+
+        <div class="obj-ring obj-ring-1">
+          <svg class="obj-icon" viewBox="0 0 37.166 37.166" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+            <path d="M35.829,32.045l-6.833-6.833c-0.513-0.513-1.167-0.788-1.836-0.853c2.06-2.567,3.298-5.819,3.298-9.359c0-8.271-6.729-15-15-15c-8.271,0-15,6.729-15,15c0,8.271,6.729,15,15,15c3.121,0,6.021-0.96,8.424-2.598c0.018,0.744,0.305,1.482,0.872,2.052l6.833,6.833c0.585,0.586,1.354,0.879,2.121,0.879s1.536-0.293,2.121-0.879C37.001,35.116,37.001,33.217,35.829,32.045z M15.458,25c-5.514,0-10-4.484-10-10c0-5.514,4.486-10,10-10c5.514,0,10,4.486,10,10C25.458,20.516,20.972,25,15.458,25z"/>
+          </svg>
+          <div class="obj-num">01</div>
+          <div class="obj-title">Relevamiento<br>&amp; Selección</div>
+          <div class="obj-sub">Open Source<br>On-Premise</div>
+        </div>
+
+        <div class="obj-ring obj-ring-2">
+          <svg class="obj-icon" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+            <path d="M18.5,9 C19.3357785,9 20.0073514,8.32842712 20.0073514,7.5 L20.0073514,6.5 C20.0073514,5.67157288 19.3357785,5 18.5073514,5 L5.5,5 C4.67157288,5 4,5.67157288 4,6.5 L4,7.5 C4,8.32842712 4.67157288,9 5.5,9 L18.5000001,9 L18.5,9 Z M3,16.5 C3,15.1192881 4.11928813,14 5.5,14 L18.5073514,14 C19.8880632,14 21.0073514,15.1192881 21.0073514,16.5 L21.0073514,17.5 C21.0073514,18.8807119 19.8880632,20 18.5073514,20 L5.5,20 C4.11928813,20 3,18.8807119 3,17.5 L3,16.5 Z M3.99975627,9.5 C3.39267155,9.0438856 3,8.31779948 3,7.5 L3,6.5 C3,5.11928813 4.11928813,4 5.5,4 L18.5073514,4 C19.8880632,4 21.0073514,5.11928813 21.0073514,6.5 L21.0073514,7.5 C21.0073514,8.31779948 20.6146798,9.0438856 20.0075951,9.5 C20.6146798,9.9561144 21.0073514,10.6822005 21.0073514,11.5 L21.0073514,12.5 C21.0073514,13.8807119 19.8880632,15 18.5073514,15 C18.2238576,15 18,14.7761424 18,14.5 C18,14.2238576 18.2238576,14 18.5,14 C19.3357785,14 20.0073514,13.3284271 20.0073514,12.5 L20.0073514,11.5 C20.0073514,10.6715729 19.3357785,10 18.5073514,10 L5.5,10 C4.67157288,10 4,10.6715729 4,11.5 L4,12.5 C4,13.3284271 4.67157288,14 5.5,14 C5.77614237,14 6,14.2238576 6,14.5 C6,14.7761424 5.77614237,15 5.5,15 C4.11928813,15 3,13.8807119 3,12.5 L3,11.5 C3,10.6822005 3.39267155,9.9561144 3.99975627,9.5 Z M4,16.5 L4,17.5 C4,18.3284271 4.67157288,19 5.5,19 L18.5073514,19 C19.3357785,19 20.0073514,18.3284271 20.0073514,17.5 L20.0073514,16.5 C20.0073514,15.6715729 19.3357785,15 18.5073514,15 L5.5,15 C4.67157288,15 4,15.6715729 4,16.5 Z M5.5,8 C5.22385763,8 5,7.77614237 5,7.5 C5,7.22385763 5.22385763,7 5.5,7 L7.5,7 C7.77614237,7 8,7.22385763 8,7.5 C8,7.77614237 7.77614237,8 7.5,8 L5.5,8 Z M5.5,13 C5.22385763,13 5,12.7761424 5,12.5 C5,12.2238576 5.22385763,12 5.5,12 L7.5,12 C7.77614237,12 8,12.2238576 8,12.5 C8,12.7761424 7.77614237,13 7.5,13 L5.5,13 Z M5.5,18 C5.22385763,18 5,17.7761424 5,17.5 C5,17.2238576 5.22385763,17 5.5,17 L7.5,17 C7.77614237,17 8,17.2238576 8,17.5 C8,17.7761424 7.77614237,18 7.5,18 L5.5,18 Z"/>
+          </svg>
+          <div class="obj-num">02</div>
+          <div class="obj-title">Arquitectura<br>&amp; Políticas</div>
+          <div class="obj-sub">Despliegue, Respaldos<br>y Usuarios</div>
+        </div>
+
+        <div class="obj-ring obj-ring-3">
+          <svg class="obj-icon obj-icon-stroke" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+            <path d="M17 12C15.8757 13.1243 11.5 16.5 11.5 16.5M17 12C20 9 20 7 20 4C17 4 15 4 12 7M17 12L17.4752 14.376C17.8031 16.0153 17.29 17.71 16.1078 18.8922L14.9374 20.0626C14.4676 20.5324 13.6788 20.4219 13.3562 19.8411L11.5 16.5M12 7L7.5 12.5M12 7L9.62395 6.52479C7.98465 6.19693 6.28996 6.71004 5.10784 7.89216L3.93743 9.06257C3.46765 9.53235 3.57813 10.3212 4.1589 10.6438L7.5 12.5M7.5 12.5L11.5 16.5M15.5 8.50049L14.5 9.50049M3 21L6.39223 20.3216C7.32708 20.1346 8 19.3138 8 18.3604L8 18C8 16.8954 7.10457 16 6 16L5.63961 16C4.68625 16 3.86542 16.6729 3.67845 17.6078L3 21Z" fill="none"/>
+          </svg>
+          <div class="obj-num">03</div>
+          <div class="obj-title">Implementación<br>Piloto</div>
+          <div class="obj-sub">Validación<br>y Usabilidad</div>
+        </div>
+
+        <div class="obj-ring obj-ring-4">
+          <svg class="obj-icon" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+            <path fill-rule="evenodd" d="M4 1a2 2 0 00-2 2v14a2 2 0 002 2h12a2 2 0 002-2V7.414A2 2 0 0017.414 6L13 1.586A2 2 0 0011.586 1H4zm0 2h7.586L16 7.414V17H4V3zm2 2a1 1 0 000 2h5a1 1 0 100-2H6zm-1 5a1 1 0 011-1h8a1 1 0 110 2H6a1 1 0 01-1-1zm1 3a1 1 0 100 2h8a1 1 0 100-2H6z"/>
+          </svg>
+          <div class="obj-num">04</div>
+          <div class="obj-title">Documentación<br>&amp; Transferencia</div>
+          <div class="obj-sub">Manuales<br>y Continuidad</div>
+        </div>
+
+      </div>
+
+      <aside class="notes">
+Ahora sí, los cuatro objetivos específicos que guiaron este trabajo. [PAUSE]
+
+Primero: relevamiento y selección. Identificar y evaluar herramientas open source que resuelvan la problemática en modalidad on-premise. [PAUSE]
+
+Segundo: arquitectura y políticas. Definir cómo se despliega el sistema, cómo se respaldan los datos y cómo se administran los usuarios. [PAUSE]
+
+Tercero: implementación piloto. Poner el sistema en marcha y validar viabilidad técnica y usabilidad con usuarios reales. [PAUSE]
+
+Cuarto: documentación y transferencia. Generar manuales tanto para usuarios finales como para el mantenimiento a largo plazo del sistema.
+      </aside>
+
+    </section>
+
+    <!-- ============================================================ -->
+    <!-- SECTION BREAK 03 · ESTADO DEL ARTE  (§4.2)                  -->
+    <!-- ============================================================ -->
+    <section class="centered" data-background-color="#0369a1">
+      <p class="section-tag text-on-dark">Sección 03</p>
+      <h1 class="section-heading text-on-dark">Estado del Arte y<br>Selección de Plataforma</h1>
+      <div class="bar bar-accent-3"></div>
+      <aside class="notes">Pasamos a la tercera sección — estado del arte y selección de plataforma. [PAUSE]</aside>
+    </section>
+
+    <!-- ============================================================ -->
+    <!-- SLIDE 4 · OBJETIVOS — NUEVO PROCESO AUTOMATIZADO             -->
+    <!-- ============================================================ -->
+    <section>
+
+      <h3>Objetivo: Implementar y Desplegar Sistema de Firma Digital de Documentos</h3>
+      <div class="bar"></div>
+
+      <!-- SVG FLOWCHART HORIZONTAL — Nuevo Proceso Automatizado -->
+      <svg viewBox="0 0 1440 410" preserveAspectRatio="xMidYMid meet"
+           xmlns="http://www.w3.org/2000/svg"
+           style="width:100%; max-height:640px; display:block; margin-top:var(--space-sm)">
+        <defs>
+          <marker id="np-arr" markerWidth="10" markerHeight="8" refX="9" refY="4" orient="auto">
+            <polygon class="np-arrowhead" points="0 0, 10 4, 0 8"/>
+          </marker>
+        </defs>
+
+        <!-- ── PASO 1 · Carga Única ─────────────────────────────── -->
+        <g class="fragment" data-fragment-index="0">
+          <rect x="40" y="55" width="280" height="300" rx="8" class="np-rect"/>
+          <circle cx="80" cy="93" r="22" class="np-badge"/>
+          <text x="80"  y="100" text-anchor="middle"
+                font-family="Inter,sans-serif" font-size="19" font-weight="700"
+                class="np-badge-num">1</text>
+          <text x="180" y="196" text-anchor="middle"
+                font-family="Inter,sans-serif" font-size="36" font-weight="700"
+                class="np-node-title">Carga Única</text>
+          <text x="180" y="242" text-anchor="middle"
+                font-family="Inter,sans-serif" font-size="25" class="np-node-sub">Docente / Alumno</text>
+          <text x="180" y="272" text-anchor="middle"
+                font-family="Inter,sans-serif" font-size="25" class="np-node-sub">sube el PDF</text>
+        </g>
+
+        <!-- ── FLECHA 1 + PASO 2 · Configuración Visual ─────────── -->
+        <g class="fragment" data-fragment-index="1">
+          <line x1="324" y1="205" x2="397" y2="205" stroke-width="2.5" stroke-dasharray="6 3"
+                class="np-arrow" marker-end="url(#np-arr)"/>
+          <rect x="400" y="55" width="280" height="300" rx="8" class="np-rect"/>
+          <circle cx="440" cy="93" r="22" class="np-badge"/>
+          <text x="440" y="100" text-anchor="middle"
+                font-family="Inter,sans-serif" font-size="19" font-weight="700"
+                class="np-badge-num">2</text>
+          <text x="540" y="172" text-anchor="middle"
+                font-family="Inter,sans-serif" font-size="36" font-weight="700"
+                class="np-node-title">Configuración</text>
+          <text x="540" y="214" text-anchor="middle"
+                font-family="Inter,sans-serif" font-size="36" font-weight="700"
+                class="np-node-title">Visual</text>
+          <text x="540" y="254" text-anchor="middle"
+                font-family="Inter,sans-serif" font-size="25" class="np-node-sub">Firmantes y posición</text>
+          <text x="540" y="284" text-anchor="middle"
+                font-family="Inter,sans-serif" font-size="25" class="np-node-sub">gráfica en el PDF</text>
+        </g>
+
+        <!-- ── FLECHA 2 + PASO 3 · Motor de Automatización ──────── -->
+        <g class="fragment" data-fragment-index="2">
+          <line x1="684" y1="205" x2="757" y2="205" stroke-width="2.5" stroke-dasharray="6 3"
+                class="np-arrow" marker-end="url(#np-arr)"/>
+          <rect x="760" y="55" width="280" height="300" rx="8" class="np-rect"/>
+          <circle cx="800" cy="93" r="22" class="np-badge"/>
+          <text x="800" y="100" text-anchor="middle"
+                font-family="Inter,sans-serif" font-size="19" font-weight="700"
+                class="np-badge-num">3</text>
+          <text x="900" y="172" text-anchor="middle"
+                font-family="Inter,sans-serif" font-size="36" font-weight="700"
+                class="np-node-title">Motor de</text>
+          <text x="900" y="214" text-anchor="middle"
+                font-family="Inter,sans-serif" font-size="36" font-weight="700"
+                class="np-node-title">Automatización</text>
+          <text x="900" y="254" text-anchor="middle"
+                font-family="Inter,sans-serif" font-size="25" class="np-node-sub">Turnos y</text>
+          <text x="900" y="284" text-anchor="middle"
+                font-family="Inter,sans-serif" font-size="25" class="np-node-sub">notificaciones</text>
+        </g>
+
+        <!-- ── FLECHA 3 + PASO 4 · Salida Trazable (éxito) ──────── -->
+        <g class="fragment" data-fragment-index="3">
+          <line x1="1044" y1="205" x2="1117" y2="205" stroke-width="2.5" stroke-dasharray="6 3"
+                class="np-arrow" marker-end="url(#np-arr)"/>
+          <rect x="1120" y="55" width="280" height="300" rx="8" class="np-rect-success"/>
+          <circle cx="1160" cy="93" r="22" class="np-badge-success"/>
+          <text x="1160" y="100" text-anchor="middle"
+                font-family="Inter,sans-serif" font-size="19" font-weight="700"
+                class="np-badge-num">4</text>
+          <text x="1260" y="196" text-anchor="middle"
+                font-family="Inter,sans-serif" font-size="36" font-weight="700"
+                class="np-node-title">Salida Trazable</text>
+          <text x="1260" y="242" text-anchor="middle"
+                font-family="Inter,sans-serif" font-size="25" class="np-node-sub-ok">Doc. firmado</text>
+          <text x="1260" y="272" text-anchor="middle"
+                font-family="Inter,sans-serif" font-size="25" class="np-node-sub-ok">y validado</text>
+        </g>
+
+      </svg>
+
+      <aside class="notes">
+La propuesta reemplaza ese proceso manual de siete pasos por uno automatizado de cuatro. [PAUSE]
+
+Paso uno: carga única. El docente o alumno sube el PDF una sola vez al sistema. Nada de descargas ni reenvíos por email. [PAUSE]
+
+Paso dos: configuración visual. Directamente en la interfaz web, define quiénes deben firmar y en qué lugar físico del documento va la firma de cada uno. [PAUSE]
+
+Paso tres: el motor de automatización de Documenso se encarga del resto — notifica a cada firmante en su turno y gestiona el flujo sin intervención manual. [PAUSE]
+
+Paso cuatro: salida trazable. El documento final queda firmado, con sello criptográfico, validable públicamente, y almacenado en la infraestructura de la FACET.
+      </aside>
+
+    </section>
+
+    <!-- ============================================================ -->
+    <!-- SLIDE 5 · SAAS VS ON-PREMISE  (§4.12 Comparison)            -->
+    <!-- ============================================================ -->
+    <section>
+
+      <h2>SaaS: USD 5.300/año para 20 usuarios — la decisión se tomó sola</h2>
+      <div class="bar"></div>
+
+      <table>
+        <thead>
+          <tr>
+            <th>Criterio</th>
+            <th>Solución SaaS Comercial</th>
+            <th>Solución Open Source On-Premise</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr class="fragment">
+            <td><strong>Costo anual (20 usuarios)</strong></td>
+            <td><span class="tag tag-bad">&gt; USD 5.300 / año</span></td>
+            <td><span class="tag tag-good">USD 0 — solo infraestructura propia</span></td>
+          </tr>
+          <tr class="fragment">
+            <td><strong>Modelo de servicio</strong></td>
+            <td>SaaS — datos en servidores del proveedor</td>
+            <td>On-Premise — datos bajo control de la FACET</td>
+          </tr>
+          <tr class="fragment">
+            <td><strong>Control y soberanía de datos</strong></td>
+            <td><span class="tag tag-bad">Dependencia del proveedor</span></td>
+            <td><span class="tag tag-good">Control total institucional</span></td>
+          </tr>
+          <tr class="fragment">
+            <td><strong>Personalización</strong></td>
+            <td><span class="tag tag-neutral">Limitada al plan contratado</span></td>
+            <td><span class="tag tag-good">Código fuente disponible y modificable</span></td>
+          </tr>
+          <tr class="fragment">
+            <td><strong>Continuidad del servicio</strong></td>
+            <td>Depende del proveedor externo</td>
+            <td>Depende solo de la infraestructura FACET</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <aside class="notes">
+Al empezar a investigar, la primera pregunta lógica era: ¿por qué no compramos algo que ya esté hecho? [PAUSE]
+
+Herramientas como DocuSign o Adobe Sign son excelentes, pero se comercializan como Software as a Service. Si hacemos los números, para apenas veinte usuarios el costo de licenciamiento supera los cinco mil trescientos dólares anuales — económicamente inviable para una universidad pública. [PAUSE]
+
+Por lo tanto, descartamos las soluciones comerciales y la investigación se centró de lleno en alternativas de código abierto que nos permitieran alojar el sistema en nuestros propios servidores.
+      </aside>
+
+    </section>
+
+    <!-- ============================================================ -->
+    <!-- SLIDE 6 · DOCUSEAL VS DOCUMENSO  (§4.12 Comparison)         -->
+    <!-- ============================================================ -->
+    <section>
+
+      <h2>DocuSeal cobra por roles y equipos; Documenso los da gratis — elegimos Documenso</h2>
+      <div class="bar"></div>
+
+      <table>
+        <thead>
+          <tr>
+            <th>Característica</th>
+            <th>DocuSeal Community</th>
+            <th>Documenso Community</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr class="fragment">
+            <td><strong>Control de acceso por roles</strong></td>
+            <td><span class="tag tag-bad">Solo en versión paga</span> — cualquier usuario = admin</td>
+            <td><span class="tag tag-good">Incluido</span> — roles Admin y Miembro diferenciados</td>
+          </tr>
+          <tr class="fragment">
+            <td><strong>Equipos / Departamentos</strong></td>
+            <td><span class="tag tag-bad">No disponible</span></td>
+            <td><span class="tag tag-good">Incluido</span> — mapea departamentos de la FACET</td>
+          </tr>
+          <tr class="fragment">
+            <td><strong>OAuth con Google (@herrera)</strong></td>
+            <td><span class="tag tag-bad">Sin soporte nativo</span></td>
+            <td><span class="tag tag-good">Soporte nativo incluido</span></td>
+          </tr>
+          <tr class="fragment">
+            <td><strong>Licencia Open Source</strong></td>
+            <td><span class="tag tag-neutral">AGPL-3.0</span></td>
+            <td><span class="tag tag-neutral">AGPL-3.0</span></td>
+          </tr>
+          <tr class="fragment">
+            <td><strong>Costo base con funciones clave</strong></td>
+            <td><span class="tag tag-bad">Requiere plan pago</span></td>
+            <td><span class="tag tag-good">Completamente gratuito</span></td>
+          </tr>
+        </tbody>
+      </table>
+
+      <aside class="notes">
+Dentro del mundo Open Source llegaron a la final dos grandes candidatos: DocuSeal y Documenso. Ambos permiten firmar documentos, pero cuando analizamos las licencias la diferencia fue enorme. [PAUSE]
+
+DocuSeal restringe funciones vitales — como el control de acceso basado en roles — a su versión paga. Eso significa que cualquier usuario creado tendría permisos de administrador. Inviable para la facultad. [PAUSE]
+
+Documenso, en cambio, incluye en su versión comunitaria el control de roles, nos permite crear Equipos que mapean perfectamente los departamentos de la FACET, y tiene soporte nativo para autenticarnos con Google usando nuestros correos institucionales. Así que, sin dudarlo, Documenso fue el elegido.
+      </aside>
+
+    </section>
+
+    <!-- ============================================================ -->
+    <!-- SECTION BREAK 04 · INFRAESTRUCTURA  (§4.2)                  -->
+    <!-- ============================================================ -->
+    <section class="centered" data-background-color="#132f4c">
+      <p class="section-tag">Sección 04</p>
+      <h1 class="section-heading text-on-dark">Infraestructura y<br>Arquitectura de Despliegue</h1>
+      <div class="bar bar-accent-3"></div>
+      <aside class="notes">Tercera sección — cómo construimos todo esto. [PAUSE]</aside>
+    </section>
+
+    <!-- ============================================================ -->
+    <!-- SLIDE 7 · STACK TECNOLÓGICO  (§4.10 Card Grid)              -->
+    <!-- ============================================================ -->
+    <section>
+
+      <h2>Stack 100% Open Source: Proxmox → Docker → Documenso + PostgreSQL + MinIO</h2>
+      <div class="bar"></div>
+
+      <div class="stack-grid">
+        <div class="stack-card fragment">
+          <div class="layer-label">Cómputo &amp; Orquestación</div>
+          <div class="layer-title">Proxmox → LXC → Docker → Coolify</div>
+        </div>
+        <div class="stack-card fragment">
+          <div class="layer-label">Base de Datos Transaccional</div>
+          <div class="layer-title">PostgreSQL</div>
+        </div>
+        <div class="stack-card fragment">
+          <div class="layer-label">Almacenamiento de Objetos</div>
+          <div class="layer-title">TrueNAS + MinIO (API S3)</div>
+        </div>
+        <div class="stack-card fragment">
+          <div class="layer-label">Email &amp; Renderizado PDF</div>
+          <div class="layer-title">Brevo SMTP · Browserless</div>
+        </div>
+      </div>
+
+      <aside class="notes">
+¿Cómo levantamos este sistema? Les presento el stack tecnológico. [PAUSE]
+
+Como base de cómputo aprovechamos el servidor de la facultad que corre Proxmox. Sobre él, usamos un contenedor LXC para correr Docker. Para no administrar contenedores a mano, utilizamos Coolify — una plataforma PaaS que facilita la orquestación. [PAUSE]
+
+Como base de datos transaccional usamos PostgreSQL. Los PDFs firmados no se guardan en la base de datos — para eso usamos TrueNAS con MinIO, almacenamiento de objetos compatible con S3. [PAUSE]
+
+Para los correos integramos Brevo SMTP. Y finalmente agregué Browserless — una instancia de Chrome virtual — fundamental para renderizar el certificado visual de la firma en el PDF.
+      </aside>
+
+    </section>
+
+    <!-- ============================================================ -->
+    <!-- SLIDE 8 · ARQUITECTURA  (§4.9 Assertion + Evidence)         -->
+    <!-- ============================================================ -->
+    <section>
+
+      <h2>Arquitectura Hardened: ningún puerto interno queda expuesto a internet</h2>
+      <div class="bar"></div>
+
+      <div class="arch-layout">
+
+        <ul class="styled-list">
+          <li class="fragment">WAN → Nginx (SSL) → Coolify → Traefik → Documenso</li>
+          <li class="fragment">PostgreSQL y Browserless: aislados en red Docker privada</li>
+          <li class="fragment">Socat (proxy TCP): URL única de MinIO, tráfico S3 siempre filtrado</li>
+        </ul>
+
+        <div class="placeholder fragment">
+          <div class="ph-label">Diagrama de Despliegue</div>
+          <div class="ph-desc">
+            Arquitectura completa de red<br>
+            WAN · Nginx · Coolify · Traefik<br>
+            Documenso · PostgreSQL · Browserless<br>
+            MinIO · TrueNAS · Socat<br><br>
+            <em>Insertar imagen del diagrama aquí</em>
+          </div>
+        </div>
+
+      </div>
+
+      <aside class="notes">
+Acá es donde todo se une. Esta es la arquitectura de red y el diagrama de despliegue. [PAUSE]
+
+Imaginen a un profesor desde internet. Su petición llega al router de borde de la FACET, es recibida por Nginx que maneja SSL y reenvía hacia adentro, al contenedor LXC donde vive Coolify. Dentro de Coolify, Traefik enruta hacia la red privada de Docker donde está Documenso. PostgreSQL y Browserless están aislados — sus puertos no se exponen a internet. [PAUSE]
+
+Fíjense en el flujo hacia MinIO. Tuvimos que resolver un desafío: Documenso requiere una única URL pública para el almacenamiento S3. Implementamos un contenedor proxy TCP llamado Socat dentro de nuestra red virtual. Todo el tráfico hacia el almacenamiento pasa siempre filtrado y seguro por el proxy de la facultad antes de llegar a los discos físicos del TrueNAS. Nada queda expuesto al exterior de forma directa.
+      </aside>
+
+    </section>
+
+    <!-- ============================================================ -->
+    <!-- SECTION BREAK 05 · VALIDACIÓN Y DEMO  (§4.2)                -->
+    <!-- ============================================================ -->
+    <section class="centered" data-background-color="#0c4a6e">
+      <p class="section-tag text-on-dark">Sección 05</p>
+      <h1 class="section-heading text-on-dark">Validación Práctica y<br>Demostración en Vivo</h1>
+      <div class="bar bar-accent-3"></div>
+      <aside class="notes">Última sección — lo que construimos funciona. Vamos a verlo. [PAUSE]</aside>
+    </section>
+
+    <!-- ============================================================ -->
+    <!-- SLIDE 9 · CONCLUSIÓN  (§4.10 Card Grid)                     -->
+    <!-- ============================================================ -->
+    <section>
+
+      <h2>Costo licencias: $0 · Datos en FACET · Respaldo automático · Sistema operativo</h2>
+      <div class="bar"></div>
+
+      <div class="conclusion-grid">
+        <div class="conclusion-card fragment">
+          <div class="c-title">Control total de datos institucionales</div>
+        </div>
+        <div class="conclusion-card fragment">
+          <div class="c-title">Costo de licenciamiento = $0</div>
+        </div>
+        <div class="conclusion-card fragment">
+          <div class="c-title">Acceso restringido a cuentas @herrera</div>
+        </div>
+        <div class="conclusion-card fragment">
+          <div class="c-title">Respaldo automático y autonomía operativa</div>
+        </div>
+        <div class="demo-banner">
+          A continuación: demostración en vivo de la plataforma &nbsp;→
+        </div>
+      </div>
+
+      <aside class="notes">
+En conclusión, logramos una arquitectura robusta, de nivel empresarial, pero alojada en nuestros propios servidores y sin depender económicamente de un tercero. [PAUSE]
+
+Hemos eliminado el problema del registro manual de usuarios cerrando el acceso únicamente a cuentas de Google institucionales. Tenemos un sistema de respaldo automático operando. Costo de licenciamiento cero. [PAUSE]
+
+Todo este diseño de infraestructura se aprecia mucho mejor viéndolo funcionar. Así que ahora pasamos a la demostración en vivo.
+
+[TRANSICIÓN A LA COMPUTADORA PARA LA DEMO EN VIVO]
+      </aside>
+
+    </section>
+
+    <!-- ============================================================ -->
+    <!-- SLIDE 10 · GRACIAS  (§4.17 Closing)                         -->
+    <!-- ============================================================ -->
+    <section class="slide-gracias">
+<div class="gracias-bg"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1536 730" preserveAspectRatio="xMidYMid" style="shape-rendering:auto;display:block;background:rgb(255,228,123)"><g><style type="text/css">
+  @keyframes ld-fall {
+    0%    { transform: translate(0,0px) rotate3d(1,1,1,0deg); }
+    16.6% { transform: translate(0,123.66666666666667px) rotate3d(1,1,1,180deg); }
+    33.3% { transform: translate(0,247.33333333333334px) rotate3d(1,1,1,360deg); }
+    50.0% { transform: translate(0,371px) rotate3d(1,1,1,540deg); }
+    66.6% { transform: translate(0,494.6666666666667px) rotate3d(1,1,1,720deg); }
+    83.3% { transform: translate(0,618.3333333333334px) rotate3d(1,1,1,900deg); }
+    100%  { transform: translate(0,742px) rotate3d(1,1,1,1080deg); }
+  }
+  .ld.ld-fall  { animation: ld-fall 4s linear infinite; }
+  .ld.ld-fall2 { animation: ld-fall 4s linear infinite; animation-fill-mode: forwards; }
+</style>
+<g transform="matrix(1,0,0,1,0,475.382)"><g transform="matrix(1,0,0,1,1411.386,0)"><g style="animation-delay:-39.1934s;animation-duration:2s;animation-play-state:paused;transform:matrix3d(0.503949,-0.310097,0.806148,0,0.806148,0.503949,-0.310097,0,-0.310097,0.806148,0.503949,0,0,443.021,0,1)" class="ld ld-fall2"><rect fill="#4355db" style="transform:matrix(2.78139,0,0,2.78139,0,0)" height="9.24" width="10.07" y="-4.62" x="-5.03"/></g></g><g transform="matrix(1,0,0,1,672.493,0)"><g style="animation-delay:-38.8439s;animation-duration:2s;animation-play-state:paused;transform:matrix3d(0.264978,0.941818,-0.206797,0,-0.206797,0.264978,0.941818,0,0.941818,-0.206797,0.264978,0,0,313.21,0,1)" class="ld ld-fall2"><rect fill="#4355db" style="transform:matrix(2.75346,0,0,2.75346,0,0)" height="9.45" width="6.45" y="-4.72" x="-3.22"/></g></g><g transform="matrix(1,0,0,1,23.222,0)"><g style="animation-delay:-37.8548s;animation-duration:4s;animation-play-state:paused;transform:matrix3d(-0.183923,0.956197,0.227726,0,0.227726,-0.183923,0.956197,0,0.956197,0.227726,-0.183923,0,0,344.127,0,1)" class="ld ld-fall2"><rect fill="#4355db" style="transform:matrix(3.3221,0,0,3.3221,0,0)" height="10.12" width="10.14" y="-5.06" x="-5.07"/></g></g><g transform="matrix(1,0,0,1,97.801,0)"><g style="animation-delay:-38.2578s;animation-duration:4s;animation-play-state:paused;transform:matrix3d(0.104217,-0.0942917,0.990075,0,0.990075,0.104217,-0.0942917,0,-0.0942917,0.990075,0.104217,0,0,419.023,0,1)" class="ld ld-fall2"><rect fill="#eb7532" style="transform:matrix(2.6287,0,0,2.6287,0,0)" height="9.37" width="7.14" y="-4.68" x="-3.57"/></g></g><g transform="matrix(1,0,0,1,1489.922,0)"><g style="animation-delay:-38.455s;animation-duration:4s;animation-play-state:paused;transform:matrix3d(0.699665,-0.332206,0.632541,0,0.632541,0.699665,-0.332206,0,-0.332206,0.632541,0.699665,0,0,455.734,0,1)" class="ld ld-fall2"><rect fill="#d23be7" style="transform:matrix(2.6058,0,0,2.6058,0,0)" height="6.78" width="11.77" y="-3.39" x="-5.89"/></g></g><g transform="matrix(1,0,0,1,132.004,0)"><g style="animation-delay:-39.8038s;animation-duration:4s;animation-play-state:paused;transform:matrix3d(0.735716,-0.328183,0.592467,0,0.592467,0.735716,-0.328183,0,-0.328183,0.592467,0.735716,0,0,705.674,0,1)" class="ld ld-fall2"><rect fill="#4355db" style="transform:matrix(2.0467,0,0,2.0467,0,0)" height="7.86" width="11.47" y="-3.93" x="-5.73"/></g></g><g transform="matrix(1,0,0,1,715.72,0)"><g style="animation-delay:-37.5481s;animation-duration:2s;animation-play-state:paused;transform:matrix3d(0.0362174,0.998733,-0.03495,0,-0.03495,0.0362174,0.998733,0,0.998733,-0.03495,0.0362174,0,0,574.683,0,1)" class="ld ld-fall2"><rect fill="#eb7532" style="transform:matrix(1.9953,0,0,1.9953,0,0)" height="10.53" width="10.04" y="-5.26" x="-5.02"/></g></g><g transform="matrix(1,0,0,1,150.135,0)"><g style="animation-delay:-38.1739s;animation-duration:4s;animation-play-state:paused;transform:matrix3d(-0.120196,0.136935,0.983261,0,0.983261,-0.120196,0.136935,0,0.136935,0.983261,-0.120196,0,0,403.382,0,1)" class="ld ld-fall2"><rect fill="#4355db" style="transform:matrix(1.96585,0,0,1.96585,0,0)" height="8.07" width="8.60" y="-4.03" x="-4.30"/></g></g><g transform="matrix(1,0,0,1,1300.68,0)"><g style="animation-delay:-37.5901s;animation-duration:2s;animation-play-state:paused;transform:matrix3d(-0.170475,0.963346,0.207129,0,0.207129,-0.170475,0.963346,0,0.963346,0.207129,-0.170475,0,0,590.225,0,1)" class="ld ld-fall2"><rect fill="#f7d038" style="transform:matrix(2.99175,0,0,2.99175,0,0)" height="7.09" width="7.07" y="-3.55" x="-3.54"/></g></g><g transform="matrix(1,0,0,1,1403.378,0)"><g style="animation-delay:-40.0854s;animation-duration:4s;animation-play-state:paused;transform:matrix3d(0.946366,0.253701,-0.200067,0,-0.200067,0.946366,0.253701,0,0.253701,-0.200067,0.946366,0,0,15.8979,0,1)" class="ld ld-fall2"><rect fill="#eb7532" style="transform:matrix(2.52596,0,0,2.52596,0,0)" height="11.31" width="6.41" y="-5.66" x="-3.20"/></g></g><g transform="matrix(1,0,0,1,1273.786,0)"><g style="animation-delay:-38.4724s;animation-duration:2s;animation-play-state:paused;transform:matrix3d(0.168512,-0.143683,0.975171,0,0.975171,0.168512,-0.143683,0,-0.143683,0.975171,0.168512,0,0,175.666,0,1)" class="ld ld-fall2"><rect fill="#eb7532" style="transform:matrix(2.22439,0,0,2.22439,0,0)" height="7.46" width="9.61" y="-3.73" x="-4.81"/></g></g><g transform="matrix(1,0,0,1,10.702,0)"><g style="animation-delay:-38.0747s;animation-duration:2s;animation-play-state:paused;transform:matrix3d(0.840381,0.454656,-0.295037,0,-0.295037,0.840381,0.454656,0,0.454656,-0.295037,0.840381,0,0,27.8149,0,1)" class="ld ld-fall2"><rect fill="#4355db" style="transform:matrix(2.0299,0,0,2.0299,0,0)" height="6.94" width="10.00" y="-3.47" x="-5.00"/></g></g><g transform="matrix(1,0,0,1,1518.209,0)"><g style="animation-delay:-38.6666s;animation-duration:2s;animation-play-state:paused;transform:matrix3d(0.99999,0.0031001,-0.0030906,0,-0.0030906,0.99999,0.0031001,0,0.0031001,-0.0030906,0.99999,0,0,247.544,0,1)" class="ld ld-fall2"><rect fill="#eb7532" style="transform:matrix(2.47601,0,0,2.47601,0,0)" height="7.59" width="9.99" y="-3.79" x="-5.00"/></g></g><g transform="matrix(1,0,0,1,1521.881,0)"><g style="animation-delay:-37.255s;animation-duration:4s;animation-play-state:paused;transform:matrix3d(0.956731,-0.182974,0.226243,0,0.226243,0.956731,-0.182974,0,-0.182974,0.226243,0.956731,0,0,233.073,0,1)" class="ld ld-fall2"><rect fill="#a3e048" style="transform:matrix(3.40746,0,0,3.40746,0,0)" height="8.67" width="8.09" y="-4.34" x="-4.04"/></g></g><g transform="matrix(1,0,0,1,714.417,0)"><g style="animation-delay:-39.018s;animation-duration:2s;animation-play-state:paused;transform:matrix3d(-0.323654,0.563802,0.759852,0,0.759852,-0.323654,0.563802,0,0.563802,0.759852,-0.323654,0,0,377.716,0,1)" class="ld ld-fall2"><rect fill="#34bbe6" style="transform:matrix(3.18031,0,0,3.18031,0,0)" height="11.64" width="8.29" y="-5.82" x="-4.15"/></g></g><g transform="matrix(1,0,0,1,1262.75,0)"><g style="animation-delay:-38.4273s;animation-duration:4s;animation-play-state:paused;transform:matrix3d(0.623762,-0.331565,0.707803,0,0.707803,0.623762,-0.331565,0,-0.331565,0.707803,0.623762,0,0,450.577,0,1)" class="ld ld-fall2"><rect fill="#34bbe6" style="transform:matrix(1.56692,0,0,1.56692,0,0)" height="7.15" width="8.68" y="-3.57" x="-4.34"/></g></g><g transform="matrix(1,0,0,1,905.845,0)"><g style="animation-delay:-38.5284s;animation-duration:4s;animation-play-state:paused;transform:matrix3d(0.867459,-0.279223,0.411765,0,0.411765,0.867459,-0.279223,0,-0.279223,0.411765,0.867459,0,0,469.414,0,1)" class="ld ld-fall2"><rect fill="#34bbe6" style="transform:matrix(3.34295,0,0,3.34295,0,0)" height="8.00" width="7.34" y="-4.00" x="-3.67"/></g></g><g transform="matrix(1,0,0,1,464.427,0)"><g style="animation-delay:-39.2338s;animation-duration:2s;animation-play-state:paused;transform:matrix3d(0.732098,-0.32873,0.596631,0,0.596631,0.732098,-0.32873,0,-0.32873,0.596631,0.732098,0,0,458.073,0,1)" class="ld ld-fall2"><rect fill="#4355db" style="transform:matrix(2.05686,0,0,2.05686,0,0)" height="10.52" width="6.89" y="-5.26" x="-3.45"/></g></g><g transform="matrix(1,0,0,1,882.543,0)"><g style="animation-delay:-39.5147s;animation-duration:4s;animation-play-state:paused;transform:matrix3d(-0.102106,0.113872,0.988235,0,0.988235,-0.102106,0.113872,0,0.113872,0.988235,-0.102106,0,0,652.149,0,1)" class="ld ld-fall2"><rect fill="#eb7532" style="transform:matrix(2.8668,0,0,2.8668,0,0)" height="10.59" width="8.35" y="-5.29" x="-4.18"/></g></g><g transform="matrix(1,0,0,1,556.514,0)"><g style="animation-delay:-39.9073s;animation-duration:4s;animation-play-state:paused;transform:matrix3d(0.937602,-0.212682,0.27508,0,0.27508,0.937602,-0.212682,0,-0.212682,0.27508,0.937602,0,0,724.833,0,1)" class="ld ld-fall2"><rect fill="#f7d038" style="transform:matrix(2.50651,0,0,2.50651,0,0)" height="7.41" width="7.69" y="-3.71" x="-3.84"/></g></g><g transform="matrix(1,0,0,1,197.091,0)"><g style="animation-delay:-38.4788s;animation-duration:2s;animation-play-state:paused;transform:matrix3d(0.207365,-0.170633,0.963267,0,0.963267,0.207365,-0.170633,0,-0.170633,0.963267,0.207365,0,0,178.017,0,1)" class="ld ld-fall2"><rect fill="#34bbe6" style="transform:matrix(1.60301,0,0,1.60301,0,0)" height="6.45" width="8.29" y="-3.22" x="-4.15"/></g></g><g transform="matrix(1,0,0,1,1063.214,0)"><g style="animation-delay:-40.6844s;animation-duration:4s;animation-play-state:paused;transform:matrix3d(-0.330279,0.609941,0.720338,0,0.720338,-0.330279,0.609941,0,0.609941,0.720338,-0.330279,0,0,127.436,0,1)" class="ld ld-fall2"><rect fill="#eb7532" style="transform:matrix(2.13065,0,0,2.13065,0,0)" height="7.32" width="10.42" y="-3.66" x="-5.21"/></g></g><g transform="matrix(1,0,0,1,782.284,0)"><g style="animation-delay:-37.7229s;animation-duration:2s;animation-play-state:paused;transform:matrix3d(-0.240066,0.325512,0.914555,0,0.914555,-0.240066,0.325512,0,0.325512,0.914555,-0.240066,0,0,639.406,0,1)" class="ld ld-fall2"><rect fill="#d23be7" style="transform:matrix(2.25324,0,0,2.25324,0,0)" height="8.64" width="11.03" y="-4.32" x="-5.51"/></g></g><g transform="matrix(1,0,0,1,1264.645,0)"><g style="animation-delay:-38.3254s;animation-duration:2s;animation-play-state:paused;transform:matrix3d(-0.332045,0.701893,0.630152,0,0.630152,-0.332045,0.701893,0,0.701893,0.630152,-0.332045,0,0,121.219,0,1)" class="ld ld-fall2"><rect fill="#eb7532" style="transform:matrix(2.22705,0,0,2.22705,0,0)" height="6.27" width="8.80" y="-3.14" x="-4.40"/></g></g><g transform="matrix(1,0,0,1,1123.469,0)"><g style="animation-delay:-37.6329s;animation-duration:2s;animation-play-state:paused;transform:matrix3d(-0.301293,0.827481,0.473811,0,0.473811,-0.301293,0.827481,0,0.827481,0.473811,-0.301293,0,0,606.08,0,1)" class="ld ld-fall2"><rect fill="#a3e048" style="transform:matrix(2.04393,0,0,2.04393,0,0)" height="10.60" width="7.52" y="-5.30" x="-3.76"/></g></g></g>
+<g transform="matrix(1,0,0,1,0,-266.618)"><g transform="matrix(1,0,0,1,1411.386,0)"><g style="animation-delay:-39.1934s;animation-duration:2s;animation-play-state:paused;transform:matrix3d(0.503949,-0.310097,0.806148,0,0.806148,0.503949,-0.310097,0,-0.310097,0.806148,0.503949,0,0,443.021,0,1)" class="ld ld-fall"><rect fill="#4355db" style="transform:matrix(2.78139,0,0,2.78139,0,0)" height="9.24" width="10.07" y="-4.62" x="-5.03"/></g></g><g transform="matrix(1,0,0,1,672.493,0)"><g style="animation-delay:-38.8439s;animation-duration:2s;animation-play-state:paused;transform:matrix3d(0.264978,0.941818,-0.206797,0,-0.206797,0.264978,0.941818,0,0.941818,-0.206797,0.264978,0,0,313.21,0,1)" class="ld ld-fall"><rect fill="#4355db" style="transform:matrix(2.75346,0,0,2.75346,0,0)" height="9.45" width="6.45" y="-4.72" x="-3.22"/></g></g><g transform="matrix(1,0,0,1,23.222,0)"><g style="animation-delay:-37.8548s;animation-duration:4s;animation-play-state:paused;transform:matrix3d(-0.183923,0.956197,0.227726,0,0.227726,-0.183923,0.956197,0,0.956197,0.227726,-0.183923,0,0,344.127,0,1)" class="ld ld-fall"><rect fill="#4355db" style="transform:matrix(3.3221,0,0,3.3221,0,0)" height="10.12" width="10.14" y="-5.06" x="-5.07"/></g></g><g transform="matrix(1,0,0,1,97.801,0)"><g style="animation-delay:-38.2578s;animation-duration:4s;animation-play-state:paused;transform:matrix3d(0.104217,-0.0942917,0.990075,0,0.990075,0.104217,-0.0942917,0,-0.0942917,0.990075,0.104217,0,0,419.023,0,1)" class="ld ld-fall"><rect fill="#eb7532" style="transform:matrix(2.6287,0,0,2.6287,0,0)" height="9.37" width="7.14" y="-4.68" x="-3.57"/></g></g><g transform="matrix(1,0,0,1,1489.922,0)"><g style="animation-delay:-38.455s;animation-duration:4s;animation-play-state:paused;transform:matrix3d(0.699665,-0.332206,0.632541,0,0.632541,0.699665,-0.332206,0,-0.332206,0.632541,0.699665,0,0,455.734,0,1)" class="ld ld-fall"><rect fill="#d23be7" style="transform:matrix(2.6058,0,0,2.6058,0,0)" height="6.78" width="11.77" y="-3.39" x="-5.89"/></g></g><g transform="matrix(1,0,0,1,132.004,0)"><g style="animation-delay:-39.8038s;animation-duration:4s;animation-play-state:paused;transform:matrix3d(0.735716,-0.328183,0.592467,0,0.592467,0.735716,-0.328183,0,-0.328183,0.592467,0.735716,0,0,705.674,0,1)" class="ld ld-fall"><rect fill="#4355db" style="transform:matrix(2.0467,0,0,2.0467,0,0)" height="7.86" width="11.47" y="-3.93" x="-5.73"/></g></g><g transform="matrix(1,0,0,1,715.72,0)"><g style="animation-delay:-37.5481s;animation-duration:2s;animation-play-state:paused;transform:matrix3d(0.0362174,0.998733,-0.03495,0,-0.03495,0.0362174,0.998733,0,0.998733,-0.03495,0.0362174,0,0,574.683,0,1)" class="ld ld-fall"><rect fill="#eb7532" style="transform:matrix(1.9953,0,0,1.9953,0,0)" height="10.53" width="10.04" y="-5.26" x="-5.02"/></g></g><g transform="matrix(1,0,0,1,150.135,0)"><g style="animation-delay:-38.1739s;animation-duration:4s;animation-play-state:paused;transform:matrix3d(-0.120196,0.136935,0.983261,0,0.983261,-0.120196,0.136935,0,0.136935,0.983261,-0.120196,0,0,403.382,0,1)" class="ld ld-fall"><rect fill="#4355db" style="transform:matrix(1.96585,0,0,1.96585,0,0)" height="8.07" width="8.60" y="-4.03" x="-4.30"/></g></g><g transform="matrix(1,0,0,1,1300.68,0)"><g style="animation-delay:-37.5901s;animation-duration:2s;animation-play-state:paused;transform:matrix3d(-0.170475,0.963346,0.207129,0,0.207129,-0.170475,0.963346,0,0.963346,0.207129,-0.170475,0,0,590.225,0,1)" class="ld ld-fall"><rect fill="#f7d038" style="transform:matrix(2.99175,0,0,2.99175,0,0)" height="7.09" width="7.07" y="-3.55" x="-3.54"/></g></g><g transform="matrix(1,0,0,1,1403.378,0)"><g style="animation-delay:-40.0854s;animation-duration:4s;animation-play-state:paused;transform:matrix3d(0.946366,0.253701,-0.200067,0,-0.200067,0.946366,0.253701,0,0.253701,-0.200067,0.946366,0,0,15.8979,0,1)" class="ld ld-fall"><rect fill="#eb7532" style="transform:matrix(2.52596,0,0,2.52596,0,0)" height="11.31" width="6.41" y="-5.66" x="-3.20"/></g></g><g transform="matrix(1,0,0,1,1273.786,0)"><g style="animation-delay:-38.4724s;animation-duration:2s;animation-play-state:paused;transform:matrix3d(0.168512,-0.143683,0.975171,0,0.975171,0.168512,-0.143683,0,-0.143683,0.975171,0.168512,0,0,175.666,0,1)" class="ld ld-fall"><rect fill="#eb7532" style="transform:matrix(2.22439,0,0,2.22439,0,0)" height="7.46" width="9.61" y="-3.73" x="-4.81"/></g></g><g transform="matrix(1,0,0,1,10.702,0)"><g style="animation-delay:-38.0747s;animation-duration:2s;animation-play-state:paused;transform:matrix3d(0.840381,0.454656,-0.295037,0,-0.295037,0.840381,0.454656,0,0.454656,-0.295037,0.840381,0,0,27.8149,0,1)" class="ld ld-fall"><rect fill="#4355db" style="transform:matrix(2.0299,0,0,2.0299,0,0)" height="6.94" width="10.00" y="-3.47" x="-5.00"/></g></g><g transform="matrix(1,0,0,1,1518.209,0)"><g style="animation-delay:-38.6666s;animation-duration:2s;animation-play-state:paused;transform:matrix3d(0.99999,0.0031001,-0.0030906,0,-0.0030906,0.99999,0.0031001,0,0.0031001,-0.0030906,0.99999,0,0,247.544,0,1)" class="ld ld-fall"><rect fill="#eb7532" style="transform:matrix(2.47601,0,0,2.47601,0,0)" height="7.59" width="9.99" y="-3.79" x="-5.00"/></g></g><g transform="matrix(1,0,0,1,1521.881,0)"><g style="animation-delay:-37.255s;animation-duration:4s;animation-play-state:paused;transform:matrix3d(0.956731,-0.182974,0.226243,0,0.226243,0.956731,-0.182974,0,-0.182974,0.226243,0.956731,0,0,233.073,0,1)" class="ld ld-fall"><rect fill="#a3e048" style="transform:matrix(3.40746,0,0,3.40746,0,0)" height="8.67" width="8.09" y="-4.34" x="-4.04"/></g></g><g transform="matrix(1,0,0,1,714.417,0)"><g style="animation-delay:-39.018s;animation-duration:2s;animation-play-state:paused;transform:matrix3d(-0.323654,0.563802,0.759852,0,0.759852,-0.323654,0.563802,0,0.563802,0.759852,-0.323654,0,0,377.716,0,1)" class="ld ld-fall"><rect fill="#34bbe6" style="transform:matrix(3.18031,0,0,3.18031,0,0)" height="11.64" width="8.29" y="-5.82" x="-4.15"/></g></g><g transform="matrix(1,0,0,1,1262.75,0)"><g style="animation-delay:-38.4273s;animation-duration:4s;animation-play-state:paused;transform:matrix3d(0.623762,-0.331565,0.707803,0,0.707803,0.623762,-0.331565,0,-0.331565,0.707803,0.623762,0,0,450.577,0,1)" class="ld ld-fall"><rect fill="#34bbe6" style="transform:matrix(1.56692,0,0,1.56692,0,0)" height="7.15" width="8.68" y="-3.57" x="-4.34"/></g></g><g transform="matrix(1,0,0,1,905.845,0)"><g style="animation-delay:-38.5284s;animation-duration:4s;animation-play-state:paused;transform:matrix3d(0.867459,-0.279223,0.411765,0,0.411765,0.867459,-0.279223,0,-0.279223,0.411765,0.867459,0,0,469.414,0,1)" class="ld ld-fall"><rect fill="#34bbe6" style="transform:matrix(3.34295,0,0,3.34295,0,0)" height="8.00" width="7.34" y="-4.00" x="-3.67"/></g></g><g transform="matrix(1,0,0,1,464.427,0)"><g style="animation-delay:-39.2338s;animation-duration:2s;animation-play-state:paused;transform:matrix3d(0.732098,-0.32873,0.596631,0,0.596631,0.732098,-0.32873,0,-0.32873,0.596631,0.732098,0,0,458.073,0,1)" class="ld ld-fall"><rect fill="#4355db" style="transform:matrix(2.05686,0,0,2.05686,0,0)" height="10.52" width="6.89" y="-5.26" x="-3.45"/></g></g><g transform="matrix(1,0,0,1,882.543,0)"><g style="animation-delay:-39.5147s;animation-duration:4s;animation-play-state:paused;transform:matrix3d(-0.102106,0.113872,0.988235,0,0.988235,-0.102106,0.113872,0,0.113872,0.988235,-0.102106,0,0,652.149,0,1)" class="ld ld-fall"><rect fill="#eb7532" style="transform:matrix(2.8668,0,0,2.8668,0,0)" height="10.59" width="8.35" y="-5.29" x="-4.18"/></g></g><g transform="matrix(1,0,0,1,556.514,0)"><g style="animation-delay:-39.9073s;animation-duration:4s;animation-play-state:paused;transform:matrix3d(0.937602,-0.212682,0.27508,0,0.27508,0.937602,-0.212682,0,-0.212682,0.27508,0.937602,0,0,724.833,0,1)" class="ld ld-fall"><rect fill="#f7d038" style="transform:matrix(2.50651,0,0,2.50651,0,0)" height="7.41" width="7.69" y="-3.71" x="-3.84"/></g></g><g transform="matrix(1,0,0,1,197.091,0)"><g style="animation-delay:-38.4788s;animation-duration:2s;animation-play-state:paused;transform:matrix3d(0.207365,-0.170633,0.963267,0,0.963267,0.207365,-0.170633,0,-0.170633,0.963267,0.207365,0,0,178.017,0,1)" class="ld ld-fall"><rect fill="#34bbe6" style="transform:matrix(1.60301,0,0,1.60301,0,0)" height="6.45" width="8.29" y="-3.22" x="-4.15"/></g></g><g transform="matrix(1,0,0,1,1063.214,0)"><g style="animation-delay:-40.6844s;animation-duration:4s;animation-play-state:paused;transform:matrix3d(-0.330279,0.609941,0.720338,0,0.720338,-0.330279,0.609941,0,0.609941,0.720338,-0.330279,0,0,127.436,0,1)" class="ld ld-fall"><rect fill="#eb7532" style="transform:matrix(2.13065,0,0,2.13065,0,0)" height="7.32" width="10.42" y="-3.66" x="-5.21"/></g></g><g transform="matrix(1,0,0,1,782.284,0)"><g style="animation-delay:-37.7229s;animation-duration:2s;animation-play-state:paused;transform:matrix3d(-0.240066,0.325512,0.914555,0,0.914555,-0.240066,0.325512,0,0.325512,0.914555,-0.240066,0,0,639.406,0,1)" class="ld ld-fall"><rect fill="#d23be7" style="transform:matrix(2.25324,0,0,2.25324,0,0)" height="8.64" width="11.03" y="-4.32" x="-5.51"/></g></g><g transform="matrix(1,0,0,1,1264.645,0)"><g style="animation-delay:-38.3254s;animation-duration:2s;animation-play-state:paused;transform:matrix3d(-0.332045,0.701893,0.630152,0,0.630152,-0.332045,0.701893,0,0.701893,0.630152,-0.332045,0,0,121.219,0,1)" class="ld ld-fall"><rect fill="#eb7532" style="transform:matrix(2.22705,0,0,2.22705,0,0)" height="6.27" width="8.80" y="-3.14" x="-4.40"/></g></g><g transform="matrix(1,0,0,1,1123.469,0)"><g style="animation-delay:-37.6329s;animation-duration:2s;animation-play-state:paused;transform:matrix3d(-0.301293,0.827481,0.473811,0,0.473811,-0.301293,0.827481,0,0.827481,0.473811,-0.301293,0,0,606.08,0,1)" class="ld ld-fall"><rect fill="#a3e048" style="transform:matrix(2.04393,0,0,2.04393,0,0)" height="10.60" width="7.52" y="-5.30" x="-3.76"/></g></g></g></g></svg></div>
+
+      <div class="gracias-content">
+        <div class="gracias-card">
+          <h1>¡Gracias!</h1>
+          <p>Fabricio Blasich &nbsp;·&nbsp; Ingeniería en Computación &nbsp;·&nbsp; FACET / UNT</p>
+        </div>
+      </div>
+
+      <aside class="notes">
+Muchas gracias. Quedo a disposición del jurado para las preguntas.
+      </aside>
+
+    </section>
+
+  </div><!-- /.slides -->
+</div><!-- /.reveal -->
+
+<script src="https://cdn.jsdelivr.net/npm/reveal.js@4.6.1/dist/reveal.js"></script>
+<script>
+  // ── SKILL.md §1.1 canonical settings ─────────────────────────
+  Reveal.initialize({
+    hash:                 true,
+    center:               true,
+    transition:           'fade',
+    transitionSpeed:      'fast',
+    backgroundTransition: 'fade',
+    width:                1920,
+    height:               1080,
+    margin:               0.08,
+    minScale:             0.2,
+    maxScale:             2.0,
+    // Presentation-specific
+    slideNumber:          'c/t',
+    controls:             false,
+    controlsTutorial:     false,
+    progress:             true,
+  });
+
+  // Click → next / right-click → prev
+  document.addEventListener('click', function(e) {
+    if (e.target.closest('a, button')) return;
+    Reveal.next();
+  });
+  document.addEventListener('contextmenu', function(e) {
+    if (e.target.closest('a, button')) return;
+    e.preventDefault();
+    Reveal.prev();
+  });
+</script>
+</body>
+</html>

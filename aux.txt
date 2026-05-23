@@ -1,0 +1,28 @@
+Tienes toda la razón, Fabricio. Un error muy común en las defensas es adjudicarse el diseño de infraestructuras que la organización ya poseía, lo cual puede generar preguntas incómodas por parte del jurado. 
+
+Revisando estrictamente tu informe, en la sección de "Alcance y Limitaciones" y en el inicio del Capítulo 3, dejas muy en claro que la facultad ya te proveía la topología de red perimetral, el hipervisor Proxmox y el contenedor LXC base. Tu mérito estuvo en **auditar ese entorno y diseñar la arquitectura de despliegue contenerizada sobre él**.
+
+Aquí tienes la **Diapositiva 3 corregida** para reflejar exactamente la realidad de tu trabajo:
+
+***
+
+#### Diapositiva 3: Objetivos del Proyecto
+*   **Tiempo estimado:** 2.5 minutos.
+*   **Contenido Visual Sugerido:** Título: *Objetivo General*. Un ícono grande de "Solución Llave en Mano". Tres viñetas de *Objetivos Específicos*: 
+    1) Evaluar alternativas Open Source. 
+    2) Diseñar despliegue e integrar servicios. *(Se cambia el texto para reflejar integración y despliegue, no diseño de red)*
+    3) Validar y elaborar manuales.
+*   **Guion Oral (Script) Actualizado:**
+    > "Frente a todo esto, el objetivo general de este trabajo fue diseñar, implementar y desplegar una solución 'llave en mano' para automatizar y centralizar la gestión de firmas electrónicas en la infraestructura de la facultad. 
+    >
+    > Para lograr esto, me planteé objetivos específicos muy claros: 
+    > Primero, evaluar alternativas de código abierto que se adapten a la institución. 
+    > Segundo, diseñar la arquitectura de despliegue e integrar los servicios contenerizados **aprovechando la infraestructura de red, virtualización y almacenamiento que la facultad ya poseía**, sumando a esto la definición de las políticas de respaldo y retención de datos. 
+    > Y tercero, validar esta solución con usuarios reales y entregar los manuales de mantenimiento para asegurar que, el día de mañana, el personal de la facultad tenga total autonomía para operar el sistema."
+
+***
+
+**¿Por qué este cambio es mejor para tu defensa?**
+Al decir *"aprovechando la infraestructura que la facultad ya poseía"*, demuestras madurez como ingeniero. Dejas en claro que supiste hacer un relevamiento (auditoría) de los recursos existentes (Proxmox, red perimetral) y adaptaste tu solución de software (Coolify, Docker, Documenso) para que encajara de forma óptima sin pedirle a la universidad que comprara hardware nuevo o cambiara su red. Eso es ingeniería pura.
+
+¿Te parece bien cómo quedó este ajuste o te gustaría afinar algún otro término de esta diapositiva?
