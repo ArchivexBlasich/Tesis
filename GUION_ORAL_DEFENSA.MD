@@ -80,72 +80,48 @@ _(Transición de sección — sin texto oral, solo pasar la slide)_
 
 ---
 
-## Diapositiva 9: SaaS vs. On-Premise — USD 5.300/año para 20 usuarios
+## Diapositiva 9: Comparativa SaaS
 
-"Al empezar a investigar, la primera pregunta lógica era: ¿por qué no compramos algo que ya esté hecho?
-
-Herramientas como DocuSign o Adobe Sign son excelentes, pero se comercializan como Software as a Service. Si hacemos los números, para apenas 20 usuarios el costo de licenciamiento supera los 5.300 dólares anuales — económicamente inviable para una universidad pública en nuestro contexto.
-
-Por lo tanto, descartamos las soluciones comerciales y la investigación se centró de lleno en alternativas de código abierto que nos permitieran alojar el sistema en nuestros propios servidores, es decir, un modelo On-Premise."
+_(pendiente de redactar)_
 
 ---
 
-## Diapositiva 10: DocuSeal vs. Documenso — Elegimos Documenso
+## Diapositiva 10: Plataformas Open Source Evaluadas
 
-"Dentro del mundo Open Source llegaron a la final dos grandes candidatos: DocuSeal y Documenso. Ambos permiten firmar documentos, pero cuando abrimos el capó y analizamos las licencias, la diferencia fue enorme para nuestro caso de uso.
-
-DocuSeal restringe funciones vitales, como el control de acceso basado en roles, a su versión paga. Esto significa que cualquier usuario creado tendría permisos de administrador. Inviable para la facultad.
-
-Documenso, en cambio, incluye en su versión comunitaria el control de roles, nos permite crear 'Equipos' que mapean perfectamente los distintos departamentos de la FACET, y tiene soporte nativo para autenticarnos con Google usando nuestros correos institucionales '@herrera'. Así que, sin dudarlo, Documenso fue el elegido."
+_(pendiente de redactar)_
 
 ---
 
-## Diapositiva 11: [Sección 04 — Infraestructura y Arquitectura de Despliegue]
+## Diapositiva 11: Comparativa Open Source — Documenso vs DocuSeal
 
-_(Transición de sección — sin texto oral, solo pasar la slide)_
-
----
-
-## Diapositiva 12: Stack Tecnológico
-
-"Ahora bien, muy lindo todo, pero ¿cómo levantamos este sistema? Les presento el stack tecnológico.
-
-Como base de cómputo aprovechamos el servidor de la facultad que corre Proxmox. Sobre él, usamos un contenedor LXC para correr Docker. Para no administrar contenedores a mano, utilizamos Coolify — una plataforma PaaS que nos facilitó la orquestación y el manejo de variables de entorno.
-
-Como base de datos transaccional usamos PostgreSQL. Pero atención acá: los PDFs firmados no se guardan en la base de datos, para eso usamos TrueNAS con MinIO, que es un almacenamiento de objetos compatible con S3. Esto nos permite separar la aplicación del almacenamiento.
-
-Para los correos electrónicos integramos Brevo, que nos da un relay SMTP externo para garantizar que los mails no caigan en spam. Y finalmente, agregué Browserless — una instancia de Chrome virtual — fundamental porque la imagen de Documenso no lo traía por defecto y lo necesitábamos para renderizar el certificado visual de la firma en el PDF."
+_(pendiente de redactar)_
 
 ---
 
-## Diapositiva 13: Arquitectura y Diagrama de Despliegue
+## Diapositiva 12: ¿Por qué Documenso? — Modelo Organizacional
 
-"Acá es donde todo se une. Esta es la arquitectura de red y el diagrama de despliegue.
+"Una vez que decidimos que Documenso era la herramienta, vale la pena explicar por qué encaja tan bien con la estructura de la FACET — y no es solo por las funcionalidades técnicas.
 
-Imaginen a un profesor desde su casa en internet (la capa WAN). Su petición llega primero al router de borde de la FACET y es recibida por nuestro reverse proxy perimetral, un Nginx. Nginx maneja la seguridad SSL y reenvía el tráfico hacia adentro, al contenedor LXC donde vive nuestro orquestador Coolify.
+Documenso tiene un modelo organizacional muy claro: existe una Organización raíz, y dentro de ella se crean Teams. Cada team es un espacio completamente aislado: tiene sus propios documentos, sus propias plantillas, y sus propios miembros. Los integrantes de un team solo ven lo que pertenece a ese team.
 
-Dentro de Coolify, tenemos otro proxy, Traefik, que enruta el tráfico hacia la red privada de Docker donde está encapsulado Documenso. Como pueden ver, Documenso se comunica internamente con PostgreSQL y con Browserless sin exponer esos puertos a internet.
+El mapeo con la FACET es casi exacto. La FACET es la Organización. Cada departamento — el DEEC, el Departamento de Física, Matemática, y así sucesivamente — se convierte en un Team. Y los documentos de cada departamento viven solo en ese espacio, sin interferir con los demás.
 
-Por último, fíjense en este flujo hacia MinIO. Tuvimos que resolver un desafío de red importante: Documenso requiere que el almacenamiento S3 tenga una única URL pública. Así que implementamos un contenedor proxy TCP llamado 'Socat' dentro de nuestra red virtual. Esto hace que todo el tráfico hacia el almacenamiento, ya sea que venga directo del navegador del usuario o desde el backend de Documenso, pase siempre filtrado y seguro por el proxy de la facultad antes de llegar a los discos físicos del TrueNAS. Nada queda expuesto al exterior de forma directa."
+Ahora, ¿qué pasa con un docente que presta servicios en dos departamentos? Simplemente pertenece a los dos teams correspondientes, y la plataforma gestiona automáticamente qué documentos puede ver en cada contexto. Sin configuración adicional, sin lógica personalizada.
 
----
+Y hay otro punto importante que diferencia a Documenso de DocuSeal en este aspecto: el modelo de roles. En Documenso, los usuarios pueden tener roles distintos tanto a nivel de organización como dentro de cada team — puede ser Administrador, Gerente o Miembro. Esto permite una gestión de permisos granular y real. DocuSeal, en cambio, trata a todos los usuarios como administradores, lo que es un problema grave de seguridad en un entorno institucional.
 
-## Diapositiva 14: [Sección 05 — Demostración en Vivo]
-
-_(Transición de sección — sin texto oral, solo pasar la slide)_
+En resumen: Documenso no requería ser adaptado para la FACET — ya estaba diseñado para organizaciones como la nuestra."
 
 ---
 
-## Diapositiva 15: Conclusión y Paso a la Demo
+## Diapositiva 13: ¿Por qué Documenso? — Integraciones Externas
 
-"En conclusión, logramos una arquitectura robusta, de nivel empresarial, pero alojada en nuestros propios servidores y sin depender económicamente de un tercero. Hemos eliminado el problema del registro manual de usuarios cerrando el acceso únicamente a cuentas de Google institucionales, y tenemos un sistema de respaldo automático operando.
+"Documenso también está diseñado para integrarse con servicios externos, y en nuestra implementación aprovechamos tres de ellas.
 
-Todo este diseño de infraestructura se aprecia mucho mejor viéndolo funcionar. Así que ahora, en los próximos minutos, vamos a pasar a la demostración en vivo de la plataforma para que vean cómo un documento recorre todo este sistema."
+Para el almacenamiento de documentos, en lugar de guardar los PDFs en el disco del servidor, los delegamos a MinIO — un servidor de objetos compatible con el protocolo S3 de Amazon — que corre en la propia infraestructura de la FACET. Esto nos da escalabilidad y separa el almacenamiento de la aplicación.
 
-_(Transición a la computadora para la demo en vivo — 5-7 minutos)_
+Para las notificaciones por email, usamos Brevo como relay SMTP. Su capa gratuita permite hasta 300 mails por día, lo cual cubre ampliamente nuestro volumen de envíos institucionales.
+
+Y para la autenticación, habilitamos OAuth 2.0 con Google. Esto significa que los docentes y administrativos entran al sistema directamente con su cuenta de Google de la UNT, sin tener que crear ni recordar otra contraseña. Zero fricción en la adopción."
 
 ---
-
-## Diapositiva 16: ¡Muchas Gracias!
-
-_(Slide final — disponible para preguntas del jurado)_

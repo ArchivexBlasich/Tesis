@@ -12,7 +12,7 @@
   <!-- Bold Theme Fonts (themes/bold.md §1) -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700;800&family=Sora:wght@600;700;800&display=swap" rel="stylesheet">
 
   <style>
     /* ================================================================ */
@@ -36,9 +36,10 @@
       --accent-4: #0369a1;  /* Sky 700 — fondo section breaks azules */
 
       /* === TYPOGRAPHY === */
-      --font-display: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-      --font-body:    'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-      --font-mono:    'JetBrains Mono', monospace;
+      --font-display:  'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      --font-body:     'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      --font-heading:  'Sora', 'Inter', sans-serif;
+      --font-mono:     'JetBrains Mono', monospace;
 
       /* === SIZE SCALE === */
       --size-stat-hero:   clamp(6rem, 15vw, 14rem);
@@ -279,12 +280,18 @@
     /* ================================================================ */
     /* SLIDE 1 — PORTADA                                               */
     /* ================================================================ */
+    /* Portada: subtle cyan radial glow behind content */
     .slide-portada {
-      display:         flex !important;
-      flex-direction:  column;
-      justify-content: center;
-      align-items:     center;
-      text-align:      center !important;
+      display:          flex !important;
+      flex-direction:   column;
+      justify-content:  center;
+      align-items:      center;
+      text-align:       center !important;
+      background-image: radial-gradient(
+        ellipse 75% 60% at 50% 45%,
+        rgba(56,189,248,0.07) 0%,
+        transparent 70%
+      );
     }
 
     @property --logos-angle {
@@ -357,12 +364,12 @@
     /* SLIDE 2 — TABLA DE CONTENIDOS                                   */
     /* ================================================================ */
     .toc-title {
-      font-family:    var(--font-display);
+      font-family:    var(--font-heading);
       font-size:      var(--size-h2);
-      font-weight:    700;
+      font-weight:    800;
       color:          var(--accent-1);
       text-align:     center;
-      letter-spacing: 0.01em;
+      letter-spacing: -0.02em;
       margin-bottom:  var(--space-lg);
     }
 
@@ -377,10 +384,10 @@
       align-items:   center;
       gap:           var(--space-lg);
       padding:       var(--space-md) var(--space-xl);
-      border-left:   6px solid var(--accent-1);
       background:    var(--bg-secondary);
       border-radius: var(--card-radius);
       border:        1px solid rgba(56,189,248,0.12);
+      border-left:   6px solid var(--accent-1);
     }
 
     .toc-num {
@@ -401,9 +408,18 @@
       line-height: 1.2;
     }
 
-    /* ================================================================ */
-    /* SECTION BREAKS                                                   */
-    /* ================================================================ */
+    /* Section-specific TOC number colors for visual memory anchors */
+    .toc-block:nth-child(1) .toc-num { color: var(--accent-1); }
+    .toc-block:nth-child(2) .toc-num { color: #a78bfa; }
+    .toc-block:nth-child(3) .toc-num { color: #4ade80; }
+    .toc-block:nth-child(4) .toc-num { color: #60a5fa; }
+    .toc-block:nth-child(5) .toc-num { color: #fb923c; }
+
+    .toc-block:nth-child(1) { border-left-color: var(--accent-1); }
+    .toc-block:nth-child(2) { border-left-color: #a78bfa; }
+    .toc-block:nth-child(3) { border-left-color: #4ade80; }
+    .toc-block:nth-child(4) { border-left-color: #60a5fa; }
+    .toc-block:nth-child(5) { border-left-color: #fb923c; }
     .section-tag {
       font-family:    var(--font-mono);
       font-size:      var(--size-label);
@@ -415,12 +431,21 @@
     }
 
     .section-heading {
-      font-family:    var(--font-display);
+      font-family:    var(--font-heading);
       font-size:      var(--size-h1);
-      font-weight:    700;
-      line-height:    1.1;
-      letter-spacing: -0.02em;
+      font-weight:    800;
+      line-height:    1.05;
+      letter-spacing: -0.03em;
       margin:         0 0 var(--space-md) 0;
+    }
+
+    /* Radial glow on every section break for depth */
+    .reveal .slides section.centered {
+      background-image: radial-gradient(
+        ellipse 90% 90% at 92% 8%,
+        rgba(255,255,255,0.055) 0%,
+        transparent 60%
+      );
     }
 
     /* ================================================================ */
@@ -474,7 +499,7 @@
 
     .problema-layout {
       display:               grid;
-      grid-template-columns: 1.4fr 1fr;
+      grid-template-columns: 1.5fr 1fr;
       gap:                   var(--space-lg);
       align-items:           start;
       margin-top:            0;
@@ -534,13 +559,16 @@
     /* ================================================================ */
     /* SLIDE: OBJETIVOS ESPECÍFICOS — Animated border circles         */
     /* ================================================================ */
-    @property --obj-angle {
-      syntax: '<angle>';
-      inherits: false;
-      initial-value: 0deg;
+    @keyframes obj-pulse {
+      0%, 100% { box-shadow: 0 0  8px 2px var(--obj-color),
+                             0 0 24px 4px color-mix(in srgb, var(--obj-color) 30%, transparent); }
+      50%      { box-shadow: 0 0 22px 6px var(--obj-color),
+                             0 0 55px 14px color-mix(in srgb, var(--obj-color) 45%, transparent); }
     }
 
-    @keyframes obj-spin { to { --obj-angle: 360deg; } }
+    .obj-slide-title {
+      font-size: clamp(2.8rem, 5vw, 6rem) !important;
+    }
 
     .obj-grid {
       display:               grid;
@@ -554,19 +582,12 @@
     .obj-ring {
       --obj-color: var(--accent-1);
       color:         var(--obj-color);   /* enables currentColor for icons */
-      width:         clamp(330px, 26vw, 484px);
-      height:        clamp(330px, 26vw, 484px);
+      width:         clamp(363px, 29vw, 532px);
+      height:        clamp(363px, 29vw, 532px);
       border-radius: 50%;
-      border:        4px solid transparent;
-      background:
-        linear-gradient(var(--bg-secondary), var(--bg-secondary)) padding-box,
-        conic-gradient(
-          from var(--obj-angle),
-          transparent 0%,
-          var(--obj-color) 35%,
-          transparent 65%
-        ) border-box;
-      animation:      obj-spin 3s linear infinite;
+      border:        4px solid var(--obj-color);
+      background:    var(--bg-secondary);
+      animation:     obj-pulse 3s ease-in-out infinite;
       display:        flex;
       flex-direction: column;
       align-items:    center;
@@ -577,14 +598,14 @@
       gap:            var(--space-xs);
     }
 
-    .obj-ring-1 { --obj-color: var(--accent-1); animation-duration: 3s;    }
-    .obj-ring-2 { --obj-color: #a78bfa;         animation-duration: 3.5s;  animation-delay: -0.9s;  }
-    .obj-ring-3 { --obj-color: #4ade80;         animation-duration: 2.8s;  animation-delay: -1.75s; }
-    .obj-ring-4 { --obj-color: #fb923c;         animation-duration: 3.2s;  animation-delay: -2.6s;  }
+    .obj-ring-1 { --obj-color: var(--accent-1); animation-duration: 3s;   }
+    .obj-ring-2 { --obj-color: #a78bfa;         animation-duration: 3.8s; animation-delay: -1.2s; }
+    .obj-ring-3 { --obj-color: #4ade80;         animation-duration: 3.3s; animation-delay: -2.1s; }
+    .obj-ring-4 { --obj-color: #fb923c;         animation-duration: 4.1s; animation-delay: -0.7s; }
 
     .obj-icon {
-      width:  clamp(48px, 5.5vw, 84px);
-      height: clamp(48px, 5.5vw, 84px);
+      width:  clamp(53px, 6vw, 92px);
+      height: clamp(53px, 6vw, 92px);
       flex-shrink: 0;
     }
     .obj-icon path          { fill: currentColor; }
@@ -593,7 +614,7 @@
 
     .obj-num {
       font-family: var(--font-mono);
-      font-size:   clamp(2.75rem, 3.85vw, 5.5rem);
+      font-size:   clamp(3rem, 4.2vw, 6rem);
       font-weight: 700;
       color:       var(--obj-color);
       line-height: 1;
@@ -601,7 +622,7 @@
 
     .obj-title {
       font-family: var(--font-display);
-      font-size:   clamp(1.82rem, 2.66vw, 3.63rem);
+      font-size:   clamp(2rem, 2.93vw, 4rem);
       font-weight: 700;
       color:       var(--text-primary);
       line-height: 1.2;
@@ -609,7 +630,7 @@
 
     .obj-sub {
       font-family: var(--font-body);
-      font-size:   clamp(1.33rem, 1.82vw, 2.66rem);
+      font-size:   clamp(1.46rem, 2vw, 2.93rem);
       font-weight: 400;
       color:       var(--text-secondary);
       line-height: 1.3;
@@ -855,6 +876,381 @@
       margin:      0;
       font-weight: 500;
     }
+
+    /* ================================================================ */
+    /* SLIDE: PANORAMA SAAS — styled table (dcodeyt approach)           */
+    /* ================================================================ */
+    .saas-kw { color: var(--accent-1); }
+
+    /* container clips rounded corners on the table */
+    .saas-wrap {
+      width:         100%;
+      margin-top:    var(--space-sm);
+      border-radius: 0.8rem;
+      overflow:      hidden;
+      box-shadow:    0 0 60px rgba(0,0,0,0.65);
+    }
+
+    .saas-table {
+      border-collapse: collapse;
+      width:           100%;
+    }
+
+    /* ── header ── */
+    /* high-specificity selector to override Reveal.js base table styles */
+    .reveal .slides .saas-table thead tr,
+    .saas-table thead tr {
+      background:    #1e293b !important;
+      color:         var(--text-primary);
+      text-align:    center;
+      border-bottom: 3px solid var(--accent-1);
+    }
+
+    .reveal .slides .saas-table thead th,
+    .saas-table thead th {
+      background:  #1e293b !important;
+      border:      none;
+      padding:     clamp(1.2rem, 1.6vw, 2.2rem) clamp(1.5rem, 2vw, 3rem);
+    }
+
+    .saas-table th,
+    .saas-table td {
+      padding: clamp(1.1rem, 1.4vw, 2rem) clamp(1.5rem, 2vw, 3rem);
+    }
+
+    .saas-table thead th:first-child { text-align: left; }
+
+    .saas-logo-wrap {
+      display:         flex;
+      flex-direction:  column;
+      align-items:     center;
+      justify-content: center;
+      gap:             0.5rem;
+      min-height:      clamp(60px, 7vw, 110px);
+    }
+    .saas-logo-wrap img {
+      display: block;
+      width:   auto;
+    }
+    .saas-logo-label {
+      font-family: var(--font-display);
+      font-size:   clamp(1.4rem, 1.7vw, 2.4rem);
+      font-weight: 600;
+      color:       var(--text-secondary);
+      line-height: 1;
+    }
+
+    /* ── body rows ── */
+    .saas-table tbody tr {
+      border-bottom: 1px solid rgba(148,163,184,0.12);
+    }
+
+    .saas-table tbody tr:nth-of-type(even) {
+      background-color: rgba(30,41,59,0.55);
+    }
+
+    /* ── cells ── */
+    .saas-table td {
+      font-family: var(--font-body);
+      font-size:   clamp(2rem, 2.7vw, 4rem);
+      color:       var(--text-primary);
+      text-align:  center;
+      line-height: 1.3;
+    }
+
+    .saas-table td:first-child {
+      font-family:  var(--font-display);
+      font-weight:  700;
+      color:        var(--text-secondary);
+      text-align:   left;
+      background:   rgba(11,17,32,0.7);
+      border-right: 2px solid rgba(148,163,184,0.14);
+    }
+
+    .saas-table td small {
+      display:    block;
+      font-size:  clamp(1.4rem, 1.8vw, 2.6rem);
+      color:      var(--text-muted);
+      margin-top: 0.15rem;
+    }
+
+    .saas-best {
+      color:       #4ade80;
+      font-weight: 700;
+    }
+
+    /* ── 20 usuarios — highlighted last row ── */
+    .saas-table tbody tr.saas-cost-row {
+      background-color: rgba(251,146,60,0.09);
+      border-top:       2px solid rgba(251,146,60,0.4);
+      border-bottom:    2px solid rgba(251,146,60,0.4);
+    }
+
+    .saas-table tbody tr.saas-cost-row td {
+      font-weight: 700;
+      font-size:   clamp(2rem, 2.8vw, 4.2rem);
+    }
+
+    .saas-table tbody tr.saas-cost-row td:first-child { color: #fb923c; }
+
+    .saas-cheapest { color: #4ade80; }
+
+    .saas-table td small.saas-annual,
+    .saas-annual {
+      color:       #ef4444 !important;
+      font-weight: 700;
+      font-size:   clamp(1.6rem, 2vw, 3rem) !important;
+    }
+
+    /* ================================================================ */
+    /* SLIDE: PANORAMA OPEN SOURCE — Two project cards               */
+    /* ================================================================ */
+    .os-kw { color: #4ade80; }
+
+    .os-grid {
+      display:               grid;
+      grid-template-columns: 1fr 1fr;
+      gap:                   var(--space-md);
+      margin-top:            var(--space-md);
+      align-items:           stretch;
+    }
+
+    .os-card {
+      background:     var(--bg-secondary);
+      border:         2px solid rgba(148,163,184,0.15);
+      border-radius:  1rem;
+      padding:        var(--space-md);
+      display:        flex;
+      flex-direction: column;
+      gap:            var(--space-sm);
+    }
+
+    /* ---- card header: repo + stars ---- */
+    .os-card-head {
+      display:         flex;
+      align-items:     center;
+      justify-content: space-between;
+      padding-bottom:  var(--space-sm);
+      border-bottom:   1px solid rgba(148,163,184,0.15);
+    }
+
+    .os-repo {
+      font-family: var(--font-mono);
+      font-size:   clamp(1.8rem, 2.4vw, 3.4rem);
+      color:       var(--text-secondary);
+      line-height: 1.2;
+    }
+    .os-repo strong {
+      color:       var(--text-primary);
+      font-weight: 700;
+    }
+
+    .os-stars {
+      display:     flex;
+      align-items: center;
+      gap:         0.35rem;
+      font-family: var(--font-mono);
+      font-size:   clamp(1.8rem, 2.4vw, 3.4rem);
+      font-weight: 700;
+      color:       #fbbf24;
+      white-space: nowrap;
+    }
+
+    /* ---- description ---- */
+    .os-desc {
+      font-family:  var(--font-body);
+      font-size:    clamp(1.68rem, 2.16vw, 3.12rem);
+      color:        var(--text-secondary);
+      font-style:   italic;
+      line-height:  1.4;
+      margin:       0;
+    }
+
+    /* ---- logo area ---- */
+    .os-logo {
+      display:         flex;
+      justify-content: center;
+      align-items:     center;
+      padding:         var(--space-sm) 0;
+      border-bottom:   1px solid rgba(148,163,184,0.12);
+    }
+    .os-logo img {
+      display:   block;
+      width:     auto;
+      height:    clamp(120px, 14vw, 220px);
+    }
+
+    /* ---- language / meta row ---- */
+    .os-meta {
+      display:     flex;
+      align-items: center;
+      gap:         0.6rem;
+      font-family: var(--font-body);
+      font-size:   clamp(1.56rem, 2.04vw, 2.88rem);
+      color:       var(--text-secondary);
+    }
+    .os-lang-dot {
+      display:       inline-block;
+      width:         clamp(10px, 1.1vw, 16px);
+      height:        clamp(10px, 1.1vw, 16px);
+      border-radius: 50%;
+      flex-shrink:   0;
+    }
+
+    /* ---- topics ---- */
+    .os-tags {
+      display:    flex;
+      flex-wrap:  wrap;
+      gap:        0.5rem;
+      margin-top: auto;
+      padding-top: var(--space-sm);
+      border-top: 1px solid rgba(148,163,184,0.10);
+    }
+
+    .os-tag {
+      font-family:   var(--font-mono);
+      font-size:     clamp(1.08rem, 1.44vw, 2.04rem);
+      background:    rgba(56,189,248,0.08);
+      color:         var(--accent-3);
+      padding:       0.2rem 0.75rem;
+      border-radius: 999px;
+      border:        1px solid rgba(56,189,248,0.2);
+    }
+
+    /* ================================================================ */
+    /* SLIDE: COMPARATIVA OPEN SOURCE — Documenso vs DocuSeal           */
+    /* ================================================================ */
+    .oss-wrap {
+      width:         100%;
+      margin-top:    var(--space-sm);
+      border-radius: 0.8rem;
+      overflow:      hidden;
+      box-shadow:    0 0 60px rgba(0,0,0,0.65);
+    }
+
+    .oss-table { border-collapse: collapse; width: 100%; }
+
+    .reveal .slides .oss-table thead tr,
+    .oss-table thead tr {
+      background:    #1e293b !important;
+      color:         var(--text-primary);
+      text-align:    center;
+      border-bottom: 3px solid #4ade80;
+    }
+    .reveal .slides .oss-table thead th,
+    .oss-table thead th {
+      background: #1e293b !important;
+      border:     none;
+      padding:    clamp(1rem,1.4vw,2rem) clamp(1.5rem,2vw,3rem);
+    }
+
+    .oss-table th, .oss-table td {
+      padding: clamp(1.1rem,1.4vw,2rem) clamp(1.5rem,2vw,3rem);
+    }
+    .oss-table thead th:first-child { text-align: left; }
+
+    .oss-logo-wrap {
+      display:         flex;
+      flex-direction:  column;
+      align-items:     center;
+      justify-content: center;
+      gap:             0.4rem;
+      min-height:      clamp(60px,6.5vw,100px);
+    }
+    .oss-logo-wrap img   { display: block; width: auto; }
+    .oss-logo-label {
+      font-family: var(--font-display);
+      font-size:   clamp(1.6rem,2vw,2.8rem);
+      font-weight: 700;
+      color:       var(--text-primary);
+      line-height: 1;
+    }
+
+    .oss-table tbody tr { border-bottom: 1px solid rgba(148,163,184,0.12); }
+    .oss-table tbody tr:nth-of-type(even) { background-color: rgba(30,41,59,0.55); }
+
+    .oss-table td {
+      font-family: var(--font-body);
+      font-size:   clamp(2rem,2.5vw,3.6rem);
+      color:       var(--text-primary);
+      text-align:  center;
+      line-height: 1.3;
+    }
+    .oss-table td:first-child {
+      font-family:  var(--font-display);
+      font-weight:  700;
+      color:        var(--text-secondary);
+      text-align:   left;
+      background:   rgba(11,17,32,0.7);
+      border-right: 2px solid rgba(148,163,184,0.14);
+    }
+    .oss-table td small {
+      display:    block;
+      font-size:  clamp(1.4rem,1.7vw,2.4rem);
+      color:      var(--text-muted);
+      margin-top: 0.1rem;
+    }
+
+    /* check — green circle */
+    .oss-check {
+      display:     inline-flex;
+      align-items: center;
+      gap:         0.6rem;
+      color:       #4ade80;
+      font-weight: 700;
+      font-size:   clamp(2rem,2.5vw,3.6rem);
+    }
+    .oss-check-icon {
+      display:         inline-flex;
+      align-items:     center;
+      justify-content: center;
+      width:           clamp(30px,3vw,48px);
+      height:          clamp(30px,3vw,48px);
+      background:      #4ade80;
+      border-radius:   50%;
+      color:           #0f172a;
+      font-size:       clamp(1.4rem,1.7vw,2.4rem);
+      font-weight:     900;
+      flex-shrink:     0;
+    }
+
+    /* lock — red circle */
+    .oss-lock {
+      display:         inline-flex;
+      flex-direction:  column;
+      align-items:     center;
+      gap:             0.35rem;
+    }
+    .oss-lock-icon {
+      display:         inline-flex;
+      align-items:     center;
+      justify-content: center;
+      width:           clamp(30px,3vw,48px);
+      height:          clamp(30px,3vw,48px);
+      background:      #ef4444;
+      border-radius:   50%;
+      color:           #fff;
+      font-size:       clamp(1.4rem,1.7vw,2.4rem);
+      font-weight:     900;
+      flex-shrink:     0;
+    }
+    .oss-lock-label {
+      font-size:   clamp(1rem,1.3vw,1.9rem);
+      color:       #ef4444;
+      font-weight: 700;
+      white-space: nowrap;
+    }
+
+    .oss-selected-badge {
+      font-family:   var(--font-display);
+      font-size:     clamp(1rem,1.3vw,1.9rem);
+      font-weight:   700;
+      color:         #0f172a;
+      background:    #4ade80;
+      padding:       0.2rem 0.9rem;
+      border-radius: 999px;
+      line-height:   1.6;
+    }
   </style>
 </head>
 <body>
@@ -942,53 +1338,55 @@ La presentación está organizada en cuatro secciones. Primero vamos a ver el co
     <!-- ============================================================ -->
     <section>
 
-      <p class="slide-kicker">Proceso de firma actual en la FACET</p>
+      <p class="slide-kicker" style="font-size:clamp(2rem,2.8vw,4rem)">Proceso de firma actual en la FACET</p>
 
       <div class="problema-layout">
 
         <div style="display:flex; align-items:center; justify-content:center;">
-          <!-- SVG FLOWCHART — proceso manual de firma (estático) -->
-          <svg viewBox="0 0 320 420" preserveAspectRatio="xMidYMid meet"
+                              <!-- SVG FLOWCHART — proceso manual de firma (estático) -->
+          <svg viewBox="0 0 540 700" preserveAspectRatio="xMidYMid meet"
                xmlns="http://www.w3.org/2000/svg"
                style="width:100%;max-height:820px;display:block;">
             <defs>
-              <marker id="fa" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
-                <path d="M0,0 L0,6 L7,3 z" fill="#38bdf8"/>
+              <marker id="fa" markerWidth="10" markerHeight="8" refX="9" refY="4" orient="auto">
+                <path d="M0,0 L0,8 L10,4 z" fill="#38bdf8"/>
               </marker>
             </defs>
             <!-- NODE 1 · Inicio -->
-            <rect x="55" y="8" width="150" height="32" rx="16" fill="#1e293b" stroke="#38bdf8" stroke-width="2"/>
-            <text x="130" y="28" text-anchor="middle" font-family="Inter,sans-serif" font-size="11" font-weight="600" fill="#f8fafc">Inicio: Doc. Requerido</text>
+            <rect x="60" y="14" width="400" height="55" rx="27" fill="#1e293b" stroke="#38bdf8" stroke-width="2.5"/>
+            <text x="260" y="47" text-anchor="middle" font-family="Inter,sans-serif" font-size="22" font-weight="600" fill="#f8fafc">Inicio: Doc. Requerido</text>
             <!-- NODE 2 · Descargar Documento -->
-            <rect x="55" y="60" width="150" height="32" rx="4" fill="#1e293b" stroke="#38bdf8" stroke-width="1.5"/>
-            <text x="130" y="80" text-anchor="middle" font-family="Inter,sans-serif" font-size="11" font-weight="500" fill="#f8fafc">Descargar Documento</text>
+            <rect x="60" y="109" width="400" height="55" rx="5" fill="#1e293b" stroke="#38bdf8" stroke-width="2"/>
+            <text x="260" y="141" text-anchor="middle" font-family="Inter,sans-serif" font-size="22" font-weight="500" fill="#f8fafc">Descargar Documento</text>
             <!-- NODE 3 · Firmar -->
-            <rect x="55" y="112" width="150" height="38" rx="4" fill="#1e293b" stroke="#38bdf8" stroke-width="1.5"/>
-            <text x="130" y="128" text-anchor="middle" font-family="Inter,sans-serif" font-size="10.5" font-weight="500" fill="#f8fafc">Firmar en Herramienta</text>
-            <text x="130" y="143" text-anchor="middle" font-family="Inter,sans-serif" font-size="10.5" font-weight="500" fill="#f8fafc">Web Externa</text>
+            <rect x="60" y="204" width="400" height="70" rx="5" fill="#1e293b" stroke="#38bdf8" stroke-width="2"/>
+            <text x="260" y="232" text-anchor="middle" font-family="Inter,sans-serif" font-size="22" font-weight="500" fill="#f8fafc">Firmar en Herramienta</text>
+            <text x="260" y="258" text-anchor="middle" font-family="Inter,sans-serif" font-size="22" font-weight="500" fill="#f8fafc">Web Externa</text>
             <!-- NODE 4 · Descargar Firmado -->
-            <rect x="55" y="170" width="150" height="32" rx="4" fill="#1e293b" stroke="#38bdf8" stroke-width="1.5"/>
-            <text x="130" y="190" text-anchor="middle" font-family="Inter,sans-serif" font-size="10.5" font-weight="500" fill="#f8fafc">Descargar Doc. Firmado</text>
+            <rect x="60" y="314" width="400" height="55" rx="5" fill="#1e293b" stroke="#38bdf8" stroke-width="2"/>
+            <text x="260" y="346" text-anchor="middle" font-family="Inter,sans-serif" font-size="22" font-weight="500" fill="#f8fafc">Descargar Doc. Firmado</text>
             <!-- NODE 5 · Enviar Email -->
-            <rect x="55" y="222" width="150" height="32" rx="4" fill="#1e293b" stroke="#38bdf8" stroke-width="1.5"/>
-            <text x="130" y="242" text-anchor="middle" font-family="Inter,sans-serif" font-size="11" font-weight="500" fill="#f8fafc">Enviar Email al Siguiente</text>
+            <rect x="60" y="409" width="400" height="55" rx="5" fill="#1e293b" stroke="#38bdf8" stroke-width="2"/>
+            <text x="260" y="441" text-anchor="middle" font-family="Inter,sans-serif" font-size="22" font-weight="500" fill="#f8fafc">Enviar Email al Siguiente</text>
             <!-- NODE 6 · ¿Todos firmaron? -->
-            <polygon points="130,274 180,302 130,330 80,302" fill="#1e293b" stroke="#38bdf8" stroke-width="1.5"/>
-            <text x="130" y="297" text-anchor="middle" font-family="Inter,sans-serif" font-size="10" font-weight="500" fill="#f8fafc">¿Todos</text>
-            <text x="130" y="311" text-anchor="middle" font-family="Inter,sans-serif" font-size="10" font-weight="500" fill="#f8fafc">firmaron?</text>
+            <polygon points="260,504 340,544 260,584 180,544" fill="#1e293b" stroke="#38bdf8" stroke-width="2"/>
+            <text x="260" y="537" text-anchor="middle" font-family="Inter,sans-serif" font-size="19" font-weight="500" fill="#f8fafc">¿Todos</text>
+            <text x="260" y="557" text-anchor="middle" font-family="Inter,sans-serif" font-size="19" font-weight="500" fill="#f8fafc">firmaron?</text>
             <!-- NODE 7 · Fin -->
-            <rect x="162" y="352" width="138" height="32" rx="16" fill="#0ea5e9" stroke="#38bdf8" stroke-width="2"/>
-            <text x="231" y="372" text-anchor="middle" font-family="Inter,sans-serif" font-size="10.5" font-weight="600" fill="#f8fafc">Fin: Doc. Completado</text>
-            <!-- ARROWS -->
-            <line x1="130" y1="40"  x2="130" y2="58"  stroke="#38bdf8" stroke-width="1.5" class="flow-arrow" style="animation-delay:0s"   marker-end="url(#fa)"/>
-            <line x1="130" y1="92"  x2="130" y2="110" stroke="#38bdf8" stroke-width="1.5" class="flow-arrow" style="animation-delay:.15s" marker-end="url(#fa)"/>
-            <line x1="130" y1="150" x2="130" y2="168" stroke="#38bdf8" stroke-width="1.5" class="flow-arrow" style="animation-delay:.3s"  marker-end="url(#fa)"/>
-            <line x1="130" y1="202" x2="130" y2="220" stroke="#38bdf8" stroke-width="1.5" class="flow-arrow" style="animation-delay:.45s" marker-end="url(#fa)"/>
-            <line x1="130" y1="254" x2="130" y2="272" stroke="#38bdf8" stroke-width="1.5" class="flow-arrow" style="animation-delay:.6s"  marker-end="url(#fa)"/>
-            <path d="M 180,302 L 297,302 L 297,350" stroke="#38bdf8" stroke-width="1.5" fill="none" class="flow-arrow" style="animation-delay:.75s" marker-end="url(#fa)"/>
-            <text x="236" y="296" text-anchor="middle" font-family="Inter,sans-serif" font-size="9" font-weight="600" fill="#38bdf8">Sí</text>
-            <path d="M 80,302 L 16,302 L 16,78 L 52,78" stroke="#38bdf8" stroke-width="1.5" fill="none" class="flow-arrow" style="animation-delay:.9s" marker-end="url(#fa)"/>
-            <text x="22" y="68" text-anchor="start" font-family="Inter,sans-serif" font-size="9" font-weight="600" fill="#38bdf8">No</text>
+            <rect x="280" y="624" width="230" height="55" rx="27" fill="#0ea5e9" stroke="#38bdf8" stroke-width="2.5"/>
+            <text x="395" y="656" text-anchor="middle" font-family="Inter,sans-serif" font-size="21" font-weight="600" fill="#f8fafc">Fin: Doc. Completado</text>
+            <!-- ARROWS (40px gaps) -->
+            <line x1="260" y1="69"  x2="260" y2="107" stroke="#38bdf8" stroke-width="2.5" class="flow-arrow" style="animation-delay:0s"   marker-end="url(#fa)"/>
+            <line x1="260" y1="164" x2="260" y2="202" stroke="#38bdf8" stroke-width="2.5" class="flow-arrow" style="animation-delay:.15s" marker-end="url(#fa)"/>
+            <line x1="260" y1="274" x2="260" y2="312" stroke="#38bdf8" stroke-width="2.5" class="flow-arrow" style="animation-delay:.3s"  marker-end="url(#fa)"/>
+            <line x1="260" y1="369" x2="260" y2="407" stroke="#38bdf8" stroke-width="2.5" class="flow-arrow" style="animation-delay:.45s" marker-end="url(#fa)"/>
+            <line x1="260" y1="464" x2="260" y2="502" stroke="#38bdf8" stroke-width="2.5" class="flow-arrow" style="animation-delay:.6s"  marker-end="url(#fa)"/>
+            <!-- Sí: right of diamond → Fin node -->
+            <path d="M 340,544 L 520,544 L 520,622" stroke="#38bdf8" stroke-width="2.5" fill="none" class="flow-arrow" style="animation-delay:.75s" marker-end="url(#fa)"/>
+            <text x="430" y="536" text-anchor="middle" font-family="Inter,sans-serif" font-size="18" font-weight="600" fill="#38bdf8">Sí</text>
+            <!-- No: left of diamond → back to Node 2 -->
+            <path d="M 180,544 L 16,544 L 16,141 L 57,141" stroke="#38bdf8" stroke-width="2.5" fill="none" class="flow-arrow" style="animation-delay:.9s" marker-end="url(#fa)"/>
+            <text x="24" y="130" text-anchor="start" font-family="Inter,sans-serif" font-size="18" font-weight="600" fill="#38bdf8">No</text>
           </svg>
         </div>
 
@@ -1145,7 +1543,7 @@ Paso cuatro: salida trazable. El documento final queda firmado, con sello cripto
     <!-- ============================================================ -->
     <section>
 
-      <h3>Objetivos Específicos del Trabajo</h3>
+      <h3 class="obj-slide-title">Objetivos Específicos del Trabajo</h3>
       <div class="bar"></div>
 
       <div class="obj-grid">
@@ -1213,223 +1611,345 @@ Cuarto: documentación y transferencia. Generar manuales tanto para usuarios fin
     </section>
 
     <!-- ============================================================ -->
-    <!-- SLIDE 4 · OBJETIVOS — NUEVO PROCESO AUTOMATIZADO             -->
+    <!-- SLIDE · PANORAMA SAAS — Comparison table  (§3.1)            -->
     <!-- ============================================================ -->
-    <section>
-
-      <h3>Objetivo: Implementar y Desplegar Sistema de Firma Digital de Documentos</h3>
+    <section data-background-color="#0f172a">
+      <h3>Panorama del Mercado: Soluciones <span class="saas-kw">SaaS</span></h3>
       <div class="bar"></div>
-
-      <!-- SVG FLOWCHART HORIZONTAL — Nuevo Proceso Automatizado -->
-      <svg viewBox="0 0 1440 410" preserveAspectRatio="xMidYMid meet"
-           xmlns="http://www.w3.org/2000/svg"
-           style="width:100%; max-height:640px; display:block; margin-top:var(--space-sm)">
-        <defs>
-          <marker id="np-arr" markerWidth="10" markerHeight="8" refX="9" refY="4" orient="auto">
-            <polygon class="np-arrowhead" points="0 0, 10 4, 0 8"/>
-          </marker>
-        </defs>
-
-        <!-- ── PASO 1 · Carga Única ─────────────────────────────── -->
-        <g class="fragment" data-fragment-index="0">
-          <rect x="40" y="55" width="280" height="300" rx="8" class="np-rect"/>
-          <circle cx="80" cy="93" r="22" class="np-badge"/>
-          <text x="80"  y="100" text-anchor="middle"
-                font-family="Inter,sans-serif" font-size="19" font-weight="700"
-                class="np-badge-num">1</text>
-          <text x="180" y="196" text-anchor="middle"
-                font-family="Inter,sans-serif" font-size="36" font-weight="700"
-                class="np-node-title">Carga Única</text>
-          <text x="180" y="242" text-anchor="middle"
-                font-family="Inter,sans-serif" font-size="25" class="np-node-sub">Docente / Alumno</text>
-          <text x="180" y="272" text-anchor="middle"
-                font-family="Inter,sans-serif" font-size="25" class="np-node-sub">sube el PDF</text>
-        </g>
-
-        <!-- ── FLECHA 1 + PASO 2 · Configuración Visual ─────────── -->
-        <g class="fragment" data-fragment-index="1">
-          <line x1="324" y1="205" x2="397" y2="205" stroke-width="2.5" stroke-dasharray="6 3"
-                class="np-arrow" marker-end="url(#np-arr)"/>
-          <rect x="400" y="55" width="280" height="300" rx="8" class="np-rect"/>
-          <circle cx="440" cy="93" r="22" class="np-badge"/>
-          <text x="440" y="100" text-anchor="middle"
-                font-family="Inter,sans-serif" font-size="19" font-weight="700"
-                class="np-badge-num">2</text>
-          <text x="540" y="172" text-anchor="middle"
-                font-family="Inter,sans-serif" font-size="36" font-weight="700"
-                class="np-node-title">Configuración</text>
-          <text x="540" y="214" text-anchor="middle"
-                font-family="Inter,sans-serif" font-size="36" font-weight="700"
-                class="np-node-title">Visual</text>
-          <text x="540" y="254" text-anchor="middle"
-                font-family="Inter,sans-serif" font-size="25" class="np-node-sub">Firmantes y posición</text>
-          <text x="540" y="284" text-anchor="middle"
-                font-family="Inter,sans-serif" font-size="25" class="np-node-sub">gráfica en el PDF</text>
-        </g>
-
-        <!-- ── FLECHA 2 + PASO 3 · Motor de Automatización ──────── -->
-        <g class="fragment" data-fragment-index="2">
-          <line x1="684" y1="205" x2="757" y2="205" stroke-width="2.5" stroke-dasharray="6 3"
-                class="np-arrow" marker-end="url(#np-arr)"/>
-          <rect x="760" y="55" width="280" height="300" rx="8" class="np-rect"/>
-          <circle cx="800" cy="93" r="22" class="np-badge"/>
-          <text x="800" y="100" text-anchor="middle"
-                font-family="Inter,sans-serif" font-size="19" font-weight="700"
-                class="np-badge-num">3</text>
-          <text x="900" y="172" text-anchor="middle"
-                font-family="Inter,sans-serif" font-size="36" font-weight="700"
-                class="np-node-title">Motor de</text>
-          <text x="900" y="214" text-anchor="middle"
-                font-family="Inter,sans-serif" font-size="36" font-weight="700"
-                class="np-node-title">Automatización</text>
-          <text x="900" y="254" text-anchor="middle"
-                font-family="Inter,sans-serif" font-size="25" class="np-node-sub">Turnos y</text>
-          <text x="900" y="284" text-anchor="middle"
-                font-family="Inter,sans-serif" font-size="25" class="np-node-sub">notificaciones</text>
-        </g>
-
-        <!-- ── FLECHA 3 + PASO 4 · Salida Trazable (éxito) ──────── -->
-        <g class="fragment" data-fragment-index="3">
-          <line x1="1044" y1="205" x2="1117" y2="205" stroke-width="2.5" stroke-dasharray="6 3"
-                class="np-arrow" marker-end="url(#np-arr)"/>
-          <rect x="1120" y="55" width="280" height="300" rx="8" class="np-rect-success"/>
-          <circle cx="1160" cy="93" r="22" class="np-badge-success"/>
-          <text x="1160" y="100" text-anchor="middle"
-                font-family="Inter,sans-serif" font-size="19" font-weight="700"
-                class="np-badge-num">4</text>
-          <text x="1260" y="196" text-anchor="middle"
-                font-family="Inter,sans-serif" font-size="36" font-weight="700"
-                class="np-node-title">Salida Trazable</text>
-          <text x="1260" y="242" text-anchor="middle"
-                font-family="Inter,sans-serif" font-size="25" class="np-node-sub-ok">Doc. firmado</text>
-          <text x="1260" y="272" text-anchor="middle"
-                font-family="Inter,sans-serif" font-size="25" class="np-node-sub-ok">y validado</text>
-        </g>
-
-      </svg>
-
-      <aside class="notes">
-La propuesta reemplaza ese proceso manual de siete pasos por uno automatizado de cuatro. [PAUSE]
-
-Paso uno: carga única. El docente o alumno sube el PDF una sola vez al sistema. Nada de descargas ni reenvíos por email. [PAUSE]
-
-Paso dos: configuración visual. Directamente en la interfaz web, define quiénes deben firmar y en qué lugar físico del documento va la firma de cada uno. [PAUSE]
-
-Paso tres: el motor de automatización de Documenso se encarga del resto — notifica a cada firmante en su turno y gestiona el flujo sin intervención manual. [PAUSE]
-
-Paso cuatro: salida trazable. El documento final queda firmado, con sello criptográfico, validable públicamente, y almacenado en la infraestructura de la FACET.
-      </aside>
-
+      <div class="saas-wrap">
+        <table class="saas-table">
+          <thead>
+            <tr>
+              <th></th>
+              <th>
+                <div class="saas-logo-wrap">
+                  <img src="figuras/docusign.svg"
+                       alt="Docusign"
+                       style="height:clamp(40px,4.2vw,68px)">
+                </div>
+              </th>
+              <th>
+                <div class="saas-logo-wrap">
+                  <img src="figuras/dropbox-sign.svg"
+                       alt="Dropbox Sign"
+                       style="height:clamp(42px,4.4vw,70px)">
+                </div>
+              </th>
+              <th>
+                <div class="saas-logo-wrap">
+                  <img src="figuras/adobe-sign.svg"
+                       alt="Adobe Sign"
+                       style="height:clamp(52px,5.2vw,84px)">
+                  <span class="saas-logo-label">Adobe Sign</span>
+                </div>
+              </th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Costo x Usuario<small>plan anual</small></td>
+              <td>$25/mes</td>
+              <td>$25/mes</td>
+              <td>$24/mes</td>
+            </tr>
+            <tr>
+              <td>Límite de Envíos</td>
+              <td>100 sobres/año<small>x usuario</small></td>
+              <td class="saas-best">Ilimitado</td>
+              <td>150 sobres/año<small>x usuario</small></td>
+            </tr>
+            <tr>
+              <td>Residencia de Datos</td>
+              <td>Infra propia<small>AWS · Azure</small></td>
+              <td>AWS</td>
+              <td>AWS · Azure</td>
+            </tr>
+            <tr class="saas-cost-row">
+              <td>20 Usuarios<small>costo estimado</small></td>
+              <td>$500/mes<small class="saas-annual">$6&#8239;000/año</small></td>
+              <td>$500/mes<small class="saas-annual">$6&#8239;000/año</small></td>
+              <td class="saas-cheapest">$480/mes<small class="saas-annual">$5&#8239;760/año</small></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <aside class="notes">Antes de elegir la plataforma, relevé las tres soluciones SaaS más usadas del mercado. Docusign, Dropbox Sign y Adobe Sign tienen precios similares — entre 24 y 25 dólares por usuario por mes. Para 20 usuarios eso representa entre 480 y 500 dólares mensuales, es decir casi 6 000 dólares al año. Y además, ninguna de estas opciones cumple con el requisito de soberanía de datos: todas dependen de infraestructura cloud en servidores del exterior. Esto justifica buscar una alternativa open source desplegable en la propia institución. [PAUSE]</aside>
     </section>
 
     <!-- ============================================================ -->
-    <!-- SLIDE 5 · SAAS VS ON-PREMISE  (§4.12 Comparison)            -->
+    <!-- SLIDE · OPEN SOURCE — Documenso vs DocuSeal  (§3.2)         -->
     <!-- ============================================================ -->
-    <section>
-
-      <h2>SaaS: USD 5.300/año para 20 usuarios — la decisión se tomó sola</h2>
+    <section data-background-color="#0f172a">
+      <h3>Panorama del Mercado: Soluciones <span class="os-kw">Open Source</span></h3>
       <div class="bar"></div>
+      <div class="os-grid">
 
-      <table>
-        <thead>
-          <tr>
-            <th>Criterio</th>
-            <th>Solución SaaS Comercial</th>
-            <th>Solución Open Source On-Premise</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr class="fragment">
-            <td><strong>Costo anual (20 usuarios)</strong></td>
-            <td><span class="tag tag-bad">&gt; USD 5.300 / año</span></td>
-            <td><span class="tag tag-good">USD 0 — solo infraestructura propia</span></td>
-          </tr>
-          <tr class="fragment">
-            <td><strong>Modelo de servicio</strong></td>
-            <td>SaaS — datos en servidores del proveedor</td>
-            <td>On-Premise — datos bajo control de la FACET</td>
-          </tr>
-          <tr class="fragment">
-            <td><strong>Control y soberanía de datos</strong></td>
-            <td><span class="tag tag-bad">Dependencia del proveedor</span></td>
-            <td><span class="tag tag-good">Control total institucional</span></td>
-          </tr>
-          <tr class="fragment">
-            <td><strong>Personalización</strong></td>
-            <td><span class="tag tag-neutral">Limitada al plan contratado</span></td>
-            <td><span class="tag tag-good">Código fuente disponible y modificable</span></td>
-          </tr>
-          <tr class="fragment">
-            <td><strong>Continuidad del servicio</strong></td>
-            <td>Depende del proveedor externo</td>
-            <td>Depende solo de la infraestructura FACET</td>
-          </tr>
-        </tbody>
-      </table>
+        <!-- DOCUMENSO -->
+        <div class="os-card">
+          <div class="os-logo">
+            <img src="figuras/documenso.svg" alt="Documenso">
+          </div>
+          <div class="os-card-head">
+            <div class="os-repo">documenso / <strong>documenso</strong></div>
+            <div class="os-stars">&#9733; 12.9k</div>
+          </div>
+          <p class="os-desc">&ldquo;The open source DocuSign alternative.&rdquo;</p>
+          <div class="os-meta">
+            <span class="os-lang-dot" style="background:#3178c6"></span>
+            TypeScript
+          </div>
+          <div class="os-tags">
+            <span class="os-tag">nextjs</span>
+            <span class="os-tag">postgresql</span>
+            <span class="os-tag">self-hosted</span>
+            <span class="os-tag">pades-standard</span>
+            <span class="os-tag">e-signature</span>
+          </div>
+        </div>
 
-      <aside class="notes">
-Al empezar a investigar, la primera pregunta lógica era: ¿por qué no compramos algo que ya esté hecho? [PAUSE]
+        <!-- DOCUSEAL -->
+        <div class="os-card">
+          <div class="os-logo">
+            <img src="figuras/docuseal.svg" alt="DocuSeal">
+          </div>
+          <div class="os-card-head">
+            <div class="os-repo">docusealco / <strong>docuseal</strong></div>
+            <div class="os-stars">&#9733; 16.9k</div>
+          </div>
+          <p class="os-desc">&ldquo;Open source DocuSign alternative. Create, fill, and sign digital documents.&rdquo;</p>
+          <div class="os-meta">
+            <span class="os-lang-dot" style="background:#701516"></span>
+            Ruby
+          </div>
+          <div class="os-tags">
+            <span class="os-tag">ruby-on-rails</span>
+            <span class="os-tag">vuejs</span>
+            <span class="os-tag">self-hosted</span>
+            <span class="os-tag">legaltech</span>
+            <span class="os-tag">pdf-signature</span>
+          </div>
+        </div>
 
-Herramientas como DocuSign o Adobe Sign son excelentes, pero se comercializan como Software as a Service. Si hacemos los números, para apenas veinte usuarios el costo de licenciamiento supera los cinco mil trescientos dólares anuales — económicamente inviable para una universidad pública. [PAUSE]
-
-Por lo tanto, descartamos las soluciones comerciales y la investigación se centró de lleno en alternativas de código abierto que nos permitieran alojar el sistema en nuestros propios servidores.
-      </aside>
-
+      </div>
+      <aside class="notes">Al descartar las opciones SaaS, relevé las alternativas open source más destacadas del mercado. Documenso y DocuSeal son los dos proyectos con mayor adopción — ambos con más de 12 mil stars en GitHub, self-hosted, y con API REST. La diferencia principal está en el stack: Documenso usa TypeScript con Next.js y PostgreSQL, mientras que DocuSeal usa Ruby on Rails con Vue.js y soporta SQLite además de PostgreSQL. Ambos cumplen los requisitos de soberanía de datos al poder desplegarse en infraestructura propia. [PAUSE]</aside>
     </section>
 
     <!-- ============================================================ -->
-    <!-- SLIDE 6 · DOCUSEAL VS DOCUMENSO  (§4.12 Comparison)         -->
+    <!-- SLIDE · COMPARATIVA OPEN SOURCE  (§3.3)                       -->
     <!-- ============================================================ -->
-    <section>
-
-      <h2>DocuSeal cobra por roles y equipos; Documenso los da gratis — elegimos Documenso</h2>
+    <section data-background-color="#0f172a">
+      <h3>Comparativa: <span class="os-kw">Documenso</span> vs <span style="color:var(--accent-1)">DocuSeal</span></h3>
       <div class="bar"></div>
+      <div class="oss-wrap">
+        <table class="oss-table">
+          <thead>
+            <tr>
+              <th></th>
+              <th>
+                <div class="oss-logo-wrap">
+                  <img src="figuras/documenso.svg" alt="Documenso" style="height:clamp(48px,5vw,80px)">
+                  <span class="oss-logo-label">Documenso</span>
+                  <span class="oss-selected-badge">&#10003;&nbsp;Seleccionado</span>
+                </div>
+              </th>
+              <th>
+                <div class="oss-logo-wrap">
+                  <img src="figuras/docuseal.svg" alt="DocuSeal" style="height:clamp(48px,5vw,80px)">
+                  <span class="oss-logo-label">DocuSeal</span>
+                </div>
+              </th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Gestión de Roles (RBAC)</td>
+              <td><span class="oss-check"><span class="oss-check-icon">✓</span> Community Ed.</span></td>
+              <td><span class="oss-lock"><span class="oss-lock-icon">✕</span><span class="oss-lock-label">Enterprise Edition</span></span></td>
+            </tr>
+            <tr>
+              <td>Login con Google (SSO)</td>
+              <td><span class="oss-check"><span class="oss-check-icon">✓</span> Community Ed.</span></td>
+              <td><span class="oss-lock"><span class="oss-lock-icon">✕</span><span class="oss-lock-label">Enterprise Edition</span></span></td>
+            </tr>
+            <tr>
+              <td>Branding Personalizado</td>
+              <td><span class="oss-check"><span class="oss-check-icon">✓</span> Community Ed.</span></td>
+              <td><span class="oss-lock"><span class="oss-lock-icon">✕</span><span class="oss-lock-label">Enterprise Edition</span></span></td>
+            </tr>
+            <tr>
+              <td>Stack Tecnológico</td>
+              <td>Remix + Prisma<small>PostgreSQL</small></td>
+              <td>Ruby on Rails<small>PostgreSQL</small></td>
+            </tr>
+            <tr>
+              <td>Licencia</td>
+              <td>AGPL-3.0</td>
+              <td>AGPL-3.0</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <aside class="notes">Al comparar ambas soluciones open source en detalle, emerge una diferencia crítica: DocuSeal bloquea funcionalidades esenciales para una institución — la gestión de roles, el inicio de sesión con Google y el branding personalizado — detrás de un plan de pago. Documenso las incluye en su versión libre con licencia AGPL-3.0. Esto, sumado a su stack moderno en TypeScript con Next.js, fue el criterio definitivo para elegir Documenso como base del sistema. [PAUSE]</aside>
+    </section>
 
-      <table>
-        <thead>
-          <tr>
-            <th>Característica</th>
-            <th>DocuSeal Community</th>
-            <th>Documenso Community</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr class="fragment">
-            <td><strong>Control de acceso por roles</strong></td>
-            <td><span class="tag tag-bad">Solo en versión paga</span> — cualquier usuario = admin</td>
-            <td><span class="tag tag-good">Incluido</span> — roles Admin y Miembro diferenciados</td>
-          </tr>
-          <tr class="fragment">
-            <td><strong>Equipos / Departamentos</strong></td>
-            <td><span class="tag tag-bad">No disponible</span></td>
-            <td><span class="tag tag-good">Incluido</span> — mapea departamentos de la FACET</td>
-          </tr>
-          <tr class="fragment">
-            <td><strong>OAuth con Google (@herrera)</strong></td>
-            <td><span class="tag tag-bad">Sin soporte nativo</span></td>
-            <td><span class="tag tag-good">Soporte nativo incluido</span></td>
-          </tr>
-          <tr class="fragment">
-            <td><strong>Licencia Open Source</strong></td>
-            <td><span class="tag tag-neutral">AGPL-3.0</span></td>
-            <td><span class="tag tag-neutral">AGPL-3.0</span></td>
-          </tr>
-          <tr class="fragment">
-            <td><strong>Costo base con funciones clave</strong></td>
-            <td><span class="tag tag-bad">Requiere plan pago</span></td>
-            <td><span class="tag tag-good">Completamente gratuito</span></td>
-          </tr>
-        </tbody>
-      </table>
+    <!-- ============================================================ -->
+    <!-- SLIDE · POR QUÉ DOCUMENSO — Alineación organizacional        -->
+    <!-- ============================================================ -->
+    <section data-background-color="#0f172a">
+      <p class="slide-kicker">¿Por qué Documenso?</p>
+      <h2 class="slide-title" style="margin-bottom:var(--space-sm);font-size:clamp(2.4rem,3.8vw,5.6rem);">Modelo Organizacional Alineado a la FACET</h2>
 
-      <aside class="notes">
-Dentro del mundo Open Source llegaron a la final dos grandes candidatos: DocuSeal y Documenso. Ambos permiten firmar documentos, pero cuando analizamos las licencias la diferencia fue enorme. [PAUSE]
+      <div style="display:grid;grid-template-columns:1fr 80px 1fr;gap:clamp(.8rem,1.5vw,2rem);align-items:center;margin-top:var(--space-sm);">
 
-DocuSeal restringe funciones vitales — como el control de acceso basado en roles — a su versión paga. Eso significa que cualquier usuario creado tendría permisos de administrador. Inviable para la facultad. [PAUSE]
+        <!-- LEFT: Documenso -->
+        <div style="background:var(--bg-secondary);border:2px solid rgba(56,189,248,0.22);border-radius:1.2rem;
+                    padding:clamp(1.2rem,2vw,2.8rem);
+                    box-shadow:0 0 24px rgba(56,189,248,0.07),0 4px 16px rgba(0,0,0,0.3);
+                    position:relative;overflow:hidden;">
+          <div style="position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,transparent,#38bdf8,transparent);"></div>
+          <p style="font-family:var(--font-mono);font-size:clamp(1.4rem,1.9vw,2.8rem);color:var(--accent-1);font-weight:700;text-align:center;margin-bottom:.8rem;text-transform:uppercase;letter-spacing:.12em;">Documenso</p>
+          <svg viewBox="0 0 440 285" xmlns="http://www.w3.org/2000/svg" style="width:100%;display:block;">
+            <defs>
+              <marker id="a1" markerWidth="9" markerHeight="7" refX="8" refY="3.5" orient="auto"><path d="M0,0 L0,7 L9,3.5 z" fill="#38bdf8"/></marker>
+              <filter id="glow-blue" x="-30%" y="-30%" width="160%" height="160%"><feGaussianBlur stdDeviation="3" result="blur"/><feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+            </defs>
+            <rect x="120" y="10" width="200" height="62" rx="8" fill="rgba(56,189,248,0.07)" stroke="#38bdf8" stroke-width="2" filter="url(#glow-blue)"/>
+            <text x="220" y="48" text-anchor="middle" font-family="Inter,sans-serif" font-size="24" fill="#f8fafc" font-weight="700">Organización</text>
+            <line x1="183" y1="72" x2="113" y2="110" stroke="#38bdf8" stroke-width="2.5" marker-end="url(#a1)"/>
+            <line x1="257" y1="72" x2="327" y2="110" stroke="#38bdf8" stroke-width="2.5" marker-end="url(#a1)"/>
+            <rect x="20" y="110" width="186" height="62" rx="7" fill="#1e293b" stroke="#38bdf8" stroke-width="2"/>
+            <text x="113" y="148" text-anchor="middle" font-family="Inter,sans-serif" font-size="24" fill="#7dd3fc" font-weight="600">Team A</text>
+            <rect x="234" y="110" width="186" height="62" rx="7" fill="#1e293b" stroke="#38bdf8" stroke-width="2"/>
+            <text x="327" y="148" text-anchor="middle" font-family="Inter,sans-serif" font-size="24" fill="#7dd3fc" font-weight="600">Team B</text>
+            <line x1="113" y1="172" x2="113" y2="218" stroke="#38bdf8" stroke-width="2.5" marker-end="url(#a1)"/>
+            <line x1="327" y1="172" x2="327" y2="218" stroke="#38bdf8" stroke-width="2.5" marker-end="url(#a1)"/>
+            <rect x="20" y="220" width="186" height="52" rx="6" fill="rgba(56,189,248,0.06)" stroke="#38bdf8" stroke-width="1.5" stroke-dasharray="6,3"/>
+            <text x="113" y="251" text-anchor="middle" font-family="Inter,sans-serif" font-size="18" fill="#7dd3fc">Docs / Templates</text>
+            <rect x="234" y="220" width="186" height="52" rx="6" fill="rgba(56,189,248,0.06)" stroke="#38bdf8" stroke-width="1.5" stroke-dasharray="6,3"/>
+            <text x="327" y="251" text-anchor="middle" font-family="Inter,sans-serif" font-size="18" fill="#7dd3fc">Docs / Templates</text>
+          </svg>
+        </div>
 
-Documenso, en cambio, incluye en su versión comunitaria el control de roles, nos permite crear Equipos que mapean perfectamente los departamentos de la FACET, y tiene soporte nativo para autenticarnos con Google usando nuestros correos institucionales. Así que, sin dudarlo, Documenso fue el elegido.
-      </aside>
+        <!-- ARROW (fixed width column, always visible) -->
+        <div style="display:flex;flex-direction:column;align-items:center;gap:.5rem;">
+          <svg viewBox="0 0 56 48" xmlns="http://www.w3.org/2000/svg" style="width:56px;overflow:visible;">
+            <defs><marker id="aw" markerWidth="10" markerHeight="8" refX="9" refY="4" orient="auto"><path d="M0,0 L0,8 L10,4 z" fill="#4ade80"/></marker></defs>
+            <line x1="4" y1="24" x2="44" y2="24" stroke="#4ade80" stroke-width="4" marker-end="url(#aw)"/>
+          </svg>
+          <span style="font-family:var(--font-mono);font-size:clamp(.9rem,1.1vw,1.6rem);color:#4ade80;font-weight:700;white-space:nowrap;">análogo</span>
+        </div>
 
+        <!-- RIGHT: FACET -->
+        <div style="background:var(--bg-secondary);border:2px solid rgba(74,222,128,0.28);border-radius:1.2rem;
+                    padding:clamp(1.2rem,2vw,2.8rem);
+                    box-shadow:0 0 24px rgba(74,222,128,0.07),0 4px 16px rgba(0,0,0,0.3);
+                    position:relative;overflow:hidden;">
+          <div style="position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,transparent,#4ade80,transparent);"></div>
+          <p style="font-family:var(--font-mono);font-size:clamp(1.4rem,1.9vw,2.8rem);color:#4ade80;font-weight:700;text-align:center;margin-bottom:.8rem;text-transform:uppercase;letter-spacing:.12em;">FACET</p>
+          <svg viewBox="0 0 460 285" xmlns="http://www.w3.org/2000/svg" style="width:100%;display:block;">
+            <defs>
+              <marker id="a3" markerWidth="9" markerHeight="7" refX="8" refY="3.5" orient="auto"><path d="M0,0 L0,7 L9,3.5 z" fill="#4ade80"/></marker>
+              <filter id="glow-green" x="-30%" y="-30%" width="160%" height="160%"><feGaussianBlur stdDeviation="3" result="blur"/><feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+            </defs>
+            <rect x="130" y="10" width="200" height="62" rx="8" fill="rgba(74,222,128,0.07)" stroke="#4ade80" stroke-width="2" filter="url(#glow-green)"/>
+            <text x="230" y="48" text-anchor="middle" font-family="Inter,sans-serif" font-size="24" fill="#f8fafc" font-weight="700">FACET</text>
+            <line x1="193" y1="72" x2="123" y2="110" stroke="#4ade80" stroke-width="2.5" marker-end="url(#a3)"/>
+            <line x1="267" y1="72" x2="337" y2="110" stroke="#4ade80" stroke-width="2.5" marker-end="url(#a3)"/>
+            <rect x="30" y="110" width="186" height="62" rx="7" fill="#1e293b" stroke="#4ade80" stroke-width="2"/>
+            <text x="123" y="148" text-anchor="middle" font-family="Inter,sans-serif" font-size="24" fill="#86efac" font-weight="600">DEEC</text>
+            <rect x="244" y="110" width="186" height="62" rx="7" fill="#1e293b" stroke="#4ade80" stroke-width="2"/>
+            <text x="337" y="148" text-anchor="middle" font-family="Inter,sans-serif" font-size="24" fill="#86efac" font-weight="600">Dep. Física</text>
+            <line x1="123" y1="172" x2="123" y2="218" stroke="#4ade80" stroke-width="2.5" marker-end="url(#a3)"/>
+            <line x1="337" y1="172" x2="337" y2="218" stroke="#4ade80" stroke-width="2.5" marker-end="url(#a3)"/>
+            <rect x="30" y="220" width="186" height="52" rx="6" fill="rgba(74,222,128,0.06)" stroke="#4ade80" stroke-width="1.5" stroke-dasharray="6,3"/>
+            <text x="123" y="251" text-anchor="middle" font-family="Inter,sans-serif" font-size="18" fill="#86efac">Docs / Templates</text>
+            <rect x="244" y="220" width="186" height="52" rx="6" fill="rgba(74,222,128,0.06)" stroke="#4ade80" stroke-width="1.5" stroke-dasharray="6,3"/>
+            <text x="337" y="251" text-anchor="middle" font-family="Inter,sans-serif" font-size="18" fill="#86efac">Docs / Templates</text>
+          </svg>
+        </div>
+      </div>
+
+      <!-- bottom note -->
+      <p style="margin-top:var(--space-sm);font-size:clamp(1.6rem,2vw,3rem);color:var(--text-secondary);text-align:center;line-height:1.5;">
+        Un usuario puede pertenecer a <strong style="color:#f8fafc;">múltiples departamentos</strong> y accede <strong style="color:#4ade80;">solo</strong> a los documentos de cada uno.
+      </p>
+
+      <aside class="notes">El modelo de organizaciones y teams de Documenso es un mapeo casi exacto de la estructura de la FACET. La facultad es la organización raíz. Cada departamento — DEEC, Física, Matemática — se convierte en un team con su propio espacio de documentos aislado. Un docente que da clases en dos departamentos simplemente pertenece a ambos teams, y la plataforma gestiona automáticamente qué documentos puede ver en cada contexto. Esto elimina configuración personalizada y hace la adopción inmediata. [PAUSE]</aside>
+    </section>
+
+    <!-- ============================================================ -->
+    <!-- SLIDE · DOCUMENSO — Integraciones externas                   -->
+    <!-- ============================================================ -->
+    <section data-background-color="#0f172a">
+      <p class="slide-kicker">¿Por qué Documenso?</p>
+      <h2 class="slide-title" style="font-size:clamp(2.4rem,3.8vw,5.6rem);margin-bottom:var(--space-md);">Integraciones con Servicios Externos</h2>
+
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:clamp(1.5rem,3vw,4rem);align-items:start;margin-top:var(--space-sm);">
+
+        <!-- MinIO -->
+        <div class="fragment fade-up" data-fragment-index="1"
+             style="display:flex;flex-direction:column;align-items:center;gap:var(--space-sm);text-align:center;
+                    background:var(--bg-secondary);border:2px solid rgba(199,46,73,0.35);border-radius:1.2rem;
+                    padding:clamp(1.5rem,2.5vw,3.5rem);
+                    box-shadow:0 0 40px rgba(199,46,73,0.12),0 4px 24px rgba(0,0,0,0.4);">
+          <!-- hex wrapper with red glow -->
+          <div style="position:relative;width:clamp(130px,13vw,210px);height:clamp(150px,15vw,242px);
+                      filter:drop-shadow(0 0 18px rgba(199,46,73,0.55));">
+            <div style="width:100%;height:100%;background:linear-gradient(135deg,#2d1219,#1e293b);
+                        clip-path:polygon(25% 0%,75% 0%,100% 50%,75% 100%,25% 100%,0% 50%);
+                        display:flex;align-items:center;justify-content:center;
+                        border:2px solid rgba(199,46,73,0.6);">
+              <svg xmlns="http://www.w3.org/2000/svg" fill="#C72E49" viewBox="0 0 24 24" style="width:48%;height:48%;"><path d="M13.207.006a2.16 2.16 0 0 0-1.62.582 2.15 2.15 0 0 0-.095 3.035l3.408 3.55a3.042 3.042 0 0 1-.663 4.688l-.463.239V7.285a15.42 15.42 0 0 0-8.018 10.487v.017l6.549-3.328v7.621L13.779 24V13.682l.897-.463a4.443 4.443 0 0 0 1.22-7.03l-3.37-3.525a.75.75 0 0 1 .037-1.055.75.75 0 0 1 1.056.038l.467.486-.006.006 4.07 4.244a.057.057 0 0 0 .082 0 .06.06 0 0 0 0-.07l-3.14-5.143-.149.143.149-.145C14.494.393 13.829.054 13.207.006m-.902 9.865v2.994l-4.152 2.149a14 14 0 0 1 2.767-3.928 14 14 0 0 1 1.385-1.215"/></svg>
+            </div>
+          </div>
+          <p style="font-family:var(--font-heading);font-size:clamp(2.4rem,3.2vw,4.8rem);font-weight:700;color:#f8fafc;margin:0;">MinIO</p>
+          <div style="width:3rem;height:3px;background:#C72E49;border-radius:2px;"></div>
+          <p style="font-size:clamp(1.7rem,2.2vw,3.2rem);color:var(--text-secondary);line-height:1.5;margin:0;">Almacenamiento S3-compatible para los PDFs firmados.</p>
+        </div>
+
+        <!-- Brevo -->
+        <div class="fragment fade-up" data-fragment-index="2"
+             style="display:flex;flex-direction:column;align-items:center;gap:var(--space-sm);text-align:center;
+                    background:var(--bg-secondary);border:2px solid rgba(11,153,110,0.35);border-radius:1.2rem;
+                    padding:clamp(1.5rem,2.5vw,3.5rem);
+                    box-shadow:0 0 40px rgba(11,153,110,0.12),0 4px 24px rgba(0,0,0,0.4);">
+          <div style="position:relative;width:clamp(130px,13vw,210px);height:clamp(150px,15vw,242px);
+                      filter:drop-shadow(0 0 18px rgba(11,153,110,0.55));">
+            <div style="width:100%;height:100%;background:linear-gradient(135deg,#0b2720,#1e293b);
+                        clip-path:polygon(25% 0%,75% 0%,100% 50%,75% 100%,25% 100%,0% 50%);
+                        display:flex;align-items:center;justify-content:center;
+                        border:2px solid rgba(11,153,110,0.6);">
+              <svg xmlns="http://www.w3.org/2000/svg" fill="#0B996E" viewBox="0 0 24 24" style="width:48%;height:48%;"><path d="M12 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0M7.2 4.8h5.747c2.34 0 3.895 1.406 3.895 3.516 0 1.022-.348 1.862-1.09 2.588C17.189 11.812 18 13.22 18 14.785c0 2.86-2.64 5.016-6.164 5.016H7.199v-15zm2.085 1.952v5.537h.07c.233-.432.858-.796 2.249-1.226 2.039-.659 3.037-1.52 3.037-2.655 0-.998-.766-1.656-1.924-1.656zm4.87 5.266c-.766.385-1.67.748-2.76 1.11-1.229.387-2.11 1.386-2.11 2.407v2.315h2.365c2.387 0 4.149-1.34 4.149-3.155 0-1.067-.625-2.087-1.645-2.677z"/></svg>
+            </div>
+          </div>
+          <p style="font-family:var(--font-heading);font-size:clamp(2.4rem,3.2vw,4.8rem);font-weight:700;color:#f8fafc;margin:0;">Brevo</p>
+          <div style="width:3rem;height:3px;background:#0B996E;border-radius:2px;"></div>
+          <p style="font-size:clamp(1.7rem,2.2vw,3.2rem);color:var(--text-secondary);line-height:1.5;margin:0;">Relay SMTP para notificaciones. Capa gratuita: hasta 300 mails/día.</p>
+        </div>
+
+        <!-- Google -->
+        <div class="fragment fade-up" data-fragment-index="3"
+             style="display:flex;flex-direction:column;align-items:center;gap:var(--space-sm);text-align:center;
+                    background:var(--bg-secondary);border:2px solid rgba(66,133,244,0.35);border-radius:1.2rem;
+                    padding:clamp(1.5rem,2.5vw,3.5rem);
+                    box-shadow:0 0 40px rgba(66,133,244,0.12),0 4px 24px rgba(0,0,0,0.4);">
+          <div style="position:relative;width:clamp(130px,13vw,210px);height:clamp(150px,15vw,242px);
+                      filter:drop-shadow(0 0 18px rgba(66,133,244,0.55));">
+            <div style="width:100%;height:100%;background:linear-gradient(135deg,#0f1f3d,#1e293b);
+                        clip-path:polygon(25% 0%,75% 0%,100% 50%,75% 100%,25% 100%,0% 50%);
+                        display:flex;align-items:center;justify-content:center;
+                        border:2px solid rgba(66,133,244,0.6);">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1556 1587" style="width:48%;height:48%;"><path fill="#4285f4" d="M1555.26 810.89c0-65.22-5.3-112.82-16.75-162.17H793.5V943.1h437.3c-8.81 73.16-56.42 183.34-162.22 257.37l-1.49 9.86 235.56 182.43 16.32 1.63c149.88-138.39 236.29-341.99 236.29-583.5"/><path fill="#34a853" d="M793.5 1586.53c214.24 0 394.1-70.51 525.47-192.14l-250.39-193.92c-67.01 46.72-156.94 79.33-275.08 79.33-209.84 0-387.93-138.38-451.42-329.64l-9.3.79-244.94 189.5-3.2 8.9c130.48 259.13 398.51 437.18 708.86 437.18"/><path fill="#fbbc05" d="M342.08 950.16c-16.75-49.36-26.44-102.25-26.44-156.89 0-54.65 9.69-107.54 25.56-156.9l-.44-10.51L92.75 433.32l-8.11 3.85C30.86 544.71 0 665.46 0 793.27c0 127.8 30.86 248.55 84.64 356.08z"/><path fill="#eb4335" d="M793.5 306.73c149 0 249.51 64.34 306.82 118.11l223.94-218.59C1186.72 78.45 1007.74 0 793.5 0 483.15 0 215.12 178.04 84.64 437.17l256.56 199.2c64.37-191.26 242.46-329.64 452.3-329.64"/></svg>
+            </div>
+          </div>
+          <p style="font-family:var(--font-heading);font-size:clamp(2.4rem,3.2vw,4.8rem);font-weight:700;color:#f8fafc;margin:0;">Login con Google</p>
+          <div style="width:3rem;height:3px;background:linear-gradient(90deg,#4285f4,#34a853,#fbbc05,#eb4335);border-radius:2px;"></div>
+          <p style="font-size:clamp(1.7rem,2.2vw,3.2rem);color:var(--text-secondary);line-height:1.5;margin:0;">OAuth 2.0 con Google Workspace UNT: acceso con cuenta institucional.</p>
+        </div>
+
+      </div>
+
+      <aside class="notes">Documenso también está diseñado para integrarse con servicios externos. En nuestra implementación aprovechamos tres de ellas. Para el almacenamiento de documentos, en lugar de guardar los PDFs en el disco del servidor, los delegamos a MinIO — un servidor de objetos compatible con el protocolo S3 de Amazon — que corre en la propia infraestructura de la FACET. Para las notificaciones por email, usamos Brevo como relay SMTP, con su capa gratuita que cubre ampliamente nuestro volumen de envíos. Y para la autenticación, habilitamos OAuth 2.0 con Google, lo que significa que los docentes entran al sistema directamente con su cuenta de Google de la UNT, sin tener que crear ni recordar otra contraseña. [PAUSE]</aside>
     </section>
 
     <!-- ============================================================ -->
@@ -1443,84 +1963,6 @@ Documenso, en cambio, incluye en su versión comunitaria el control de roles, no
     </section>
 
     <!-- ============================================================ -->
-    <!-- SLIDE 7 · STACK TECNOLÓGICO  (§4.10 Card Grid)              -->
-    <!-- ============================================================ -->
-    <section>
-
-      <h2>Stack 100% Open Source: Proxmox → Docker → Documenso + PostgreSQL + MinIO</h2>
-      <div class="bar"></div>
-
-      <div class="stack-grid">
-        <div class="stack-card fragment">
-          <div class="layer-label">Cómputo &amp; Orquestación</div>
-          <div class="layer-title">Proxmox → LXC → Docker → Coolify</div>
-        </div>
-        <div class="stack-card fragment">
-          <div class="layer-label">Base de Datos Transaccional</div>
-          <div class="layer-title">PostgreSQL</div>
-        </div>
-        <div class="stack-card fragment">
-          <div class="layer-label">Almacenamiento de Objetos</div>
-          <div class="layer-title">TrueNAS + MinIO (API S3)</div>
-        </div>
-        <div class="stack-card fragment">
-          <div class="layer-label">Email &amp; Renderizado PDF</div>
-          <div class="layer-title">Brevo SMTP · Browserless</div>
-        </div>
-      </div>
-
-      <aside class="notes">
-¿Cómo levantamos este sistema? Les presento el stack tecnológico. [PAUSE]
-
-Como base de cómputo aprovechamos el servidor de la facultad que corre Proxmox. Sobre él, usamos un contenedor LXC para correr Docker. Para no administrar contenedores a mano, utilizamos Coolify — una plataforma PaaS que facilita la orquestación. [PAUSE]
-
-Como base de datos transaccional usamos PostgreSQL. Los PDFs firmados no se guardan en la base de datos — para eso usamos TrueNAS con MinIO, almacenamiento de objetos compatible con S3. [PAUSE]
-
-Para los correos integramos Brevo SMTP. Y finalmente agregué Browserless — una instancia de Chrome virtual — fundamental para renderizar el certificado visual de la firma en el PDF.
-      </aside>
-
-    </section>
-
-    <!-- ============================================================ -->
-    <!-- SLIDE 8 · ARQUITECTURA  (§4.9 Assertion + Evidence)         -->
-    <!-- ============================================================ -->
-    <section>
-
-      <h2>Arquitectura Hardened: ningún puerto interno queda expuesto a internet</h2>
-      <div class="bar"></div>
-
-      <div class="arch-layout">
-
-        <ul class="styled-list">
-          <li class="fragment">WAN → Nginx (SSL) → Coolify → Traefik → Documenso</li>
-          <li class="fragment">PostgreSQL y Browserless: aislados en red Docker privada</li>
-          <li class="fragment">Socat (proxy TCP): URL única de MinIO, tráfico S3 siempre filtrado</li>
-        </ul>
-
-        <div class="placeholder fragment">
-          <div class="ph-label">Diagrama de Despliegue</div>
-          <div class="ph-desc">
-            Arquitectura completa de red<br>
-            WAN · Nginx · Coolify · Traefik<br>
-            Documenso · PostgreSQL · Browserless<br>
-            MinIO · TrueNAS · Socat<br><br>
-            <em>Insertar imagen del diagrama aquí</em>
-          </div>
-        </div>
-
-      </div>
-
-      <aside class="notes">
-Acá es donde todo se une. Esta es la arquitectura de red y el diagrama de despliegue. [PAUSE]
-
-Imaginen a un profesor desde internet. Su petición llega al router de borde de la FACET, es recibida por Nginx que maneja SSL y reenvía hacia adentro, al contenedor LXC donde vive Coolify. Dentro de Coolify, Traefik enruta hacia la red privada de Docker donde está Documenso. PostgreSQL y Browserless están aislados — sus puertos no se exponen a internet. [PAUSE]
-
-Fíjense en el flujo hacia MinIO. Tuvimos que resolver un desafío: Documenso requiere una única URL pública para el almacenamiento S3. Implementamos un contenedor proxy TCP llamado Socat dentro de nuestra red virtual. Todo el tráfico hacia el almacenamiento pasa siempre filtrado y seguro por el proxy de la facultad antes de llegar a los discos físicos del TrueNAS. Nada queda expuesto al exterior de forma directa.
-      </aside>
-
-    </section>
-
-    <!-- ============================================================ -->
     <!-- SECTION BREAK 05 · VALIDACIÓN Y DEMO  (§4.2)                -->
     <!-- ============================================================ -->
     <section class="centered" data-background-color="#0c4a6e">
@@ -1528,44 +1970,6 @@ Fíjense en el flujo hacia MinIO. Tuvimos que resolver un desafío: Documenso re
       <h1 class="section-heading text-on-dark">Validación Práctica y<br>Demostración en Vivo</h1>
       <div class="bar bar-accent-3"></div>
       <aside class="notes">Última sección — lo que construimos funciona. Vamos a verlo. [PAUSE]</aside>
-    </section>
-
-    <!-- ============================================================ -->
-    <!-- SLIDE 9 · CONCLUSIÓN  (§4.10 Card Grid)                     -->
-    <!-- ============================================================ -->
-    <section>
-
-      <h2>Costo licencias: $0 · Datos en FACET · Respaldo automático · Sistema operativo</h2>
-      <div class="bar"></div>
-
-      <div class="conclusion-grid">
-        <div class="conclusion-card fragment">
-          <div class="c-title">Control total de datos institucionales</div>
-        </div>
-        <div class="conclusion-card fragment">
-          <div class="c-title">Costo de licenciamiento = $0</div>
-        </div>
-        <div class="conclusion-card fragment">
-          <div class="c-title">Acceso restringido a cuentas @herrera</div>
-        </div>
-        <div class="conclusion-card fragment">
-          <div class="c-title">Respaldo automático y autonomía operativa</div>
-        </div>
-        <div class="demo-banner">
-          A continuación: demostración en vivo de la plataforma &nbsp;→
-        </div>
-      </div>
-
-      <aside class="notes">
-En conclusión, logramos una arquitectura robusta, de nivel empresarial, pero alojada en nuestros propios servidores y sin depender económicamente de un tercero. [PAUSE]
-
-Hemos eliminado el problema del registro manual de usuarios cerrando el acceso únicamente a cuentas de Google institucionales. Tenemos un sistema de respaldo automático operando. Costo de licenciamiento cero. [PAUSE]
-
-Todo este diseño de infraestructura se aprecia mucho mejor viéndolo funcionar. Así que ahora pasamos a la demostración en vivo.
-
-[TRANSICIÓN A LA COMPUTADORA PARA LA DEMO EN VIVO]
-      </aside>
-
     </section>
 
     <!-- ============================================================ -->
