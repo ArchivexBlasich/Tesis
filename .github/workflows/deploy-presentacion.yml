@@ -6,6 +6,7 @@ on:
       - main
     paths:
       - 'presentacion/**'
+      - '.github/workflows/deploy-presentacion.yml'
 
   # Permite ejecutar manualmente desde la pestaña Actions
   workflow_dispatch:
