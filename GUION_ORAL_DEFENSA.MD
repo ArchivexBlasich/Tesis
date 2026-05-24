@@ -125,3 +125,56 @@ Para las notificaciones por email, usamos Brevo como relay SMTP. Su capa gratuit
 Y para la autenticación, habilitamos OAuth 2.0 con Google. Esto significa que los docentes y administrativos entran al sistema directamente con su cuenta de Google de la UNT, sin tener que crear ni recordar otra contraseña. Zero fricción en la adopción."
 
 ---
+
+## Diapositiva 14: [Sección 04 — Infraestructura y Arquitectura de Despliegue]
+
+_(Transición de sección — sin texto oral, solo pasar la slide)_
+
+---
+
+## Diapositiva 15: Conceptos Clave de la Infraestructura
+
+"Ahora que sabemos qué herramientas elegimos, veamos cómo las desplegamos concretamente.
+
+La FACET ya contaba con un servidor físico corriendo Proxmox VE, un hipervisor open source muy usado en entornos universitarios. Proxmox nos ofrece dos modalidades de virtualización: máquinas virtuales completas a través de KVM, y contenedores ligeros a través de LXC. Nosotros optamos por un contenedor LXC, porque tiene un overhead mínimo — comparte el kernel del host y arranca en segundos — y es más que suficiente para nuestra carga de trabajo.
+
+[CLICK]
+
+Dentro de ese contenedor instalamos Coolify, que es el corazón operativo de todo el sistema. Coolify es una plataforma PaaS open source que gestiona el ciclo de vida completo de los servicios: despliegue, variables de entorno, actualizaciones y monitoreo, todo desde una interfaz web. Incluye Traefik como reverse proxy integrado, que se encarga automáticamente de provisionar los certificados TLS y de enrutar el tráfico HTTP hacia el servicio correcto según el dominio. Cada componente de la aplicación — Documenso, la base de datos PostgreSQL y MinIO — corre en su propio contenedor Docker, completamente aislado del resto.
+
+[CLICK]
+
+Y en paralelo, en un segundo servidor, tenemos el Servidor NAS. Ahí corre TrueNAS, que gestiona el almacenamiento de discos con redundancia RAID, y MinIO, que expone ese almacenamiento como un bucket compatible con el protocolo S3. De esta forma, los documentos firmados nunca viven en el mismo servidor que la aplicación — están separados físicamente, lo que simplifica los backups y mejora la resiliencia."
+
+---
+
+## Diapositiva 16: Diagrama General de Arquitectura
+
+"Para cerrar esta sección, acá tienen el diagrama completo de la infraestructura.
+
+Desde abajo hacia arriba: en la zona WAN tenemos al usuario final — un personal de la FACET — que accede desde la red universitaria o desde internet. El tráfico entra por el Router de Borde de la FACET, donde Nginx actúa como primer proxy y termina el TLS externo. Desde ahí el pedido viaja por la red interna hasta el contenedor LXC, donde Traefik lo recibe y lo despacha al contenedor Docker correspondiente — Documenso en este caso.
+
+Si el flujo requiere enviar una notificación, Documenso la delega a Brevo vía SMTP. Si requiere autenticación, redirige al usuario al servidor de Google OAuth. Y si requiere guardar o recuperar un documento, habla directamente con MinIO en el Servidor NAS a través del protocolo S3.
+
+Todo en la misma red institucional, sin ningún dato saliendo a la nube."
+
+---
+
+---
+
+## Diapositiva 17: Stack de Documenso
+
+i hacemos un 'zoom' dentro de la red privada que nos orquesta Coolify, llegamos al corazón del sistema: el stack de Documenso. 
+
+Como ven en pantalla, aquí operan tres contenedores principales que se comunican de forma aislada. Primero, tenemos la base de datos **PostgreSQL**. Una decisión de diseño clave aquí fue utilizarla *exclusivamente* para guardar la metadata del sistema, es decir, el estado de los trámites, los usuarios y los permisos [1, 2]. Los archivos PDF no se guardan acá para evitar que la base de datos crezca descontroladamente y afecte el rendimiento [2].
+
+[CLICK o señalar a Browserless]
+
+Y en segundo lugar, pueden ver un servicio llamado **Browserless**. Este contenedor no estaba previsto en el diseño original, sino que nació de la necesidad de resolver un problema crítico de integración. 
+
+Durante mis pruebas piloto, el sistema permitía cargar el documento y recolectaba las firmas correctamente, pero al final del proceso el trámite quedaba atrapado en un estado de 'PENDING' [3]. Analizando los registros de ejecución, detecté que el sistema fallaba al intentar generar la representación visual del certificado en el PDF porque la imagen oficial de Documenso en Docker no incluye los binarios de Chromium necesarios para dibujarlo [3, 4].
+
+Para resolverlo de forma limpia, sin alterar la imagen oficial de Documenso ni romper su capacidad de actualización, implementé este contenedor Browserless [5]. Funciona como una instancia de Chrome virtual en segundo plano. Ahora, Documenso simplemente se conecta a él, le delega el trabajo pesado del renderizado gráfico del PDF, y el ciclo de firma se completa con éxito [5].
+
+---
+

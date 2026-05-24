@@ -1963,6 +1963,200 @@ Cuarto: documentación y transferencia. Generar manuales tanto para usuarios fin
     </section>
 
     <!-- ============================================================ -->
+    <!-- SLIDE · CONCEPTOS CLAVE DE LA INFRAESTRUCTURA               -->
+    <!-- ============================================================ -->
+    <section data-background-color="#0f172a">
+      <p class="slide-kicker">Infraestructura y Arquitectura de Despliegue</p>
+      <h2 class="slide-title" style="font-size:clamp(2.4rem,3.8vw,5.6rem);margin-bottom:var(--space-sm);">Conceptos Clave de la Infraestructura</h2>
+
+      <!-- OUTER GRID: dos servidores físicos -->
+      <div style="display:grid;grid-template-columns:3fr 1.15fr;gap:clamp(.8rem,1.2vw,1.8rem);margin-top:clamp(.4rem,.6vw,.9rem);">
+
+        <!-- ── SERVIDOR 1 (siempre visible, borde punteado ámbar) ────────── -->
+        <div style="border:3px dashed rgba(251,146,60,0.70);border-radius:1.2rem;
+                    padding:clamp(.7rem,1.1vw,1.6rem);position:relative;">
+          <span style="position:absolute;top:-.75rem;left:1.1rem;background:#0f172a;
+                       padding:0 .6rem;font-family:var(--font-mono);
+                       font-size:clamp(1.25rem,1.5vw,2.2rem);color:#fb923c;
+                       letter-spacing:.12em;text-transform:uppercase;font-weight:700;">Servidor 1</span>
+
+          <!-- Proxmox card -->
+          <div style="background:var(--bg-secondary);border:2px solid rgba(229,112,0,0.28);border-radius:1rem;
+                      padding:clamp(.8rem,1.4vw,2rem);position:relative;overflow:hidden;margin-bottom:clamp(.5rem,.8vw,1.2rem);">
+            <div style="position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,transparent,#e57000,transparent);"></div>
+            <div style="display:flex;align-items:center;gap:clamp(.8rem,1.6vw,2.4rem);margin-bottom:clamp(.6rem,1vw,1.6rem);">
+              <img src="figuras/proxmox.svg" alt="Proxmox"
+                   style="height:clamp(46px,5.8vw,82px);flex-shrink:0;filter:drop-shadow(0 0 10px rgba(229,112,0,0.35));">
+              <div>
+                <p style="font-family:var(--font-heading);font-size:clamp(2rem,2.7vw,4.2rem);font-weight:700;color:#fb923c;margin:0 0 .15rem;">Proxmox VE</p>
+                <p style="font-size:clamp(1.5rem,2vw,3rem);color:var(--text-secondary);margin:0;">Ambiente de virtualización <em>open source</em></p>
+              </div>
+            </div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:clamp(.6rem,1.2vw,2rem);">
+              <div style="background:rgba(229,112,0,0.06);border:1.5px solid rgba(229,112,0,0.22);border-radius:.8rem;
+                          padding:clamp(.6rem,.9vw,1.4rem);display:flex;align-items:center;gap:clamp(.6rem,1vw,1.5rem);">
+                <svg viewBox="0 0 44 38" style="width:clamp(34px,3.9vw,58px);flex-shrink:0;">
+                  <rect x="3" y="4" width="38" height="24" rx="3" fill="none" stroke="#e57000" stroke-width="2.5"/>
+                  <line x1="7" y1="34" x2="16" y2="28" stroke="#e57000" stroke-width="2"/>
+                  <line x1="37" y1="34" x2="28" y2="28" stroke="#e57000" stroke-width="2"/>
+                  <line x1="5" y1="34" x2="39" y2="34" stroke="#e57000" stroke-width="2.5" stroke-linecap="round"/>
+                  <rect x="14" y="9" width="16" height="11" rx="1.5" fill="#e57000" opacity=".18"/>
+                  <text x="22" y="18" text-anchor="middle" font-family="monospace" font-size="7" fill="#e57000" font-weight="bold">VM</text>
+                </svg>
+                <div>
+                  <p style="font-family:var(--font-mono);font-size:clamp(1.5rem,1.85vw,2.8rem);color:#fb923c;font-weight:700;margin:0 0 .1rem;">Full Virtualization</p>
+                  <p style="font-size:clamp(1.25rem,1.6vw,2.3rem);color:var(--text-muted);margin:0;">KVM / QEMU</p>
+                </div>
+              </div>
+              <div style="background:rgba(221,72,20,0.08);border:2px solid rgba(221,72,20,0.40);border-radius:.8rem;
+                          padding:clamp(.6rem,.9vw,1.4rem);display:flex;align-items:center;gap:clamp(.6rem,1vw,1.5rem);
+                          box-shadow:0 0 18px rgba(221,72,20,0.10);">
+                <img src="figuras/lxc-cube.svg" alt="LXC"
+                     style="height:clamp(28px,3.2vw,48px);flex-shrink:0;filter:drop-shadow(0 0 6px rgba(221,72,20,0.40));">
+                <div style="flex:1;">
+                  <div style="display:flex;align-items:center;gap:.6rem;flex-wrap:wrap;">
+                    <p style="font-family:var(--font-mono);font-size:clamp(1.5rem,1.85vw,2.8rem);color:#f87171;font-weight:700;margin:0;">Containers</p>
+                    <span style="font-size:clamp(.8rem,1vw,1.5rem);background:rgba(221,72,20,0.22);color:#fca5a5;
+                                 border:1px solid rgba(221,72,20,0.38);border-radius:.3rem;padding:.1em .5em;font-weight:600;">← usamos</span>
+                  </div>
+                  <p style="font-size:clamp(1.25rem,1.6vw,2.3rem);color:var(--text-muted);margin:.1rem 0 0;">LXC: Linux Container</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- LXC inner stack (fragment 1) -->
+          <div class="fragment fade-up" data-fragment-index="1"
+               style="background:rgba(221,72,20,0.05);border:2px solid rgba(221,72,20,0.26);border-radius:1rem;
+                      padding:clamp(.6rem,1vw,1.5rem);position:relative;overflow:hidden;">
+            <div style="position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,transparent,#dd4814,transparent);"></div>
+            <p style="font-family:var(--font-mono);font-size:clamp(1.25rem,1.5vw,2.2rem);color:#f87171;font-weight:700;
+                      margin:0 0 clamp(.4rem,.7vw,1rem);text-transform:uppercase;letter-spacing:.1em;">Dentro del LXC</p>
+            <div style="display:flex;align-items:center;gap:0;">
+              <div style="background:var(--bg-secondary);border:1.5px solid rgba(140,82,255,0.30);border-radius:.8rem;
+                          padding:clamp(.5rem,.7vw,1.2rem) clamp(.7rem,1.2vw,2rem);text-align:center;flex-shrink:0;">
+                <img src="figuras/coolify.svg" alt="Coolify"
+                     style="height:clamp(28px,3.4vw,52px);display:block;margin:0 auto .35rem;filter:drop-shadow(0 0 7px rgba(140,82,255,0.40));">
+                <p style="font-family:var(--font-heading);font-size:clamp(1.1rem,1.4vw,2.2rem);font-weight:700;color:#c4b5fd;margin:0 0 .1rem;">Coolify</p>
+                <p style="font-size:clamp(.85rem,1vw,1.6rem);color:var(--text-muted);margin:0;">PaaS</p>
+              </div>
+              <div style="display:flex;align-items:center;padding:0 clamp(.4rem,.6vw,.9rem);flex-shrink:0;">
+                <svg viewBox="0 0 44 14" style="width:clamp(24px,2.8vw,42px);">
+                  <line x1="2" y1="7" x2="35" y2="7" stroke="#475569" stroke-width="2.5"/>
+                  <path d="M29,2 L42,7 L29,12" fill="#475569"/>
+                </svg>
+              </div>
+              <div style="background:var(--bg-secondary);border:1.5px solid rgba(55,171,200,0.30);border-radius:.8rem;
+                          padding:clamp(.5rem,.7vw,1.2rem) clamp(.7rem,1.2vw,2rem);text-align:center;flex-shrink:0;">
+                <img src="figuras/traefik-1.svg" alt="Traefik"
+                     style="height:clamp(28px,3.4vw,52px);display:block;margin:0 auto .35rem;filter:drop-shadow(0 0 7px rgba(55,171,200,0.40));">
+                <p style="font-family:var(--font-heading);font-size:clamp(1.1rem,1.4vw,2.2rem);font-weight:700;color:#67e8f9;margin:0 0 .1rem;">Traefik</p>
+                <p style="font-size:clamp(.85rem,1vw,1.6rem);color:var(--text-muted);margin:0;">Reverse Proxy</p>
+              </div>
+              <div style="flex:1;display:flex;align-items:center;gap:0;padding-left:clamp(.3rem,.5vw,.8rem);">
+                <svg viewBox="0 0 60 275" xmlns="http://www.w3.org/2000/svg"
+                     style="width:50px;height:275px;flex-shrink:0;overflow:visible;">
+                  <defs>
+                    <marker id="af2" markerWidth="9" markerHeight="7" refX="8" refY="3.5" orient="auto">
+                      <path d="M0,0 L0,7 L9,3.5 z" fill="#37abc8"/>
+                    </marker>
+                  </defs>
+                  <line x1="0" y1="137" x2="14" y2="137" stroke="#37abc8" stroke-width="2.5"/>
+                  <line x1="14" y1="42"  x2="14" y2="232" stroke="#37abc8" stroke-width="2"/>
+                  <line x1="14" y1="42"  x2="52" y2="42"  stroke="#37abc8" stroke-width="2" marker-end="url(#af2)"/>
+                  <line x1="14" y1="137" x2="52" y2="137" stroke="#37abc8" stroke-width="2" marker-end="url(#af2)"/>
+                  <line x1="14" y1="232" x2="52" y2="232" stroke="#37abc8" stroke-width="2" marker-end="url(#af2)"/>
+                </svg>
+                <div style="flex:1;display:flex;flex-direction:column;gap:10px;">
+                  <div style="background:var(--bg-secondary);border:1.5px solid rgba(35,150,237,0.26);border-radius:.7rem;
+                              padding:clamp(.4rem,.6vw,1rem);text-align:center;min-height:85px;
+                              display:flex;flex-direction:column;align-items:center;justify-content:center;">
+                    <img src="figuras/docker.svg" alt="Docker"
+                         style="height:clamp(27px,2.9vw,44px);display:block;margin:0 auto .3rem;filter:drop-shadow(0 0 5px rgba(35,150,237,0.38));">
+                    <p style="font-family:var(--font-heading);font-size:clamp(1.2rem,1.5vw,2.2rem);font-weight:600;color:#7dd3fc;margin:0;">Frontend</p>
+                  </div>
+                  <div style="background:var(--bg-secondary);border:1.5px solid rgba(35,150,237,0.26);border-radius:.7rem;
+                              padding:clamp(.4rem,.6vw,1rem);text-align:center;min-height:85px;
+                              display:flex;flex-direction:column;align-items:center;justify-content:center;">
+                    <img src="figuras/docker.svg" alt="Docker"
+                         style="height:clamp(27px,2.9vw,44px);display:block;margin:0 auto .3rem;filter:drop-shadow(0 0 5px rgba(35,150,237,0.38));">
+                    <p style="font-family:var(--font-heading);font-size:clamp(1.2rem,1.5vw,2.2rem);font-weight:600;color:#7dd3fc;margin:0;">Backend</p>
+                  </div>
+                  <div style="background:var(--bg-secondary);border:1.5px solid rgba(35,150,237,0.26);border-radius:.7rem;
+                              padding:clamp(.4rem,.6vw,1rem);text-align:center;min-height:85px;
+                              display:flex;flex-direction:column;align-items:center;justify-content:center;">
+                    <img src="figuras/docker.svg" alt="Docker"
+                         style="height:clamp(27px,2.9vw,44px);display:block;margin:0 auto .3rem;filter:drop-shadow(0 0 5px rgba(35,150,237,0.38));">
+                    <p style="font-family:var(--font-heading);font-size:clamp(1.2rem,1.5vw,2.2rem);font-weight:600;color:#7dd3fc;margin:0;">Base de datos</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ── SERVIDOR NAS (fragment 2, borde punteado teal) ──────────── -->
+        <div class="fragment fade-up" data-fragment-index="2"
+             style="border:3px dashed rgba(49,190,236,0.70);border-radius:1.2rem;
+                    padding:clamp(.7rem,1.1vw,1.6rem);position:relative;
+                    display:flex;flex-direction:column;justify-content:center;gap:clamp(.5rem,.8vw,1.2rem);">
+          <span style="position:absolute;top:-.75rem;left:1.1rem;background:#0f172a;
+                       padding:0 .6rem;font-family:var(--font-mono);
+                       font-size:clamp(1.25rem,1.5vw,2.2rem);color:#31beec;
+                       letter-spacing:.12em;text-transform:uppercase;font-weight:700;">Servidor NAS</span>
+
+          <!-- TrueNAS -->
+          <div style="background:var(--bg-secondary);border:1.5px solid rgba(49,190,236,0.30);border-radius:.8rem;
+                      padding:clamp(.5rem,.8vw,1.3rem);text-align:center;">
+            <img src="figuras/truenas.svg" alt="TrueNAS"
+                 style="height:clamp(36px,4.2vw,60px);display:block;margin:0 auto .4rem;filter:drop-shadow(0 0 7px rgba(49,190,236,0.40));">
+            <p style="font-family:var(--font-heading);font-size:clamp(1.5rem,1.85vw,2.7rem);font-weight:700;color:#7dd3fc;margin:0 0 .1rem;">TrueNAS</p>
+            <p style="font-size:clamp(1.1rem,1.35vw,2rem);color:var(--text-muted);margin:0;">Gestión de discos</p>
+          </div>
+
+          <div style="display:flex;justify-content:center;">
+            <svg viewBox="0 0 14 30" style="width:18px;height:30px;">
+              <line x1="7" y1="2" x2="7" y2="22" stroke="#475569" stroke-width="2.5"/>
+              <path d="M2,17 L7,28 L12,17" fill="#475569"/>
+            </svg>
+          </div>
+
+          <!-- MinIO -->
+          <div style="background:var(--bg-secondary);border:1.5px solid rgba(199,46,73,0.35);border-radius:.8rem;
+                      padding:clamp(.5rem,.8vw,1.3rem);text-align:center;">
+            <img src="figuras/MinIO Symbol SVG.svg" alt="MinIO"
+                 style="height:clamp(36px,4.2vw,60px);display:block;margin:0 auto .4rem;filter:drop-shadow(0 0 7px rgba(199,46,73,0.40));">
+            <p style="font-family:var(--font-heading);font-size:clamp(1.5rem,1.85vw,2.7rem);font-weight:700;color:#fda4af;margin:0 0 .1rem;">MinIO</p>
+            <p style="font-size:clamp(1.1rem,1.35vw,2rem);color:var(--text-muted);margin:0;">Object Storage S3</p>
+          </div>
+        </div>
+
+      </div>
+
+      <aside class="notes">La infraestructura de la FACET ya contaba con Proxmox VE — un hipervisor open source. Proxmox permite dos tipos de virtualización: máquinas virtuales completas con KVM, y contenedores ligeros con LXC. Nosotros utilizamos un contenedor LXC por su bajo overhead. [CLICK] Dentro de ese contenedor instalamos Coolify, una plataforma PaaS open source que gestiona todo el ciclo de vida de los servicios. Coolify incluye Traefik como reverse proxy integrado: se encarga de los certificados TLS y el enrutamiento HTTP automático. Cada componente del sistema — Documenso, MinIO, la base de datos — corre en su propio contenedor Docker completamente aislado. [PAUSE]</aside>
+    </section>
+
+    <!-- ============================================================ -->
+    <!-- SLIDE 16 · DIAGRAMA GENERAL DE ARQUITECTURA                 -->
+    <!-- ============================================================ -->
+    <section data-background-image="figuras/diagrama_general.svg"
+             data-background-size="135%"
+             data-background-position="64% 70%"
+             data-background-color="#0f172a">
+      <aside class="notes">Aquí vemos el diagrama completo de la infraestructura: cómo se conectan todos los componentes del sistema desde Internet hasta los contenedores internos.</aside>
+    </section>
+
+    <!-- ============================================================ -->
+    <!-- SLIDE 17 · STACK DE DOCUMENSO                               -->
+    <!-- ============================================================ -->
+    <section data-background-image="figuras/documenso_stack.svg"
+             data-background-size="170%"
+             data-background-position="82% 30%"
+             data-background-color="#0f172a">
+      <aside class="notes">Acá se puede ver el stack completo de Documenso y cómo interactúan sus capas internas.</aside>
+    </section>
+
+    <!-- ============================================================ -->
     <!-- SECTION BREAK 05 · VALIDACIÓN Y DEMO  (§4.2)                -->
     <!-- ============================================================ -->
     <section class="centered" data-background-color="#0c4a6e">
