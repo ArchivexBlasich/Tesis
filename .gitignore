@@ -22,6 +22,12 @@
 !figuras/
 !figuras/**
 
+# Permitir presentacion RevealJS y workflows de GitHub Actions
+!.github/
+!.github/**
+!presentacion/
+!presentacion/**
+
 # --- Reglas de limpieza para LaTeX ---
 # Ignorar archivos temporales de compilación incluso en las subcarpetas permitidas
 *.aux
