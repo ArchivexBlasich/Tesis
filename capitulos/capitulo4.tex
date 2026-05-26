@@ -259,7 +259,7 @@ Las métricas de consumo de CPU y RAM se registraron por contenedor mediante Net
 \subsection{Consumo de recursos en operación normal (baseline)}
 \label{subsec:baseline}
 
-El baseline se registró el 13 de abril de 2026 entre las 21:44 y las 22:00 UTC bajo condiciones de navegación estándar y descarga de archivos, sin ejecución de ciclos de firma concurrentes.
+El baseline se registró el 24 de abril de 2026 entre las 16:17 y las 16:20 UTC bajo condiciones de navegación estándar y descarga de archivos, sin ejecución de ciclos de firma concurrentes.
 
 \subsubsection*{Memoria RAM}
 
@@ -339,18 +339,18 @@ Las Figuras~\ref{fig:carga_5firmas_cpu} y \ref{fig:carga_5firmas_ram} registran 
     \begin{subfigure}[b]{0.95\textwidth}
         \centering
         \includegraphics[width=\textwidth]{figuras/capitulo4/4.6/BloqueB/ram_bajo_carga_controlada_5firmas.png}
-        \caption{Consumo de RAM (en MiB) durante la ráfaga de cinco documentos. Pico máximo de Browserless: 1\,331~MiB. Total del \textit{stack} en el pico: \(\approx\) 1\,826~MiB sobre 8~GiB asignados al LXC.}
+        \caption{Consumo de RAM (en MiB) durante la ráfaga de cinco documentos. Pico máximo de Browserless: 797~MiB. Total del \textit{stack} en el pico: \(\approx\) 1\,338~MiB sobre 8~GiB asignados al LXC.}
         \label{fig:carga_5firmas_ram}
     \end{subfigure}
-    \caption[CPU y RAM durante la ráfaga de cinco documentos concurrentes]{Consumo de CPU y RAM del \textit{stack} durante la ráfaga de cinco documentos. La ventana de actividad se extendió entre las 00:46:28 y las 00:47:40 UTC (\(\approx\)~1~min 12~s). Browserless alcanzó un pico sostenido de 100\,\% de CPU y un pico de RAM de 1\,331~MiB antes de liberar ambos recursos al completarse todos los jobs.}
+    \caption[CPU y RAM durante la ráfaga de cinco documentos concurrentes]{Consumo de CPU y RAM del \textit{stack} durante la ráfaga de cinco documentos. La ventana de actividad se extendió entre las 17:45:38 y las 17:46:50 UTC (\(\approx\)~1~min 12~s). Browserless alcanzó un pico sostenido de 100\,\% de CPU y un pico de RAM de 797~MiB antes de liberar ambos recursos al completarse todos los jobs.}
     \label{fig:carga_5_firmas}
 \end{figure}
 
 \FloatBarrier
 
-En este ensayo, el bloque de actividad se extendió entre las 00:46:28 y las 00:47:40 UTC, aproximadamente 1~minuto 12~segundos: Browserless procesó los cinco jobs en forma secuencial, lo que explica la forma escalonada de la curva de RAM (Figura~\ref{fig:carga_5firmas_ram}), donde cada peldaño corresponde al lanzamiento de un proceso de Chrome adicional. El pico máximo de RAM de Browserless fue de 1\,331~MiB. Al completarse el último job, la curva cayó a los 298~MiB de baseline en un único intervalo de muestreo.
+En este ensayo, el bloque de actividad se extendió entre las 17:45:38 y las 17:46:50 UTC, aproximadamente 1~minuto 12~segundos: Browserless procesó los cinco jobs en forma secuencial, lo que explica la forma escalonada de la curva de RAM (Figura~\ref{fig:carga_5firmas_ram}), donde cada peldaño corresponde al lanzamiento de un proceso de Chrome adicional. El pico máximo de RAM de Browserless fue de 797~MiB. Al completarse el último job, la curva cayó a los 298~MiB de baseline en un único intervalo de muestreo.
 
-En CPU, Browserless registró un pico agudo inicial de 100\,\% a las 00:46:28, un breve descenso hacia el baseline a las 00:46:32 y luego una actividad sostenida al 100\,\% durante aproximadamente 1~minuto hasta las 00:47:38. El pico de 100\,\% corresponde a 1 núcleo virtual sobre los 8~vCPUs del LXC (el 12,5\,\% de la capacidad total). Documenso registró un pico de 25\,\% al inicio del proceso, asociado al despacho inicial de los jobs de sellado, retornando luego al baseline.
+En CPU, Browserless registró un pico agudo inicial de 100\,\% a las 17:45:38, un breve descenso hacia el baseline a las 17:45:52 y luego una actividad sostenida al 100\,\% durante aproximadamente 1~minuto hasta las 17:46:38. El pico de 100\,\% corresponde a 1 núcleo virtual sobre los 8~vCPUs del LXC (el 12,5\,\% de la capacidad total). Documenso registró un pico de 25\,\% al inicio del proceso, asociado al despacho inicial de los jobs de sellado, retornando luego al baseline.
 
 \subsubsection*{Tabla comparativa de rendimiento}
 
@@ -369,15 +369,15 @@ La Tabla~\ref{tab:metricas_rendimiento} consolida los valores registrados en amb
         \quad Documenso     & 5,9\,\%    & 25\,\%   & \(\approx\) 3,1\,\% (\(\approx\) 0,25~vCPU) \\
         \midrule
         \multicolumn{4}{l}{\textbf{Uso de RAM} (capacidad total: 8\,192~MiB)} \\
-        \quad Browserless             & \(\approx\) 102,0~MiB  & \(\approx\) 1\,331~MiB & \(\approx\) 16\,\% \\
-        \quad \textbf{\textit{Stack} total}    & \textbf{\(\approx\) 396,7~MiB (5\,\%)} & \textbf{\(\approx\) 1\,826~MiB} & \textbf{\(\approx\) 22\,\%} \\
+        \quad Browserless             & \(\approx\) 102,0~MiB  & \(\approx\) 797~MiB & \(\approx\) 9,7\,\% \\
+        \quad \textbf{\textit{Stack} total}    & \textbf{\(\approx\) 396,7~MiB (5\,\%)} & \textbf{\(\approx\) 1\,338~MiB} & \textbf{\(\approx\) 16,3\,\%} \\
         \bottomrule
     \end{tabular}
 \end{table}
 
 \FloatBarrier
 
-El recurso con mayor variación bajo carga fue la RAM de Browserless, que se multiplicó por \(\approx\)~13 respecto al baseline. Aun en el peor caso registrado, el \textit{stack} consumió el 22\,\% de la RAM del LXC, lo que dejó un margen de aproximadamente 6\,366~MiB (\(\approx\) 6,2~GiB) disponibles. La CPU no representó un cuello de botella en ninguno de los dos ensayos.
+El recurso con mayor variación bajo carga fue la RAM de Browserless, que se multiplicó por \(\approx\)~7,8 respecto al baseline. Aun en el peor caso registrado, el \textit{stack} consumió el 16,3\,\% de la RAM del LXC, lo que dejó un margen de aproximadamente 6\,854~MiB (\(\approx\) 6,7~GiB) disponibles. La CPU no representó un cuello de botella en ninguno de los dos ensayos.
 
 \section{Validación del Respaldo y Recuperación}
 \label{sec:validacion_respaldo}
@@ -584,7 +584,7 @@ comerciales con los resultados de la infraestructura desplegada.
     Consumo de recursos dentro de la capacidad del LXC &
     \ref{sec:infraestructura_base} &
     \ref{sec:metricas_rendimiento} &
-    Cumplido. RAM pico \texttt{22\,\%}; CPU dentro de umbrales operativos. \\
+    Cumplido. RAM pico \texttt{16,3\,\%}; CPU dentro de umbrales operativos. \\
     \addlinespace
     Acceso web \textit{clientless} (usabilidad) &
     \ref{subsec:documenso_core} &

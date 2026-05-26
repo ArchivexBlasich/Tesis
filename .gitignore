@@ -21,6 +21,8 @@
 !apendices/**
 !figuras/
 !figuras/**
+!manual-usuario/
+!manual-usuario/**
 
 # Permitir presentacion RevealJS y workflows de GitHub Actions
 !.github/

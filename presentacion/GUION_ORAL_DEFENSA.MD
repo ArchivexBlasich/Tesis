@@ -207,7 +207,7 @@ Para resolverlo de forma limpia, sin alterar la imagen oficial de Documenso ni r
 
 Brevo, en su capa gratuita, permite 300 correos diarios. Cada trámite de firma genera, como mínimo, 6 notificaciones: las invitaciones a cada firmante y el aviso de finalización. Eso nos da un techo real de 50 trámites por día.
 
-A 20 MB por trámite — considerando que MinIO guarda tanto el PDF original como la versión firmada — el crecimiento diario proyectado es de 1 GB.
+Cada trámite genera 2 PDFs de 10 MB en promedio — el original y la versión firmada — lo que da 20 MB por trámite y un crecimiento diario proyectado de 1 GB.
 
 Con una política de retención ILM de 5 años, que es el plazo razonable para documentos institucionales, eso nos da 1.825 TB de volumen máximo proyectado. Por eso asigné una cuota de 2 TB, con un margen de seguridad del 10%.
 
